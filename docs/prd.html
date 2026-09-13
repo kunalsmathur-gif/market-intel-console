@@ -1,0 +1,1654 @@
+<meta charset="utf-8">
+<title>Citebell PRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+/* ---------- Document tokens (theme-aware) ---------- */
+:root{
+  --bg:#F3F5F9; --paper:#FFFFFF; --ink:#0C1526; --ink-2:#3F4D66; --ink-3:#5B6980;
+  --line:#DCE2EC; --line-2:#E9EDF4; --code:#EDF1F7;
+  --brass:#8F5B08; --brass-fill:#F6EAD3; --blue:#1F4FD1; --blue-fill:#E4ECFC;
+  --up:#0B7A55; --up-fill:#DFF2E9; --down:#BD2A40; --down-fill:#FBE4E7; --warn:#A64B16; --warn-fill:#FBE9DD;
+  --brand-tile:#E6A53C; --brand-bell:#0A1120;
+  --shadow:0 1px 2px rgba(12,21,38,.06),0 10px 30px rgba(12,21,38,.07);
+  --sans:"Fira Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"Fira Code",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1120; --paper:#0F1829; --ink:#E7EDF6; --ink-2:#AEBACD; --ink-3:#8492AA;
+    --line:#22304A; --line-2:#19253A; --code:#15203A;
+    --brass:#EAAB45; --brass-fill:#2A2214; --blue:#78A9FF; --blue-fill:#15254A;
+    --up:#3CC794; --up-fill:#0F2A22; --down:#F47683; --down-fill:#301820; --warn:#F0955F; --warn-fill:#2E1D14;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1120; --paper:#0F1829; --ink:#E7EDF6; --ink-2:#AEBACD; --ink-3:#8492AA;
+  --line:#22304A; --line-2:#19253A; --code:#15203A;
+  --brass:#EAAB45; --brass-fill:#2A2214; --blue:#78A9FF; --blue-fill:#15254A;
+  --up:#3CC794; --up-fill:#0F2A22; --down:#F47683; --down-fill:#301820; --warn:#F0955F; --warn-fill:#2E1D14;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--sans);text-wrap:balance;margin:0}
+p{margin:0}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Masthead ---------- */
+.masthead{background:var(--paper);border-bottom:1px solid var(--line)}
+.masthead-in{max-width:1320px;margin:0 auto;padding:28px 28px 26px;display:grid;gap:22px}
+.lockup{display:flex;align-items:center;gap:12px}
+.lockup svg{width:38px;height:38px;flex:none}
+.wordmark{font-weight:700;font-size:26px;letter-spacing:-.03em;line-height:1}
+.wordmark sup{font-family:var(--mono);color:var(--brass);font-size:.5em;font-weight:600;margin-left:1px;vertical-align:super}
+.head-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:12px;letter-spacing:.02em;padding:4px 9px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);background:var(--paper);white-space:nowrap}
+.chip.brass{border-color:transparent;background:var(--brass-fill);color:var(--brass)}
+.headline{display:grid;gap:10px;max-width:880px}
+.headline h1{font-size:clamp(30px,4.2vw,46px);line-height:1.08;letter-spacing:-.025em;font-weight:700}
+.headline p{color:var(--ink-2);font-size:18px;max-width:70ch}
+
+/* Trading-day rail (signature figure) */
+.dayrail{border:1px solid var(--line);border-radius:12px;padding:16px 18px 12px;background:var(--bg)}
+.dayrail-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.label{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.rail-scroll{overflow-x:auto}
+.rail{position:relative;min-width:760px;padding-left:112px}
+.rail-row{position:relative;height:24px;margin:5px 0}
+.rail-row .name{position:absolute;left:-112px;top:2px;width:104px;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.rail-track{position:absolute;inset:0;border-radius:4px;background:repeating-linear-gradient(90deg,transparent 0 calc(14.634% - 1px),var(--line-2) calc(14.634% - 1px) 14.634%)}
+.sess{position:absolute;top:4px;height:16px;border-radius:4px;background:var(--blue-fill);border:1px solid color-mix(in srgb,var(--blue) 35%,transparent)}
+.sess.in{background:color-mix(in srgb,var(--brass) 22%,transparent);border-color:color-mix(in srgb,var(--brass) 55%,transparent)}
+.sess.pre{background:var(--brass);border-color:var(--brass)}
+.sess span{position:absolute;left:6px;top:-1px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);white-space:nowrap}
+.drops{position:relative;height:44px;margin-top:4px}
+.drop{position:absolute;top:0;transform:translateX(-50%);display:grid;justify-items:center;gap:2px}
+.drop i{display:block;width:10px;height:10px;border-radius:50%;background:var(--brass);box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--brass)}
+.drop b{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+.drop small{font-size:11px;color:var(--ink-3);white-space:nowrap}
+.dropline{position:absolute;top:-148px;bottom:40px;width:0;border-left:1px dashed color-mix(in srgb,var(--brass) 60%,transparent)}
+.ticks{position:relative;height:18px}
+.ticks span{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
+.rail-note{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+
+/* ---------- Layout ---------- */
+.layout{max-width:1320px;margin:0 auto;padding:28px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.toc{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;padding-right:6px}
+.toc ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:1px}
+.toc a{display:grid;grid-template-columns:34px 1fr;gap:4px;padding:6px 8px;border-radius:6px;color:var(--ink-2);text-decoration:none;font-size:14px;line-height:1.35}
+.toc a span{font-family:var(--mono);font-size:12px;color:var(--ink-3);padding-top:1px}
+.toc a:hover{background:var(--paper);color:var(--ink)}
+.toc a.on{background:var(--paper);color:var(--ink);box-shadow:inset 2px 0 0 var(--brass)}
+@media (max-width:1080px){
+  .layout{grid-template-columns:1fr;gap:18px}
+  .toc{position:static;max-height:none}
+  .toc ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto;padding-bottom:6px}
+}
+main{min-width:0;display:grid;gap:22px}
+.sec{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:30px 32px 32px;display:grid;gap:18px}
+@media (max-width:640px){.sec{padding:22px 18px}.masthead-in,.layout{padding-left:16px;padding-right:16px}}
+.sec-h{display:grid;gap:4px}
+.sec-h .label{color:var(--brass)}
+.sec-h h2{font-size:28px;letter-spacing:-.02em;line-height:1.2}
+.sec h3{font-size:19px;letter-spacing:-.01em;margin-top:8px}
+.sec h4{font-size:15px}
+.prose{display:grid;gap:12px;max-width:74ch;color:var(--ink)}
+.prose p,.prose li{color:var(--ink-2)}
+.prose strong{color:var(--ink)}
+ul.clean,ol.clean{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--ink-2)}
+ul.clean li::marker{color:var(--ink-3)}
+.lede{font-size:17px;color:var(--ink-2);max-width:74ch}
+.callout{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:14px 16px;display:grid;gap:6px;max-width:92ch}
+.callout.brass{background:var(--brass-fill);border-color:transparent}
+.callout.brass .label{color:var(--brass)}
+.callout p{color:var(--ink-2)}
+
+/* Tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;line-height:1.45}
+th,td{text-align:left;vertical-align:top;padding:10px 14px;border-bottom:1px solid var(--line-2)}
+thead th{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--bg);border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td{color:var(--ink-2)}
+td:first-child{color:var(--ink);font-weight:500}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;padding:2px 7px;border-radius:5px;background:var(--code);color:var(--ink-2);white-space:nowrap}
+.tag.up{background:var(--up-fill);color:var(--up)}
+.tag.down{background:var(--down-fill);color:var(--down)}
+.tag.brass{background:var(--brass-fill);color:var(--brass)}
+.tag.blue{background:var(--blue-fill);color:var(--blue)}
+.tag.warn{background:var(--warn-fill);color:var(--warn)}
+
+/* Grids of items */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.item{border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:6px;align-content:start}
+.item h4{font-size:15.5px}
+.item p{color:var(--ink-2);font-size:14.5px}
+.item .label{font-size:11px}
+
+/* Architecture diagram */
+.arch{overflow-x:auto}
+.arch-in{min-width:880px;display:grid;grid-template-columns:150px 22px 1fr 22px 180px 22px 150px;align-items:center;gap:0}
+.node{border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--bg);font-size:13px;line-height:1.35}
+.node b{display:block;font-size:13.5px;color:var(--ink)}
+.node small{color:var(--ink-3);font-size:12px}
+.node.gate{background:var(--brass-fill);border-color:color-mix(in srgb,var(--brass) 45%,transparent)}
+.node.gate b{color:var(--brass)}
+.node.store{background:var(--blue-fill);border-color:color-mix(in srgb,var(--blue) 35%,transparent)}
+.stack{display:grid;gap:6px}
+.arrow{height:2px;background:var(--ink-3);position:relative;margin:0 3px}
+.arrow::after{content:"";position:absolute;right:-1px;top:-4px;border-left:7px solid var(--ink-3);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.pipeline{display:grid;gap:6px;border:1px dashed var(--line);border-radius:10px;padding:8px}
+.pipeline .row{display:grid;grid-template-columns:1fr 18px 1fr 18px 1fr;align-items:center}
+.pipeline .label{margin:0 0 2px 2px}
+
+/* Verification steps */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:st}
+.step{border:1px solid var(--line);border-radius:10px;padding:12px 13px;display:grid;gap:4px;position:relative}
+.step::before{counter-increment:st;content:counter(st);font-family:var(--mono);font-size:11.5px;color:var(--brass);font-weight:600}
+.step b{font-size:14.5px}
+.step p{font-size:13.5px;color:var(--ink-2)}
+
+/* Phasing */
+.phases{display:grid;gap:10px}
+.phase{display:grid;grid-template-columns:150px 1fr 260px;gap:18px;border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.phase h4{font-size:17px}
+.phase .when{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.phase ul{margin:0;padding-left:18px;color:var(--ink-2);font-size:14.5px;display:grid;gap:3px}
+.phase .gate-box{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--ink-2)}
+.phase .gate-box .label{display:block;margin-bottom:3px}
+.phase.nirvana{background:linear-gradient(0deg,var(--brass-fill),var(--brass-fill)) padding-box;border-color:transparent}
+@media (max-width:900px){.phase{grid-template-columns:1fr;gap:10px}}
+
+/* Flows */
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flow .s{font-size:13.5px;border:1px solid var(--line);border-radius:7px;padding:5px 9px;background:var(--bg);color:var(--ink)}
+.flow .s.key{background:var(--brass-fill);border-color:transparent;color:var(--brass);font-weight:500}
+.flow .to{color:var(--ink-3);font-family:var(--mono);font-size:13px}
+.flowcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:10px}
+.flowcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.flowcard header b{font-size:16px}
+.flowcard header .label{color:var(--brass)}
+
+/* Brand */
+.brand-hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px}
+@media (max-width:860px){.brand-hero{grid-template-columns:1fr}}
+.brand-card{border-radius:14px;padding:26px;display:grid;gap:14px;align-content:start;background:#0A1120;color:#E7EDF6}
+.brand-card .lockup svg{width:54px;height:54px}
+.brand-card .wordmark{font-size:40px}
+.brand-card .tagline{font-size:22px;font-weight:500;letter-spacing:-.01em;color:#E7EDF6}
+.brand-card p{color:#AEBACD;font-size:14.5px}
+.brand-card .wordmark sup{color:#EAAB45}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.sw{border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12.5px}
+.sw i{display:block;height:46px}
+.sw div{padding:7px 9px;display:grid;gap:1px}
+.sw b{font-size:13px}
+.sw code{color:var(--ink-3);font-size:11.5px}
+.typespec{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.typespec .item .big{font-size:34px;line-height:1.1;letter-spacing:-.02em;font-weight:700;color:var(--ink)}
+.typespec .item .bigmono{font-family:var(--mono);font-size:26px;color:var(--ink);font-variant-numeric:tabular-nums}
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.dd{grid-template-columns:1fr}}
+.do,.dont{border-radius:10px;padding:12px 14px;display:grid;gap:6px;font-size:14px}
+.do{background:var(--up-fill)} .dont{background:var(--down-fill)}
+.do .label{color:var(--up)} .dont .label{color:var(--down)}
+.do p,.dont p{color:var(--ink)}
+.yes{color:var(--up);font-weight:600} .no{color:var(--down);font-weight:600}
+
+/* ---------- Wireframe gallery ---------- */
+.wf-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.wf-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.wf-tabs button,.btn{font-family:var(--sans);font-size:13.5px;border:1px solid var(--line);background:var(--paper);color:var(--ink-2);padding:6px 11px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.wf-tabs button b{font-family:var(--mono);font-weight:600;font-size:12px;margin-right:5px;color:var(--ink-3)}
+.wf-tabs button:hover,.btn:hover{border-color:var(--ink-3);color:var(--ink)}
+.wf-tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.wf-tabs button[aria-selected="true"] b{color:var(--brand-tile)}
+.wf-panel{display:grid;gap:10px}
+.wf-cap{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline}
+.wf-cap h3{margin:0}
+.wf-cap p{color:var(--ink-2);font-size:14.5px;max-width:90ch}
+.frame{overflow-x:auto;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.annot{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.annot div{font-size:13.5px;color:var(--ink-2);border-left:2px solid var(--brass);padding:2px 0 2px 10px}
+.annot b{color:var(--ink)}
+
+/* ---------- App mockup tokens (dark-first product, light variant) ---------- */
+.app{
+  --a-bg:#070D19; --a-panel:#0D1627; --a-panel-2:#121D33; --a-line:#1E2B45; --a-line-2:#17223A;
+  --a-text:#E6ECF5; --a-text-2:#A0ADC2; --a-text-3:#75849E;
+  --a-brass:#EAAB45; --a-brass-fill:rgba(234,171,69,.13); --a-blue:#6AA3FF; --a-blue-fill:rgba(106,163,255,.13);
+  --a-up:#34C28E; --a-up-fill:rgba(52,194,142,.13); --a-down:#F4697A; --a-down-fill:rgba(244,105,122,.13);
+  --a-warn:#EE8B57; --a-warn-fill:rgba(238,139,87,.14);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
+  --a-skel:#16223a;
+  background:var(--a-bg);color:var(--a-text);font-family:var(--sans);font-size:13px;line-height:1.45;min-width:1080px;position:relative;
+  color-scheme:dark;
+}
+.app.is-light{
+  --a-bg:#EDF1F7; --a-panel:#FFFFFF; --a-panel-2:#F6F8FB; --a-line:#DAE1EB; --a-line-2:#E8EDF4;
+  --a-text:#0C1526; --a-text-2:#44526A; --a-text-3:#657389;
+  --a-brass:#8F5B08; --a-brass-fill:#F6EAD3; --a-blue:#1F4FD1; --a-blue-fill:#E4ECFC;
+  --a-up:#0B7A55; --a-up-fill:#DFF2E9; --a-down:#BD2A40; --a-down-fill:#FBE4E7;
+  --a-warn:#A64B16; --a-warn-fill:#FBE9DD;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --a-skel:#E3E9F2;
+  color-scheme:light;
+}
+.app .ill{position:absolute;right:14px;bottom:10px;z-index:5;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--a-text-3);background:var(--a-panel);border:1px solid var(--a-line);padding:3px 8px;border-radius:5px;pointer-events:none}
+.shell{display:grid;grid-template-columns:56px 1fr;min-height:640px}
+.side{border-right:1px solid var(--a-line);display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0;background:var(--a-panel)}
+.side .logo svg{width:30px;height:30px}
+.side .logo{margin-bottom:10px}
+.nav-i{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:var(--a-text-3);position:relative}
+.nav-i svg{width:19px;height:19px}
+.nav-i.on{background:var(--a-blue-fill);color:var(--a-blue)}
+.nav-i.on::before{content:"";position:absolute;left:-9px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--a-blue)}
+.side .spacer{flex:1}
+.ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--a-line);background:var(--a-panel)}
+.search{flex:1;max-width:420px;display:flex;align-items:center;gap:8px;border:1px solid var(--a-line);border-radius:8px;padding:6px 10px;color:var(--a-text-3);background:var(--a-bg)}
+.search kbd{margin-left:auto;font-family:var(--mono);font-size:11px;border:1px solid var(--a-line);border-radius:4px;padding:0 5px}
+.mkt{display:flex;gap:6px;flex-wrap:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--a-line);border-radius:999px;padding:3px 9px;font-size:11.5px;color:var(--a-text-2);white-space:nowrap}
+.pill .d{width:7px;height:7px;border-radius:50%;background:var(--a-text-3)}
+.pill.open .d{background:var(--a-up)}
+.pill.pre .d{background:var(--a-brass)}
+.clock{margin-left:auto;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;color:var(--a-text)}
+.clock small{color:var(--a-text-3);font-size:11px}
+.iconbtn{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--a-text-2);border:1px solid var(--a-line);position:relative}
+.iconbtn .badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:var(--a-brass);color:#0A1120;font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--a-panel-2);border:1px solid var(--a-line);display:grid;place-items:center;font-size:11.5px;font-weight:600;color:var(--a-text-2)}
+.content{padding:14px 16px 40px;display:grid;gap:12px;align-content:start}
+.panel{background:var(--a-panel);border:1px solid var(--a-line);border-radius:10px;padding:12px 14px;display:grid;gap:10px;align-content:start;min-width:0}
+.ph{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.ph h5{margin:0;font-size:13.5px;font-weight:600;letter-spacing:.005em}
+.ph .sub{color:var(--a-text-3);font-size:11.5px}
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--a-text-3)}
+.v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--a-up)} .down{color:var(--a-down)}
+.asof{font-family:var(--mono);font-size:10.5px;color:var(--a-brass);background:var(--a-brass-fill);border-radius:4px;padding:1px 5px;white-space:nowrap}
+.asof.stale{color:var(--a-warn);background:var(--a-warn-fill)}
+.cite{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--a-brass);vertical-align:super;margin-left:1px;cursor:pointer}
+.cite:hover{text-decoration:underline}
+.vbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;border-radius:5px;padding:1px 6px;white-space:nowrap}
+.vbadge .ico{width:12px;height:12px}
+.vbadge.ok{color:var(--a-up);background:var(--a-up-fill)}
+.vbadge.prim{color:var(--a-blue);background:var(--a-blue-fill)}
+.vbadge.attr{color:var(--a-text-2);background:var(--a-panel-2);border:1px solid var(--a-line)}
+.vbadge.wh{color:var(--a-warn);background:var(--a-warn-fill)}
+.src{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--a-text-2);border:1px solid var(--a-line);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.src .t{font-family:var(--mono);font-size:9.5px;color:var(--a-text-3);border-right:1px solid var(--a-line);padding-right:5px}
+.tone{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.06em;border-radius:5px;padding:2px 7px}
+.tone.off{color:var(--a-down);background:var(--a-down-fill)}
+.tone.on{color:var(--a-up);background:var(--a-up-fill)}
+.tone.mix{color:var(--a-brass);background:var(--a-brass-fill)}
+.impact{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--a-text-2);background:var(--a-panel-2);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--a-line);border-radius:7px;overflow:hidden}
+.seg span{padding:3px 9px;font-size:11.5px;color:var(--a-text-2);border-right:1px solid var(--a-line)}
+.seg span:last-child{border-right:0}
+.seg span.on{background:var(--a-blue-fill);color:var(--a-blue);font-weight:500}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--a-line)}
+.tabs span{padding:6px 10px;font-size:12px;color:var(--a-text-3);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs span.on{color:var(--a-text);border-bottom-color:var(--a-blue);font-weight:500}
+.linkbtn{display:inline-flex;align-items:center;gap:5px;color:var(--a-blue);font-size:12px;font-weight:500}
+.abtn{display:inline-flex;align-items:center;gap:6px;border-radius:7px;padding:6px 11px;font-size:12px;font-weight:500;border:1px solid var(--a-line);color:var(--a-text)}
+.abtn.pri{background:var(--a-blue);border-color:var(--a-blue);color:#fff}
+.abtn.brass{background:var(--a-brass);border-color:var(--a-brass);color:#0A1120}
+.app.is-light .abtn.brass{color:#fff}
+.rows{display:grid}
+.r{display:grid;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--a-line-2)}
+.r:last-child{border-bottom:0}
+.muted{color:var(--a-text-3)}
+.t2{color:var(--a-text-2)}
+.g{display:grid;gap:12px}
+.spark{width:100%;height:46px;display:block}
+.chart-svg text{fill:var(--a-text-3);font-family:var(--mono);font-size:10px}
+.tip{position:absolute;pointer-events:none;background:var(--a-panel);border:1px solid var(--a-line);border-radius:7px;padding:6px 8px;font-size:11.5px;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap;z-index:4}
+.tip[hidden]{display:none}
+.skel{background:var(--a-skel);border-radius:5px}
+
+/* phones */
+.phones{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;padding:22px;background:var(--a-bg)}
+.phone{width:320px;border:1px solid var(--a-line);border-radius:30px;padding:10px;background:var(--a-panel-2)}
+.screen{border-radius:22px;overflow:hidden;background:var(--a-bg);min-height:600px;display:grid;grid-template-rows:auto 1fr auto}
+.pstatus{display:flex;justify-content:space-between;padding:10px 18px 4px;font-family:var(--mono);font-size:11px;color:var(--a-text-2)}
+.pbody{padding:8px 12px;display:grid;gap:10px;align-content:start}
+.tabbar{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--a-line);background:var(--a-panel);padding:6px 4px 12px}
+.tabbar div{display:grid;justify-items:center;gap:2px;font-size:10px;color:var(--a-text-3);min-height:44px;align-content:center}
+.tabbar div.on{color:var(--a-blue)}
+.tabbar svg{width:18px;height:18px}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></symbol>
+    <symbol id="i-flows" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3"/></symbol>
+    <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 7.5v9M9.5 7.5H13a2 2 0 0 1 0 4.5H9.5H14a2.25 2.25 0 0 1 0 4.5H9.5"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 21a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></symbol>
+    <symbol id="mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#E6A53C"/><path d="M15 7c-4.2 0-6.8 3.1-6.8 7.2v4.3L6 21.8h18l-2.2-3.3v-4.3C21.8 10.1 19.2 7 15 7z" fill="#0A1120"/><circle cx="15" cy="24.7" r="2.1" fill="#0A1120"/><circle cx="25" cy="7.4" r="3" fill="#0A1120"/></symbol>
+  </defs>
+</svg>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <div class="head-row">
+      <div class="lockup"><svg aria-label="Citebell logo"><use href="#mark"/></svg><span class="wordmark">citebell<sup>[1]</sup></span></div>
+      <div class="meta">
+        <span class="chip brass">PRD v1.0 · draft for review</span>
+        <span class="chip">14 Sep 2026</span>
+        <span class="chip">Personal use first · SaaS-ready</span>
+      </div>
+    </div>
+    <div class="headline">
+      <span class="label">Product requirements · working name was “Market Intel Console”</span>
+      <h1>Verified before the bell.</h1>
+      <p>A fact-checked market console for an Indian F&amp;O trader. Four scheduled reports a day, global and crypto charts, and a citation on every claim. Built for one trader first, and shaped so it can become a subscription product later.</p>
+    </div>
+
+    <figure class="dayrail" aria-label="Trading day in IST with the four Citebell report drops">
+      <div class="dayrail-top">
+        <span class="label">The trading day, IST · September timings</span>
+        <span class="label" style="color:var(--brass)">● Citebell report drops</span>
+      </div>
+      <div class="rail-scroll">
+        <div class="rail">
+          <div class="rail-row"><span class="name">Tokyo</span><div class="rail-track"></div><div class="sess" style="left:2.44%;width:31.71%"><span>05:30–12:00</span></div></div>
+          <div class="rail-row"><span class="name">Hong Kong</span><div class="rail-track"></div><div class="sess" style="left:9.76%;width:31.71%"><span>07:00–13:30</span></div></div>
+          <div class="rail-row"><span class="name">NSE / BSE</span><div class="rail-track"></div><div class="sess pre" style="left:19.51%;width:1.22%" title="Pre-open 09:00–09:15"></div><div class="sess in" style="left:20.73%;width:30.49%"><span>pre-open 09:00 · 09:15–15:30</span></div></div>
+          <div class="rail-row"><span class="name">London</span><div class="rail-track"></div><div class="sess" style="left:36.59%;width:41.46%"><span>12:30–21:00</span></div></div>
+          <div class="rail-row"><span class="name">New York</span><div class="rail-track"></div><div class="sess" style="left:68.29%;width:31.71%"><span>19:00–01:30 ›</span></div></div>
+          <div class="drops">
+            <div class="drop" style="left:18.29%"><span class="dropline"></span><i></i><b>08:45</b><small>Morning</small></div>
+            <div class="drop" style="left:35.37%"><span class="dropline"></span><i></i><b>12:15</b><small>Mid-day</small></div>
+            <div class="drop" style="left:53.66%"><span class="dropline"></span><i></i><b>16:00</b><small>End of day</small></div>
+            <div class="drop" style="left:73.17%"><span class="dropline"></span><i></i><b>20:00</b><small>Flows</small></div>
+          </div>
+          <div class="ticks"><span style="left:4.88%">06</span><span style="left:19.51%">09</span><span style="left:34.15%">12</span><span style="left:48.78%">15</span><span style="left:63.41%">18</span><span style="left:78.05%">21</span><span style="left:92.68%">00</span></div>
+        </div>
+      </div>
+      <p class="rail-note">Regular-session hours during US and UK daylight saving. After the clocks change (UK 25 Oct, US 1 Nov 2026), London and New York start and end one hour later in IST.</p>
+    </figure>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <span class="label">Contents</span>
+    <ol>
+      <li><a href="#s1"><span>01</span>Business context &amp; objective</a></li>
+      <li><a href="#s2"><span>02</span>Problems the user faces</a></li>
+      <li><a href="#s3"><span>03</span>Competitors</a></li>
+      <li><a href="#s4"><span>04</span>Differentiation</a></li>
+      <li><a href="#s5"><span>05</span>Brand: name &amp; identity</a></li>
+      <li><a href="#s6"><span>06</span>Features to copy</a></li>
+      <li><a href="#s7"><span>07</span>High-level solution</a></li>
+      <li><a href="#s8"><span>08</span>Phasing V0 → Nirvana</a></li>
+      <li><a href="#s9"><span>09</span>Making it holistic</a></li>
+      <li><a href="#s10"><span>10</span>User flows</a></li>
+      <li><a href="#s11"><span>11</span>Market-ready UX</a></li>
+      <li><a href="#s12"><span>12</span>Hi-fi wireframes</a></li>
+      <li><a href="#s13"><span>13</span>Success metrics</a></li>
+      <li><a href="#s14"><span>14</span>Guardrail metrics</a></li>
+      <li><a href="#s15"><span>A</span>Risks, assumptions, sources</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+<!-- 1 -->
+<section class="sec" id="s1">
+  <div class="sec-h"><span class="label">§1</span><h2>Business context &amp; objective</h2></div>
+  <div class="prose">
+    <p><strong>The user</strong> is a solo Indian F&amp;O trader (Nifty and Bank Nifty index options, plus stock F&amp;O). Their decisions cluster at the pre-open (09:00–09:08 order entry) and the 09:15 open. Trades are rechecked around midday and reviewed after the 15:30 close.</p>
+    <p><strong>What moves their book:</strong> overnight US and Asia sessions, GIFT Nifty, crude, USD/INR, DXY, US yields, FII/DII flows, OI, PCR and max pain, India VIX, the F&amp;O ban list, scheduled events (RBI, Fed, CPI, results), geopolitics (shipping lanes, sanctions, conflict, tariffs), tech news (AI capex and semiconductors feed Nasdaq, which feeds Nifty IT), and Bitcoin as a gauge of risk appetite.</p>
+  </div>
+  <div class="grid2">
+    <div class="item"><span class="label">Objective</span><h4>One trusted source for every trading decision</h4><p>Four on-time, fact-checked reports each trading day, cross-market charts, and a citation on every claim. The trader stops researching and spends that time deciding.</p></div>
+    <div class="item"><span class="label">Business objective (later)</span><h4>A subscription product traders will pay for</h4><p>Prove the verification engine on one demanding user, then package it for retail F&amp;O traders and investors in India. The paid promise is trust: every claim cited.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Goal</th><th>Target</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>Pre-market research time</td><td class="n">≤ 15 min</td><td>Frees the 08:45–09:15 window for decisions.</td></tr>
+      <tr><td>Claims with a working citation</td><td class="n">100%</td><td>The product's core promise.</td></tr>
+      <tr><td>Unverified claims published</td><td class="n">0</td><td>One wrong number costs more trust than ten right ones earn.</td></tr>
+      <tr><td>Reports delivered on time</td><td class="n">≥ 98%</td><td>A late morning report is a useless morning report.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><span class="label">Non-goals</span><p>Placing orders. Buy/sell calls or price targets in Citebell's own voice (third-party views appear only with attribution). Tick-level data for scalping. Social media as a source.</p></div>
+</section>
+
+<!-- 2 -->
+<section class="sec" id="s2">
+  <div class="sec-h"><span class="label">§2</span><h2>Problems the user faces</h2></div>
+  <p class="lede">Everything below competes for the same 45 minutes before the open.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Problem</th><th>What it looks like today</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td class="n">P1</td><td>Too many sources</td><td>10+ tabs: Moneycontrol, Mint, Business Standard, Reuters, CNBC, NSE, NSDL, Investing.com, TradingView, X.</td><td>An estimated 60–90 min before the open <span class="tag">assumption · measure in V0</span></td></tr>
+      <tr><td class="n">P2</td><td>Fact-checking is manual</td><td>Provisional vs final FII data, Brent front-month vs next-month, old articles resurfacing, rumours on X and Telegram.</td><td>Wrong inputs lead to wrong positions.</td></tr>
+      <tr><td class="n">P3</td><td>Hand-built reports drift</td><td>Seen in the sample reports reviewed for this PRD: a file suffixed <code>_Corrected</code>; Brent given as $108.31, “$108” and “near $109” within one morning report; a typo in a July brief.</td><td>Rework, and lost trust.</td></tr>
+      <tr><td class="n">P4</td><td>Synthesis is hard</td><td>The same story appears in eight outlets. Turning it into “what does this mean for Nifty and Bank Nifty” is manual.</td><td>Mental load right at 09:00.</td></tr>
+      <tr><td class="n">P5</td><td>Unclear freshness</td><td>It's often unclear what “as of” time a number refers to.</td><td>Decisions made on stale data.</td></tr>
+      <tr><td class="n">P6</td><td>Tight timing</td><td>US close is 01:30 IST, Tokyo opens 05:30, Hong Kong 07:00, and the report is due 08:45.</td><td>No room for a slow workflow.</td></tr>
+      <tr><td class="n">P7</td><td>Missed events</td><td>Ban list, expiry calendar, SEBI circulars, results, macro data releases.</td><td>Surprise risk on open positions.</td></tr>
+      <tr><td class="n">P8</td><td>Charts live in other apps</td><td>No single cross-asset view.</td><td>Correlations go unnoticed.</td></tr>
+      <tr><td class="n">P9</td><td>Paywalls</td><td>Mint, Business Standard, FT, Bloomberg.</td><td>Only part of a story gets read.</td></tr>
+      <tr><td class="n">P10</td><td>No memory</td><td>No record of how a story evolved, or which news came before a win or a loss.</td><td>No learning loop.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 3 -->
+<section class="sec" id="s3">
+  <div class="sec-h"><span class="label">§3</span><h2>Competitors and their key features</h2></div>
+  <p class="lede">Features and prices were checked by web search on 14 Sep 2026. Prices come from third-party reviews and may be out of date; verify before relying on them. Sources are in the appendix.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Product</th><th>Key features</th><th>Gaps for this trader</th><th>Indicative price</th></tr></thead>
+    <tbody>
+      <tr><td>Moneycontrol app + Pro</td><td>News, FII/DII data, results, alerts, portfolio tracking, analyst trade ideas.</td><td>Ad-heavy; no claim-level citations; mostly India; promotional content mixed in.</td><td class="n">Pro ~₹699/yr [R1]</td></tr>
+      <tr><td>Mint · Business Standard · ET</td><td>Quality reporting, explainers, live market blogs.</td><td>One outlet's view each; paywalls; no synthesis across sources.</td><td>Subscriptions</td></tr>
+      <tr><td>Zerodha Pulse</td><td>Aggregates the last 24 h of business news from major Indian outlets in one feed; groups related stories; web, apps and browser extension.</td><td>Headlines only; no verification; little global or crypto depth; no charts.</td><td class="n">Free [R2]</td></tr>
+      <tr><td>Perplexity Finance</td><td>Live NSE/BSE prices, market summaries with citations, watchlists, earnings-call transcripts, SEBI filing summaries.</td><td>On demand, not scheduled; no fixed F&amp;O report format; no flows or OI view.</td><td class="n">Free tier [R3]</td></tr>
+      <tr><td>Bloomberg Terminal · LSEG Workspace</td><td>Fast, verified wire news (Reuters inside Workspace), urgency flags, economic calendar with consensus, deep data, analytics.</td><td>Built for institutions; far beyond a personal budget; no personal synthesis.</td><td>Enterprise [R5]</td></tr>
+      <tr><td>TradingView</td><td>Best-in-class charts, multi-asset coverage, alerts, watchlists; open-source Lightweight Charts library (Apache-2.0).</td><td>News is secondary; no verification.</td><td>Free + paid tiers [R6]</td></tr>
+      <tr><td>Koyfin</td><td>Custom dashboards; macro, FX, yields and crypto; news; transcripts.</td><td>US-centric; weak India F&amp;O coverage.</td><td class="n">Pro ~$69–109/mo [R7]</td></tr>
+      <tr><td>Benzinga Pro</td><td>Real-time newsfeed, audio squawk that reads headlines aloud, scanners, calendars.</td><td>US equities focus; expensive for an Indian retail trader.</td><td class="n">~$99–197/mo, reviews differ [R8]</td></tr>
+      <tr><td>Sensibull · Opstra</td><td>Option chain, OI, PCR, Greeks, IV, strategy builders, backtesting (Opstra).</td><td>Options analytics tools, not news products.</td><td>Free + paid [R4]</td></tr>
+      <tr><td>StockEdge · Trendlyne</td><td>Daily scans (breakouts, volume spikes, buildups), FII/DII data, screeners, fundamentals.</td><td>Thin on news and synthesis.</td><td>Free + paid [R9]</td></tr>
+      <tr><td>Investing.com</td><td>Global quotes; economic calendar with importance stars and actual / forecast / previous columns.</td><td>Ads; uneven source quality.</td><td>Free + paid [R10]</td></tr>
+      <tr><td>AI-native newcomers (Tradar, MarketsEasy)</td><td>AI pre-market briefs, scored alerts, live option chain and OI with news.</td><td>Accuracy unproven; sourcing opaque.</td><td>Varies [R11]</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 4 -->
+<section class="sec" id="s4">
+  <div class="sec-h"><span class="label">§4</span><h2>How Citebell is different</h2></div>
+  <p class="lede">Every competitor either has trust without synthesis (wires, terminals) or synthesis without proof (apps, AI summaries). Citebell's position is synthesis with proof, delivered at fixed times in the trading day.</p>
+  <div class="grid3">
+    <div class="item"><span class="label">Trust</span><h4>Verification-first</h4><p>Each claim goes through source tiers, corroboration, a numeric check, a recency check and a publish gate. Anything unverified never appears.</p></div>
+    <div class="item"><span class="label">Proof</span><h4>Citations that show their work</h4><p>Every citation carries a link, publisher, timestamp, matched quote, source tier and an archived snapshot, so link rot and silent edits can't break it.</p></div>
+    <div class="item"><span class="label">Numbers</span><h4>Figures come from data, not articles</h4><p>Figures come from exchange and primary feeds and are checked against a second feed. A number has one value everywhere in a report, which fixes P3.</p></div>
+    <div class="item"><span class="label">Lens</span><h4>Written for F&amp;O</h4><p>Each story is tagged with the index or sector it affects, likely direction and time horizon, plus a one-line cause → effect.</p></div>
+    <div class="item"><span class="label">Rhythm</span><h4>Built around the trading day</h4><p>Four fixed drops in IST. Each one opens with what changed since the last report.</p></div>
+    <div class="item"><span class="label">Transmission</span><h4>Global → India map</h4><p>Nasdaq semis → Nifty IT. Crude → OMCs, paints, aviation. DXY → INR → FII flows. BTC → risk appetite.</p></div>
+    <div class="item"><span class="label">Memory</span><h4>Learns with the trader</h4><p>Story timelines, a trade journal that links news to trades, and descriptive pattern statistics (never signals).</p></div>
+    <div class="item"><span class="label">Integrity</span><h4>Public corrections log</h4><p>No ads, no paid placements, no unattributed tips. Every correction is timestamped and visible.</p></div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="sec" id="s5">
+  <div class="sec-h"><span class="label">§5</span><h2>Brand: name &amp; identity</h2></div>
+  <div class="brand-hero">
+    <div class="brand-card">
+      <div class="lockup"><svg aria-hidden="true"><use href="#mark"/></svg><span class="wordmark">citebell<sup>[1]</sup></span></div>
+      <p class="tagline">Verified before the bell.</p>
+      <p>A bell, and a citation mark in its corner. The <code>[1]</code> in the wordmark is the same citation marker that appears on every claim in the product: the brand device and the core UI element are one thing.</p>
+    </div>
+    <div class="prose">
+      <h3 style="margin:0">Recommendation: <span style="color:var(--brass)">Citebell</span></h3>
+      <ul class="clean">
+        <li><strong>Meaning.</strong> <em>Cite</em> is the product's promise: every claim cited. <em>Bell</em> is the market's opening bell and the four scheduled drops.</li>
+        <li><strong>Sound.</strong> Two short syllables, easy to say in English and Hindi. It works as a verb: “Citebell it before you trade.”</li>
+        <li><strong>Room to grow.</strong> Not tied to F&amp;O or India. It stretches to equities, crypto and global investors, with tiers like Citebell Pro and Citebell Desk.</li>
+        <li><strong>Availability.</strong> <code>.com</code>, <code>.app</code>, <code>.in</code>, <code>.ai</code> and <code>.io</code> were all unregistered at check time. A web search found no company or product using the name.</li>
+        <li><strong>Risk to manage.</strong> “Cite” sounds like “site” and “sight”. The logo and exact-match domains carry the spelling, and the pun on “sight” (seeing clearly) doesn't hurt.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Name screen</h3>
+  <p class="lede" style="font-size:15px">About 80 candidates were generated; these are the ones worth comparing. Domains were checked via registry RDAP lookups on 14 Sep 2026 (Verisign for .com, Google Registry for .app, NIXI for .in, Identity Digital for .ai and .io). Each lookup was validated against a known-registered domain and a random unregistered one.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Name</th><th>Idea</th><th>.com</th><th>.app</th><th>.in</th><th>.ai</th><th>.io</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Citebell</td><td>Cited, delivered on the bell</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td><span class="tag brass">Recommended</span></td></tr>
+      <tr><td>Bellproof</td><td>Proof before the bell</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td>Runner-up. Can read as “resistant to bells”, like waterproof.</td></tr>
+      <tr><td>Groundtick</td><td>Ground truth, tick by tick</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td>Less intuitive; “tick” also means the insect.</td></tr>
+      <tr><td>Citetick</td><td>A cited tick</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td>Dropped: too close to TickTick; an old listing still appears in search.</td></tr>
+      <tr><td>Veracle</td><td>Vera (truth) + oracle</td><td class="no">taken</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td>—</td><td>Premium sound, but no .com, and “oracle” is a trademark risk.</td></tr>
+      <tr><td>Tapeproof</td><td>Proof for the market tape</td><td class="no">taken</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td>—</td><td>No .com.</td></tr>
+      <tr><td>Tickproof</td><td>A proven tick</td><td class="no">taken</td><td class="yes">free</td><td class="yes">free</td><td class="yes">free</td><td>—</td><td>No .com; sounds like tick repellent.</td></tr>
+      <tr><td>Pramaan · Tathya · Pramana</td><td>Hindi/Sanskrit for proof and fact</td><td class="no">taken</td><td class="no">taken</td><td class="no">taken</td><td class="no">taken</td><td>—</td><td>Right meaning, every domain taken.</td></tr>
+      <tr><td>Openbell · Firstbell</td><td>The opening bell</td><td class="no">taken</td><td class="no">taken</td><td class="no">taken</td><td class="no">taken</td><td>—</td><td>Every domain taken.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout brass"><span class="label">Before announcing the name</span><p>Register all five Citebell domains together; “unregistered” in RDAP doesn't rule out premium pricing. Run a formal trademark search on IP India (classes 9, 36, 41, 42) and on USPTO/WIPO before filing. Check social handles, which weren't part of this screen.</p></div>
+
+  <h3>Identity system</h3>
+  <p class="lede" style="font-size:15px">Built from the ui-ux-pro-max design-system output for a financial dashboard (data-dense, dark-first, trust blue with amber highlights, Fira pairing), then refined for this brand. The generated file is in <code>design-system/citebell/MASTER.md</code>.</p>
+  <div class="swatches">
+    <div class="sw"><i style="background:#0A1120"></i><div><b>Ink navy</b><code>#0A1120</code><span class="t2" style="color:var(--ink-3)">Dark ground</span></div></div>
+    <div class="sw"><i style="background:#E6A53C"></i><div><b>Bell brass</b><code>#E6A53C</code><span style="color:var(--ink-3)">Brand, citations, as-of</span></div></div>
+    <div class="sw"><i style="background:#6AA3FF"></i><div><b>Signal blue</b><code>#6AA3FF / #1F4FD1</code><span style="color:var(--ink-3)">Interactive, primary</span></div></div>
+    <div class="sw"><i style="background:#34C28E"></i><div><b>Advance</b><code>#34C28E / #0B7A55</code><span style="color:var(--ink-3)">Up, verified</span></div></div>
+    <div class="sw"><i style="background:#F4697A"></i><div><b>Decline</b><code>#F4697A / #BD2A40</code><span style="color:var(--ink-3)">Down</span></div></div>
+    <div class="sw"><i style="background:#EE8B57"></i><div><b>Withheld</b><code>#EE8B57 / #A64B16</code><span style="color:var(--ink-3)">Stale, withheld</span></div></div>
+  </div>
+  <div class="typespec">
+    <div class="item"><span class="label">Display &amp; UI · Fira Sans</span><div class="big">Oil and banks drag the open</div><p>Headlines at 600–700 weight with tight tracking; body text at 400 and 15–16 px.</p></div>
+    <div class="item"><span class="label">Data · Fira Code</span><div class="bigmono">24,118.50 <span style="color:var(--down)">▼0.42%</span></div><p>Tickers, prices, timestamps and citation marks. Tabular figures. ₹ amounts use Indian digit grouping (₹1,23,456 Cr).</p></div>
+  </div>
+  <h4 style="margin-top:6px">Voice</h4>
+  <div class="dd">
+    <div class="do"><span class="label">Do</span><p>“Brent $96.20, up 1.4% since the NSE close <span class="mono" style="color:var(--brass)">[1][2]</span> · ICE, 08:12 IST.”</p><p>“A brokerage note expects Nifty IT to underperform, per its research desk <span class="mono" style="color:var(--brass)">[3]</span>.” Views are always attributed and linked.</p></div>
+    <div class="dont"><span class="label">Don't</span><p>“Oil is exploding, sell OMCs now!”</p><p>Any number without an as-of time, hype words, emoji, or a buy/sell call in Citebell's own voice.</p></div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="sec" id="s6">
+  <div class="sec-h"><span class="label">§6</span><h2>Features to copy from competitors</h2></div>
+  <p class="lede">Proven patterns worth adopting outright. Differentiation lives in verification and synthesis, not in reinventing a chart or a calendar.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Feature</th><th>Borrowed from</th><th>How Citebell uses it</th><th>Phase</th></tr></thead>
+    <tbody>
+      <tr><td>Multi-source aggregation, grouped stories</td><td>Zerodha Pulse</td><td>A story cluster shows “+5 similar”; syndicated copies are merged and counted as one source.</td><td class="n">V1</td></tr>
+      <tr><td>Inline citations; Q&amp;A over news; filing and call summaries</td><td>Perplexity Finance</td><td>A citation on every claim; Ask Citebell answers only from the verified corpus.</td><td class="n">V0 / V2</td></tr>
+      <tr><td>Urgency levels; calendar with consensus</td><td>Bloomberg, LSEG</td><td>Flash / Breaking / Update tags; actual, consensus and prior values for each event.</td><td class="n">V1</td></tr>
+      <tr><td>Interactive charts, compare, alerts, watchlists</td><td>TradingView</td><td>Lightweight Charts (Apache-2.0, with attribution); percent-compare overlay; price alerts.</td><td class="n">V0 / V1</td></tr>
+      <tr><td>Configurable dashboards; macro panel</td><td>Koyfin</td><td>Rearrangeable widgets; a yields, DXY and commodities panel.</td><td class="n">V2</td></tr>
+      <tr><td>Audio squawk; real-time alerts</td><td>Benzinga Pro</td><td>A 2-minute audio morning brief; verified breaking alerts only.</td><td class="n">V2</td></tr>
+      <tr><td>FII/DII history; ban list; results calendar; buildup scans</td><td>Moneycontrol, StockEdge, Trendlyne</td><td>A Flows tab, a ban-list chip in the Today rail, long/short buildup lists.</td><td class="n">V0 / V1</td></tr>
+      <tr><td>OI, PCR, max pain, IV, VIX</td><td>Sensibull, Opstra</td><td>Display-only derivatives panel; no strategy builder.</td><td class="n">V1</td></tr>
+      <tr><td>Event importance stars; holiday calendars</td><td>Investing.com</td><td>1–3 importance levels, each with a text label; NSE, US and Asia holidays.</td><td class="n">V1</td></tr>
+      <tr><td>Crypto market panel</td><td>CoinGecko-style trackers</td><td>BTC/ETH, dominance, spot ETF flows, funding rates.</td><td class="n">V1</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 7 -->
+<section class="sec" id="s7">
+  <div class="sec-h"><span class="label">§7</span><h2>High-level solution</h2></div>
+  <h3 style="margin-top:0">Architecture</h3>
+  <div class="arch" role="img" aria-label="Architecture: scheduler triggers collector agents, whose claims pass extraction, independent verification, writing and QA, then a publish gate, storage and the console">
+    <div class="arch-in">
+      <div class="stack">
+        <div class="node"><b>Scheduler</b><small>IST cron: 07:30, 11:20, 15:35, 19:15</small></div>
+        <div class="node"><b>Sources</b><small>Exchange data, market APIs, RSS feeds, regulators</small></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="pipeline">
+        <span class="label">Agent pipeline · Claude Agent SDK</span>
+        <div class="row">
+          <div class="node"><b>Collectors</b><small>India · Global macro · Geopolitics · Tech · Crypto · Flows &amp; derivatives</small></div>
+          <div class="arrow"></div>
+          <div class="node"><b>Claim extractor</b><small>Claims, entities, numbers, timestamps</small></div>
+          <div class="arrow"></div>
+          <div class="node"><b>Verifier</b><small>Independent context; adversarial checks</small></div>
+        </div>
+        <div class="row">
+          <div class="node"><b>Writer</b><small>Fills the report template</small></div>
+          <div class="arrow"></div>
+          <div class="node"><b>Editor / QA</b><small>Consistency, rounding, spelling, attribution</small></div>
+          <div class="arrow"></div>
+          <div class="node gate"><b>Publish gate</b><small>Fails closed: blocks any claim that isn't verified</small></div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+      <div class="stack">
+        <div class="node store"><b>Postgres (Supabase)</b><small>Reports, claims, sources, snapshots, prices, audit log</small></div>
+        <div class="node"><b>Link archiver</b><small>Snapshot of every cited page</small></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="stack">
+        <div class="node"><b>Citebell web app</b><small>Next.js + Tailwind PWA</small></div>
+        <div class="node"><b>Notifications</b><small>Telegram, email, push</small></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Verification pipeline</h3>
+  <div class="steps">
+    <div class="step"><b>Extract</b><p>Split the draft into atomic claims: number, event, forecast or opinion.</p></div>
+    <div class="step"><b>Tier sources</b><p>T1 primary · T2 established press · T3 context only · TX never publishable.</p></div>
+    <div class="step"><b>Corroborate</b><p>Find independent support. Syndicated PTI or Reuters copies count as one source.</p></div>
+    <div class="step"><b>Reconcile numbers</b><p>Match against T1 data or a second feed within tolerance.</p></div>
+    <div class="step"><b>Check links</b><p>HTTP 200, the claim text is on the page, publish time captured, snapshot archived.</p></div>
+    <div class="step"><b>Check recency</b><p>Reject stale or resurfaced stories; stamp every number with its as-of time.</p></div>
+    <div class="step"><b>Gate</b><p>Pass → publish with a badge. Fail → withhold and log. Nothing unverified gets through.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>Claim type</th><th>Rule to publish</th><th>Badge shown</th></tr></thead>
+    <tbody>
+      <tr><td>Market number</td><td>Matches T1 data, or two independent feeds agree within tolerance (index ±0.01%, flows exact to ₹0.01 Cr). Always shows an as-of time.</td><td><span class="tag blue">Primary data</span></td></tr>
+      <tr><td>News event</td><td>One T1 source, or two independent T2 sources.</td><td><span class="tag up">Verified · 2 sources</span></td></tr>
+      <tr><td>Forecast or opinion</td><td>Attributed to its author (“Brokerage X expects …”) with a link. Never in Citebell's own voice.</td><td><span class="tag">Attributed view</span></td></tr>
+      <tr><td>Fails any rule</td><td>Left out and written to the audit log. If a whole section misses its deadline, a “withheld” banner shows the reason and the retry time.</td><td><span class="tag warn">Withheld</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Report schedule</h3>
+  <p class="lede" style="font-size:15px">Report fields follow the structure of the sample reports reviewed for this PRD.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Report</th><th>Cutoff → ready</th><th>Contents</th></tr></thead>
+    <tbody>
+      <tr><td>Morning Insights</td><td class="n">08:15 → 08:45</td><td><b>Global opening check:</b> GIFT Nifty, S&amp;P and Nasdaq futures, US close, Asia. <b>India setup &amp; flows:</b> previous Nifty, Bank Nifty and VIX close; commodities; FII/DII; USD/INR; futures premium. <b>Data outlook:</b> PCR, put base and call wall, max pain, expiry, long/short buildup, F&amp;O ban. Also: key takeaway; opening cue, support and key risk; overnight global news, domestic triggers, geopolitics, tech, crypto; today's calendar.</td></tr>
+      <tr><td>Mid-day Markets</td><td class="n">11:50 → 12:15</td><td>Main intraday driver and tone; Nifty, Sensex, Bank Nifty and VIX; breadth; sector and stock leaders; cross-asset check (WTI, Brent, gold, silver, DXY, USD/INR); news since 08:45; what changed since the morning; Europe pre-open.</td></tr>
+      <tr><td>End-of-day Insights</td><td class="n">15:35 → 16:00</td><td>Market story and close badge; session in one line; three drivers of the move, ranked and cited; sector heat map; breadth; closing OI and PCR snapshot; VIX; market lesson; Europe and US futures; tomorrow's calendar.</td></tr>
+      <tr><td>Institutional Flows</td><td class="n">exchange release → 20:00</td><td>FII/FPI and DII buy, sell and net; combined flow; 20-day trend; participant-wise OI (FII index futures long/short); NSDL FPI data (T+1); bulk and block deals; insider trades; plain-language explanation; next-day setup; US pre-market and crypto check.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Data &amp; stack</h3>
+  <div class="grid2">
+    <div class="item"><span class="label">India data</span><p>NSE/BSE indices, bhavcopy, F&amp;O ban list, participant-wise OI, FII/DII provisional data; NSDL FPI; NSE IX for GIFT Nifty; a broker API (Kite, Dhan or Upstox) for index data; SEBI, RBI and PIB circulars; exchange corporate announcements.</p></div>
+    <div class="item"><span class="label">Global data</span><p>A licensed market-data API (e.g. Twelve Data, EODHD or Polygon) plus a second feed for reconciliation; CME FedWatch; US Treasury; Fed, ECB, BoJ and PBoC; US BLS. Crypto: CoinGecko or Binance public APIs, plus ETF flow data.</p></div>
+    <div class="item"><span class="label">News feeds</span><p>RSS and official feeds: Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, Reuters, AP, CNBC, FT and WSJ headlines, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block.</p></div>
+    <div class="item"><span class="label">Stack</span><p>Next.js + Tailwind PWA · Supabase Postgres · Claude Agent SDK (a strong model for verification and synthesis, a fast model for classification and dedupe) · cloud-scheduled runs · Telegram bot + email. Store headlines, links and snippets of 25 words or fewer; never full articles.</p></div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="sec" id="s8">
+  <div class="sec-h"><span class="label">§8</span><h2>Phasing: V0 → Nirvana</h2></div>
+  <p class="lede">Each phase has to pass its exit gate before the next one starts. Trust is earned first, then scope grows.</p>
+  <div class="phases">
+    <div class="phase">
+      <div><h4>V0 · Proof of trust</h4><span class="when">~3 weeks</span></div>
+      <ul><li>Four scheduled reports as HTML/PDF, sent to Telegram and email</li><li>About 15 curated sources; verification gate v1 (tiers, link check, match against one feed)</li><li>A citation on every claim; a “flag as wrong” button on each claim</li><li>Simple archive page; Markets page built on chart widgets</li></ul>
+      <div class="gate-box"><span class="label">Exit gate</span>20 trading days in a row: ≥95% on time, zero unverified or wrong claims found in spot checks, and baseline research time measured.</div>
+    </div>
+    <div class="phase">
+      <div><h4>V1 · Console</h4><span class="when">~6 weeks</span></div>
+      <ul><li>Full web app: Today, Reports, Markets, Flows, Crypto &amp; Tech, Calendar</li><li>“What changed” view, story clustering, verification badges, fact-check drawer</li><li>Corrections log, search and archive, derivatives panel, economic, results and expiry calendars</li><li>Verified breaking alerts; second-feed reconciliation</li></ul>
+      <div class="gate-box"><span class="label">Exit gate</span>Research time ≤ 15 min; usefulness rating ≥ 4.2/5.</div>
+    </div>
+    <div class="phase">
+      <div><h4>V2 · Analyst</h4><span class="when">next quarter</span></div>
+      <ul><li>Ask Citebell: answers only from the verified corpus, with citations</li><li>Story timelines; impact tags with historical analogues</li><li>Trade journal (manual entry or tradebook import, read-only); watchlist ranking</li><li>2-minute audio brief; weekly review</li></ul>
+      <div class="gate-box"><span class="label">Exit gate</span>≥ 70% of trades have a linked rationale.</div>
+    </div>
+    <div class="phase">
+      <div><h4>V3 · Co-pilot + SaaS beta</h4><span class="when">after V2</span></div>
+      <ul><li>Descriptive pattern library; scenario planner (crude +5% → sector sensitivity)</li><li>IV and OI shifts overlaid on news times; read-only broker positions → news on held stocks</li><li>Accounts, onboarding, plans and billing; licensed data for redistribution; legal review of SEBI research-analyst rules</li></ul>
+      <div class="gate-box"><span class="label">Exit gate</span>Primary source on ≥ 90% of days; 20 beta users meet the trust guardrails.</div>
+    </div>
+    <div class="phase nirvana">
+      <div><h4>Nirvana</h4><span class="when">the end state</span></div>
+      <ul><li>A personal trading-intelligence system with a continuous verified event stream</li><li>Source reliability scores learned from each outlet's accuracy and corrections record</li><li>Analysis of which news types came before the trader's best and worst trades; risk-regime detection</li><li>Hindi business press, voice interaction, fully auditable. A human stays in the loop; no auto-trading.</li></ul>
+      <div class="gate-box"><span class="label">What it feels like</span>The trader opens one app at 08:45 and trusts every line in it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="sec" id="s9">
+  <div class="sec-h"><span class="label">§9</span><h2>What else makes it a holistic platform</h2></div>
+  <div class="grid3">
+    <div class="item"><span class="label">Calendars</span><p>Economic (India + global) with actual, consensus and prior; results and corporate actions; expiry calendar; NSE, US and Asia holidays.</p></div>
+    <div class="item"><span class="label">Rules tracker</span><p>SEBI F&amp;O changes (lot sizes, margins, expiry rules), taken straight from exchange and SEBI circulars.</p></div>
+    <div class="item"><span class="label">Derivatives</span><p>OI, PCR, max pain, IV percentile, VIX, participant-wise OI, FII futures long/short ratio.</p></div>
+    <div class="item"><span class="label">Macro</span><p>RBI policy and system liquidity, Fed path, yields, INR, commodities including natural gas and base metals, IMD monsoon.</p></div>
+    <div class="item"><span class="label">Crypto</span><p>ETF flows, funding rates, liquidations, and Indian crypto regulation and tax news.</p></div>
+    <div class="item"><span class="label">Discipline</span><p>Trade journal; daily loss-limit reminder; warning on high-event-risk days; pre-trade checklist.</p></div>
+    <div class="item"><span class="label">Alerts</span><p>Watchlists, price alerts and verified-story alerts; quiet hours; daily cap.</p></div>
+    <div class="item"><span class="label">Records</span><p>PDF export, a searchable archive and a public corrections log.</p></div>
+    <div class="item"><span class="label">Operations</span><p>System health page (agent runs, source uptime, spend); 2FA; a secrets vault.</p></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="sec" id="s10">
+  <div class="sec-h"><span class="label">§10</span><h2>User flows</h2></div>
+  <div class="grid2">
+    <div class="flowcard"><header><span class="label">08:45</span><b>A · Pre-market</b></header>
+      <div class="flow"><span class="s key">Push: Morning ready</span><span class="to">→</span><span class="s">Today</span><span class="to">→</span><span class="s">3 takeaways (≈2 min)</span><span class="to">→</span><span class="s">Tap [1] → fact-check drawer</span><span class="to">→</span><span class="s">GIFT &amp; Asia charts</span><span class="to">→</span><span class="s">Calendar + ban list</span><span class="to">→</span><span class="s">Mark items relevant</span><span class="to">→</span><span class="s key">Trade plan by 09:00</span></div></div>
+    <div class="flowcard"><header><span class="label">Any time</span><b>B · Verified breaking news</b></header>
+      <div class="flow"><span class="s key">Alert (verified only)</span><span class="to">→</span><span class="s">Story card: impact + sources</span><span class="to">→</span><span class="s">Chart with news marker</span><span class="to">→</span><span class="s">Add note to journal</span></div></div>
+    <div class="flowcard"><header><span class="label">12:15</span><b>C · Mid-day</b></header>
+      <div class="flow"><span class="s key">Mid-day ready</span><span class="to">→</span><span class="s">“Changed since 08:45”</span><span class="to">→</span><span class="s">Breadth &amp; leaders</span><span class="to">→</span><span class="s">Adjust positions</span></div></div>
+    <div class="flowcard"><header><span class="label">16:00</span><b>D · End of day</b></header>
+      <div class="flow"><span class="s key">EOD ready</span><span class="to">→</span><span class="s">Why the market moved</span><span class="to">→</span><span class="s">Tag today's trades against the drivers</span><span class="to">→</span><span class="s">Market lesson</span></div></div>
+    <div class="flowcard"><header><span class="label">20:00</span><b>E · Flows &amp; next day</b></header>
+      <div class="flow"><span class="s key">Flows ready</span><span class="to">→</span><span class="s">FII/DII + participant OI</span><span class="to">→</span><span class="s">Next-day setup</span><span class="to">→</span><span class="s">Set alerts</span></div></div>
+    <div class="flowcard"><header><span class="label">Trust loop</span><b>F · Fact-check &amp; correction</b></header>
+      <div class="flow"><span class="s">Tap citation</span><span class="to">→</span><span class="s">Quote, tier, time, archive</span><span class="to">→</span><span class="s key">Flag as wrong</span><span class="to">→</span><span class="s">Re-verify in ≤30 min</span><span class="to">→</span><span class="s">Corrected with changelog</span></div></div>
+    <div class="flowcard"><header><span class="label">Exception</span><b>G · Late or withheld</b></header>
+      <div class="flow"><span class="s key">Banner: reason + retry time</span><span class="to">→</span><span class="s">Verified sections still readable</span><span class="to">→</span><span class="s">Last verified data kept, with timestamps</span><span class="to">→</span><span class="s">Push when complete</span></div></div>
+    <div class="flowcard"><header><span class="label">SaaS · later</span><b>H · New subscriber</b></header>
+      <div class="flow"><span class="s">Landing</span><span class="to">→</span><span class="s">Sample report (no signup)</span><span class="to">→</span><span class="s">Sign up</span><span class="to">→</span><span class="s">3-step setup (skippable)</span><span class="to">→</span><span class="s key">First morning report</span><span class="to">→</span><span class="s">Trial → plan</span></div></div>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="sec" id="s11">
+  <div class="sec-h"><span class="label">§11</span><h2>Market-ready UX</h2></div>
+  <p class="lede">UX rules drawn from ui-ux-pro-max (financial dashboard, data-dense, density 8/10, subtle motion) and adapted to a product whose main feature is trust.</p>
+  <div class="grid2">
+    <div class="item"><span class="label">Trust patterns</span><h4>Proof on every surface</h4><p>Citation superscripts on every claim. Three verification badges (Primary data · Verified · Attributed view). An as-of chip on every number. Source-tier chips. Visible withheld states. A changelog on corrected reports.</p></div>
+    <div class="item"><span class="label">Freshness</span><h4>Time is always visible</h4><p>An IST clock and market-status pills in the top bar. As-of chips turn orange, with an icon and the word “stale”, once a figure passes its freshness window. Never colour alone.</p></div>
+    <div class="item"><span class="label">States</span><h4>Loading, empty, error, partial</h4><p>Skeletons reserve space (CLS &lt; 0.1). Empty states explain the rule, e.g. “No tech story met the two-source rule since 08:45.” Errors offer a way forward: “Feed B isn't responding. Showing NSE values only. Retry.”</p></div>
+    <div class="item"><span class="label">Density</span><h4>Dense, but scannable</h4><p>12-column grid, max 1400 px, 13 px UI base, tabular numbers. Summary before detail: takeaways, then tiles, then tables. Indian digit grouping for ₹, standard grouping for index levels.</p></div>
+    <div class="item"><span class="label">Colour &amp; access</span><h4>Up/down never colour-only</h4><p>▲▼ glyphs and signs on every change; candles filled vs hollow; 4.5:1 text contrast in both themes; a table view for every chart; aria-live on breaking alerts.</p></div>
+    <div class="item"><span class="label">Motion</span><h4>Calm at 09:00</h4><p>Transitions of 150–300 ms for state changes only. No scrolling tickers or flashing prices. Respects reduced-motion settings.</p></div>
+    <div class="item"><span class="label">Speed</span><h4>Keyboard-first</h4><p><code>/</code> search · <code>J</code>/<code>K</code> next and previous story · <code>C</code> open citations · <code>G</code> then <code>M</code> go to Markets. Visible focus rings; 44 px touch targets on mobile.</p></div>
+    <div class="item"><span class="label">Notifications</span><h4>Few, verified, useful</h4><p>Report-ready pushes plus verified breaking alerts, capped at 5 per day, with quiet hours and a digest option. Toasts auto-dismiss after 3–5 s; alerts stay until read.</p></div>
+    <div class="item"><span class="label">Onboarding &amp; pricing (SaaS)</span><h4>Value before signup</h4><p>A sample report without signup. Three skippable setup steps: instruments, report times and channels, watchlist. Three plans with the middle one highlighted and 20–30% off annual; the FAQ answers “Is this investment advice?” (No.)</p></div>
+    <div class="item"><span class="label">Themes &amp; screens</span><h4>Dark-first, light supported</h4><p>Dark by default for early-morning screens, with a full light theme. Breakpoints 375 / 768 / 1024 / 1440; no horizontal scroll; bottom tab bar with 5 items on mobile.</p></div>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="sec" id="s12">
+  <div class="sec-h"><span class="label">§12</span><h2>High-fidelity wireframes</h2></div>
+  <p class="lede">Clickable mockups of the product in its default dark theme. Every number, headline and ticker below is illustrative sample data, not real market information. Hover the charts to see the tooltip layer.</p>
+  <div class="wf-bar">
+    <div class="wf-tabs" role="tablist" aria-label="Wireframe screens">
+      <button role="tab" aria-selected="true" data-wf="w1"><b>W1</b>Today</button>
+      <button role="tab" aria-selected="false" data-wf="w2"><b>W2</b>Morning report</button>
+      <button role="tab" aria-selected="false" data-wf="w3"><b>W3</b>Fact-check</button>
+      <button role="tab" aria-selected="false" data-wf="w4"><b>W4</b>Markets</button>
+      <button role="tab" aria-selected="false" data-wf="w5"><b>W5</b>Mid-day</button>
+      <button role="tab" aria-selected="false" data-wf="w6"><b>W6</b>End of day</button>
+      <button role="tab" aria-selected="false" data-wf="w7"><b>W7</b>Flows</button>
+      <button role="tab" aria-selected="false" data-wf="w8"><b>W8</b>Crypto &amp; Tech</button>
+      <button role="tab" aria-selected="false" data-wf="w9"><b>W9</b>Mobile</button>
+      <button role="tab" aria-selected="false" data-wf="w10"><b>W10</b>States</button>
+      <button role="tab" aria-selected="false" data-wf="w11"><b>W11</b>SaaS</button>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn" id="themeBtn" type="button" aria-pressed="false">Preview light theme</button>
+      <button class="btn" id="allBtn" type="button" aria-pressed="false">Show all screens</button>
+    </div>
+  </div>
+
+<style>
+.tk{margin:0;padding:0;list-style:none;display:grid;gap:8px;counter-reset:tk}
+.tk li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:13.5px;line-height:1.5}
+.tk li::before{counter-increment:tk;content:counter(tk);font-family:var(--mono);font-size:11px;color:var(--a-brass);border:1px solid var(--a-line);border-radius:5px;height:20px;display:grid;place-items:center}
+.tk .chips{margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--a-line);border:1px solid var(--a-line);border-radius:10px;overflow:hidden}
+.tile{background:var(--a-panel);padding:9px 11px;display:grid;gap:2px}
+.tile .v.big{font-size:15px;font-weight:500;color:var(--a-text)}
+.tile .row{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mini{background:var(--a-panel);border:1px solid var(--a-line);border-radius:10px;padding:10px 12px 6px;display:grid;gap:2px}
+.mini .row{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.story{display:grid;gap:5px;padding:10px 0;border-bottom:1px solid var(--a-line-2)}
+.story:last-child{border-bottom:0}
+.story h6{margin:0;font-size:14px;font-weight:600;line-height:1.35;color:var(--a-text)}
+.story .meta{display:flex;gap:8px;align-items:center}
+.urg{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.07em;padding:1px 6px;border-radius:4px;border:1px solid var(--a-line);color:var(--a-text-2)}
+.urg.brk{color:var(--a-down);border-color:color-mix(in srgb,var(--a-down) 50%,transparent)}
+.rep{display:grid;gap:4px}
+.rep .time{font-family:var(--mono);font-size:19px;font-weight:500}
+.prog{height:4px;border-radius:2px;background:var(--a-panel-2);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--a-blue)}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:12.5px}
+.kv .v{text-align:right}
+.bar2{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px}
+.bar2 i{display:block;height:100%}
+.heat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+.heat div{border-radius:6px;padding:9px 10px;display:grid;gap:1px;font-size:12px;min-height:58px;align-content:center}
+.heat b{font-weight:500;font-size:12px}
+.heat .v{font-size:13px}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:440px;background:var(--a-panel);border-left:1px solid var(--a-line);box-shadow:-20px 0 50px rgba(0,0,0,.35);padding:16px 18px;display:grid;gap:12px;align-content:start;overflow:auto;z-index:3}
+.dim{position:absolute;inset:0;background:rgba(3,7,15,.55);z-index:2}
+.app.is-light .dim{background:rgba(12,21,38,.28)}
+.claim{background:var(--a-panel-2);border:1px solid var(--a-line);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.5}
+.srcitem{border:1px solid var(--a-line);border-radius:8px;padding:9px 11px;display:grid;gap:5px}
+.srcitem q{font-size:12.5px;color:var(--a-text-2);font-style:italic}
+.tl{display:flex;gap:0;align-items:center;font-size:11.5px;color:var(--a-text-2)}
+.tl span{display:flex;align-items:center;gap:5px}
+.tl i{width:7px;height:7px;border-radius:50%;background:var(--a-up)}
+.tl em{flex:1;height:1px;background:var(--a-line);margin:0 8px;min-width:14px}
+.corr{display:grid;grid-template-columns:78px repeat(6,minmax(0,1fr));gap:2px;font-size:11px}
+.corr div{display:grid;place-items:center;height:30px;border-radius:4px;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.corr .h{color:var(--a-text-3);font-family:var(--sans);font-size:10.5px;justify-items:start;padding-left:2px}
+.corr .ch{color:var(--a-text-3);font-family:var(--sans);font-size:10.5px;text-align:center;line-height:1.1}
+.chain{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11.5px}
+.chain span{border:1px solid var(--a-line);border-radius:5px;padding:2px 7px;background:var(--a-panel-2)}
+.chain b{color:var(--a-text-3);font-weight:400}
+.statgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--a-line);border:1px solid var(--a-line);border-radius:10px;overflow:hidden}
+.banner{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;border-radius:9px;padding:11px 13px;border:1px solid}
+.banner.warn{background:var(--a-warn-fill);border-color:color-mix(in srgb,var(--a-warn) 45%,transparent)}
+.banner.info{background:var(--a-blue-fill);border-color:color-mix(in srgb,var(--a-blue) 40%,transparent)}
+.banner .ico{width:18px;height:18px;margin-top:1px}
+.banner.warn .ico{color:var(--a-warn)} .banner.info .ico{color:var(--a-blue)}
+.browser{background:var(--a-panel);border-bottom:1px solid var(--a-line);display:flex;align-items:center;gap:14px;padding:12px 22px}
+.browser nav{display:flex;gap:18px;color:var(--a-text-2);font-size:13px;margin-left:18px}
+.hero{padding:40px 22px 26px;display:grid;grid-template-columns:1.05fr 1fr;gap:28px;align-items:center}
+.hero h2{font-size:44px;line-height:1.05;letter-spacing:-.03em;margin:8px 0 12px}
+.hero p{font-size:15.5px;color:var(--a-text-2);max-width:46ch}
+.plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.plan{border:1px solid var(--a-line);border-radius:12px;padding:16px;display:grid;gap:8px;align-content:start;background:var(--a-panel)}
+.plan.pop{border-color:var(--a-brass);box-shadow:0 0 0 1px var(--a-brass)}
+.plan .price{font-family:var(--mono);font-size:26px;font-weight:500}
+.plan ul{margin:0;padding-left:16px;color:var(--a-text-2);display:grid;gap:3px;font-size:12.5px}
+.opt{display:flex;flex-wrap:wrap;gap:8px}
+.opt span{border:1px solid var(--a-line);border-radius:8px;padding:8px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center;min-height:40px}
+.opt span.on{border-color:var(--a-blue);background:var(--a-blue-fill);color:var(--a-text)}
+</style>
+
+  <!-- W1 -->
+  <div class="wf-panel" id="w1" role="tabpanel">
+    <div class="wf-cap"><h3>W1 · Today</h3><p>The home screen at 08:52 IST, seven minutes after the morning drop. Summary before detail: report status, three ranked takeaways, cross-market tiles, charts, then the verified feed.</p></div>
+    <div class="frame"><div class="app" data-nav="today" data-clock="08:52:14" data-day="Thu 03 Sep">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+          <div class="panel rep"><div class="ph"><span class="lbl">Morning Insights</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>Ready 08:41</span></div><span class="time">08:45</span><span class="muted" style="font-size:11.5px">41 claims · 41 cited · 3 withheld</span><div class="prog"><i style="width:100%;background:var(--a-up)"></i></div></div>
+          <div class="panel rep"><div class="ph"><span class="lbl">Mid-day Markets</span><span class="pill"><span class="d"></span>Scheduled</span></div><span class="time">12:15</span><span class="muted" style="font-size:11.5px">Data cutoff 11:50</span><div class="prog"><i style="width:0"></i></div></div>
+          <div class="panel rep"><div class="ph"><span class="lbl">End of day</span><span class="pill"><span class="d"></span>Scheduled</span></div><span class="time">16:00</span><span class="muted" style="font-size:11.5px">Data cutoff 15:35</span><div class="prog"><i style="width:0"></i></div></div>
+          <div class="panel rep"><div class="ph"><span class="lbl">Institutional Flows</span><span class="pill"><span class="d"></span>Scheduled</span></div><span class="time">20:00</span><span class="muted" style="font-size:11.5px">After the exchange releases data</span><div class="prog"><i style="width:0"></i></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,2.25fr) minmax(0,1fr);gap:12px;align-items:start">
+          <div class="g">
+            <div class="panel">
+              <div class="ph"><div style="display:flex;gap:8px;align-items:center"><h5>Key takeaways</h5><span class="tone off">▼ RISK-OFF</span><span class="sub">Morning Insights · ranked by impact</span></div><span class="linkbtn">Read full report <svg class="ico"><use href="#i-arrow"/></svg></span></div>
+              <ol class="tk">
+                <li><div>GIFT Nifty at <span class="v">24,118.50</span> points to a weak open, <span class="v down">0.42%</span> below Nifty's previous close.<span class="cite">[1]</span><span class="cite">[2]</span><div class="chips"><span class="impact">Nifty ▼ · opening</span><span class="vbadge prim"><svg class="ico"><use href="#i-shield"/></svg>Primary data</span><span class="asof">07:58</span></div></div></li>
+                <li><div>Brent up <span class="v up">1.4%</span> to <span class="v">$96.20</span> on supply concerns; OMCs and paint makers face cost pressure.<span class="cite">[3]</span><span class="cite">[4]</span><div class="chips"><span class="impact">OMCs ▼ · Paints ▼ · 1–3 days</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>Verified · 2 sources</span></div></div></li>
+                <li><div>FIIs sold a net <span class="v">₹2,184.36 Cr</span> in cash; DIIs bought <span class="v">₹3,021.58 Cr</span>, keeping the combined flow positive.<span class="cite">[5]</span><div class="chips"><span class="impact">Bank Nifty · cushion</span><span class="vbadge prim"><svg class="ico"><use href="#i-shield"/></svg>Primary data</span><span class="asof">02 Sep 19:12</span></div></div></li>
+              </ol>
+            </div>
+            <div class="tiles">
+              <div class="tile"><span class="lbl">GIFT Nifty</span><span class="v big">24,118.50</span><div class="row"><span class="v down">▼ 0.42%</span><span class="asof">07:58</span></div></div>
+              <div class="tile"><span class="lbl">S&amp;P 500 fut</span><span class="v big">7,389.25</span><div class="row"><span class="v down">▼ 0.18%</span><span class="asof">08:40</span></div></div>
+              <div class="tile"><span class="lbl">Nasdaq-100 fut</span><span class="v big">26,904.50</span><div class="row"><span class="v down">▼ 0.31%</span><span class="asof">08:40</span></div></div>
+              <div class="tile"><span class="lbl">Nikkei 225</span><span class="v big">44,812.30</span><div class="row"><span class="v down">▼ 1.12%</span><span class="asof">08:45</span></div></div>
+              <div class="tile"><span class="lbl">Hang Seng</span><span class="v big">25,406.18</span><div class="row"><span class="v down">▼ 0.86%</span><span class="asof">08:45</span></div></div>
+              <div class="tile"><span class="lbl">Brent Nov</span><span class="v big">$96.20</span><div class="row"><span class="v up">▲ 1.40%</span><span class="asof">08:12</span></div></div>
+              <div class="tile"><span class="lbl">USD/INR</span><span class="v big">94.62</span><div class="row"><span class="v up">▲ 0.11%</span><span class="asof">08:30</span></div></div>
+              <div class="tile"><span class="lbl">US 10Y</span><span class="v big">4.71%</span><div class="row"><span class="v up">▲ 3 bp</span><span class="asof">08:40</span></div></div>
+              <div class="tile"><span class="lbl">Gold</span><span class="v big">$4,212.40</span><div class="row"><span class="v down">▼ 0.30%</span><span class="asof">08:40</span></div></div>
+              <div class="tile"><span class="lbl">Bitcoin</span><span class="v big">$118,420</span><div class="row"><span class="v down">▼ 1.80%</span><span class="asof">08:50</span></div></div>
+            </div>
+            <div class="minis">
+              <div class="mini"><div class="row"><span class="lbl">Nifty 50 · 5D</span><span class="v down">▼ 0.9%</span></div><div class="row"><span class="v" style="font-size:15px">24,219.60</span><span class="muted" style="font-size:11px">prev close</span></div><svg class="spark" data-seed="11" data-trend="-1" role="img" aria-label="Nifty 50 five-day sparkline, down"></svg></div>
+              <div class="mini"><div class="row"><span class="lbl">Bank Nifty · 5D</span><span class="v up">▲ 0.6%</span></div><div class="row"><span class="v" style="font-size:15px">55,842.35</span><span class="muted" style="font-size:11px">prev close</span></div><svg class="spark" data-seed="23" data-trend="1" role="img" aria-label="Bank Nifty five-day sparkline, up"></svg></div>
+              <div class="mini"><div class="row"><span class="lbl">S&amp;P 500 · 5D</span><span class="v down">▼ 1.1%</span></div><div class="row"><span class="v" style="font-size:15px">7,402.15</span><span class="muted" style="font-size:11px">US close</span></div><svg class="spark" data-seed="5" data-trend="-1" role="img" aria-label="S&P 500 five-day sparkline, down"></svg></div>
+              <div class="mini"><div class="row"><span class="lbl">Nasdaq Comp · 5D</span><span class="v down">▼ 1.6%</span></div><div class="row"><span class="v" style="font-size:15px">25,418.30</span><span class="muted" style="font-size:11px">US close</span></div><svg class="spark" data-seed="8" data-trend="-1" role="img" aria-label="Nasdaq five-day sparkline, down"></svg></div>
+              <div class="mini"><div class="row"><span class="lbl">Nikkei 225 · 5D</span><span class="v down">▼ 2.0%</span></div><div class="row"><span class="v" style="font-size:15px">44,812.30</span><span class="muted" style="font-size:11px">live</span></div><svg class="spark" data-seed="31" data-trend="-1" role="img" aria-label="Nikkei five-day sparkline, down"></svg></div>
+              <div class="mini"><div class="row"><span class="lbl">Hang Seng · 5D</span><span class="v up">▲ 0.4%</span></div><div class="row"><span class="v" style="font-size:15px">25,406.18</span><span class="muted" style="font-size:11px">live</span></div><svg class="spark" data-seed="42" data-trend="1" role="img" aria-label="Hang Seng five-day sparkline, up"></svg></div>
+            </div>
+            <div class="panel">
+              <div class="ph"><h5>Verified feed</h5><span class="sub">Only stories that passed the publish gate</span></div>
+              <div class="tabs"><span class="on">All 14</span><span>India 5</span><span>Global 3</span><span>Geopolitics 2</span><span>Tech 2</span><span>Crypto 2</span></div>
+              <div>
+                <article class="story"><div class="meta"><span class="urg brk">BREAKING</span><span class="v muted">08:31</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>Verified · 2 sources</span></div><h6>US semiconductor futures slip after new chip-export rules</h6><p class="t2">Semis weakness → Nasdaq futures soft → weaker Nifty IT sentiment at the open.</p><div class="chips"><span class="impact">Nifty IT ▼ · 1–3 days</span><span class="src"><span class="t">T2</span>Reuters · 08:12</span><span class="src"><span class="t">T2</span>Mint · 08:24</span><span class="muted">+4 similar</span></div></article>
+                <article class="story"><div class="meta"><span class="urg">UPDATE</span><span class="v muted">08:05</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>Verified · 3 sources</span></div><h6>Brent extends gains as shipping disruption raises supply worries</h6><p class="t2">Higher crude → input-cost pressure for OMCs, paints and aviation; a weaker rupee adds to it.</p><div class="chips"><span class="impact">OMCs ▼ · Aviation ▼</span><span class="src"><span class="t">T2</span>Reuters · 07:44</span><span class="src"><span class="t">T2</span>Business Standard · 07:51</span><span class="src"><span class="t">T2</span>Moneycontrol · 08:02</span></div></article>
+                <article class="story"><div class="meta"><span class="urg">GEOPOLITICS</span><span class="v muted">07:20</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>Verified · 2 sources</span></div><h6>Sanctions talks stall; energy importers watch tanker insurance costs</h6><p class="t2">Freight and insurance costs → landed crude price → India's import bill and INR.</p><div class="chips"><span class="impact">USD/INR ▲ · weeks</span><span class="src"><span class="t">T2</span>AP · 06:58</span><span class="src"><span class="t">T2</span>Nikkei Asia · 07:05</span></div></article>
+              </div>
+            </div>
+          </div>
+          <div class="g">
+            <div class="panel"><div class="ph"><h5>Today's calendar</h5><span class="sub">IST</span></div>
+              <div class="rows">
+                <div class="r" style="grid-template-columns:44px 1fr auto"><span class="v muted">10:30</span><span>Results: 6 F&amp;O stocks</span><span class="tag" style="font-size:10.5px">Med</span></div>
+                <div class="r" style="grid-template-columns:44px 1fr auto"><span class="v muted">13:30</span><span>Euro area services PMI</span><span class="tag" style="font-size:10.5px">Med</span></div>
+                <div class="r" style="grid-template-columns:44px 1fr auto"><span class="v muted">18:00</span><span>US jobless claims</span><span class="tag" style="font-size:10.5px">Med</span></div>
+                <div class="r" style="grid-template-columns:44px 1fr auto"><span class="v muted">19:30</span><span>US ISM services</span><span class="tag warn" style="font-size:10.5px">High</span></div>
+              </div>
+            </div>
+            <div class="panel"><div class="ph"><h5>Flows · 02 Sep</h5><span class="asof">NSE 19:12</span></div>
+              <div class="kv"><span class="t2">FII / FPI net</span><span class="v down">−₹2,184.36 Cr</span><span class="t2">DII net</span><span class="v up">+₹3,021.58 Cr</span><span class="t2">Combined</span><span class="v up">+₹837.22 Cr</span></div>
+              <span class="muted" style="font-size:11px">Provisional · exchange data</span>
+            </div>
+            <div class="panel"><div class="ph"><h5>F&amp;O ban</h5><span class="tag warn" style="font-size:10.5px">3 stocks</span></div>
+              <div class="chips"><span class="src">BANKX</span><span class="src">METALCO</span><span class="src">INFRAONE</span></div>
+              <span class="muted" style="font-size:11.5px">Only position reduction allowed.</span>
+            </div>
+            <div class="panel"><div class="ph"><h5>Derivatives setup</h5><span class="asof">02 Sep close</span></div>
+              <div class="kv"><span class="t2">Nifty PCR</span><span class="v">0.78</span><span class="t2">Max pain</span><span class="v">24,200</span><span class="t2">Put base · call wall</span><span class="v">24,000 · 24,500</span><span class="t2">Next expiry</span><span class="v">Tue 08 Sep</span></div>
+            </div>
+            <div class="panel"><div class="ph"><h5>Verification health</h5><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>All clear</span></div>
+              <div class="kv"><span class="t2">Sources reachable</span><span class="v">18 / 18</span><span class="t2">Feed B in sync</span><span class="v">±0.00%</span><span class="t2">Last correction</span><span class="v">2 days ago</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+    <div class="annot"><div><b>Report strip</b> shows whether each drop is ready, and how many claims were cited or withheld.</div><div><b>Every number</b> carries an as-of chip; every claim carries a <span class="mono" style="color:var(--brass)">[n]</span> that opens W3.</div><div><b>Impact chips</b> translate news into what an F&amp;O trader acts on: instrument, direction, horizon.</div></div>
+  </div>
+
+  <!-- W2 -->
+  <div class="wf-panel" id="w2" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W2 · Morning Insights report</h3><p>The report view follows the reference template's three blocks, then adds news sections. A verification summary sits above the fold, and a source rail lists every citation in the section.</p></div>
+    <div class="frame"><div class="app" data-nav="reports" data-clock="08:53:40" data-day="Thu 03 Sep">
+      <div class="content">
+        <div class="panel" style="gap:8px">
+          <div class="ph"><div><span class="lbl">Reports / Morning Insights</span><h5 style="font-size:20px;margin-top:2px">Morning Insights · Thu 03 Sep 2026</h5></div><div style="display:flex;gap:6px"><span class="abtn"><svg class="ico"><use href="#i-play"/></svg>Audio brief</span><span class="abtn"><svg class="ico"><use href="#i-file"/></svg>PDF</span><span class="abtn pri">Mark as read</span></div></div>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:12px" class="t2"><span>Ready <span class="v">08:41 IST</span></span><span>Data cutoff <span class="v">08:15</span></span><span class="vbadge prim">29 primary data</span><span class="vbadge ok">12 verified news</span><span class="vbadge wh"><svg class="ico"><use href="#i-alert"/></svg>3 withheld</span><span>0 corrections</span></div>
+          <div class="bar2" aria-hidden="true"><i style="flex:29;background:var(--a-blue)"></i><i style="flex:12;background:var(--a-up)"></i><i style="flex:3;background:var(--a-warn)"></i></div>
+        </div>
+        <div class="tabs"><span class="on">Global opening check</span><span>India setup &amp; flows</span><span>Data outlook</span><span>Overnight global</span><span>Domestic triggers</span><span>Geopolitics</span><span>Tech</span><span>Crypto</span><span>Calendar</span></div>
+        <div style="display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr);gap:12px;align-items:start">
+          <div class="g">
+            <div class="panel" style="grid-template-columns:auto 1fr auto;align-items:center">
+              <span class="lbl" style="color:var(--a-down)">Key takeaway</span>
+              <span style="font-size:14px">A weak GIFT Nifty, steep Asian losses and firmer crude point to a risk-off open.<span class="cite">[1]</span><span class="cite">[3]</span><span class="cite">[6]</span></span>
+              <span class="tone off">▼ RISK-OFF</span>
+            </div>
+            <div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+              <div class="tile"><span class="lbl">GIFT Nifty · 07:58 IST</span><span class="v big" style="font-size:20px">24,118.50</span><div class="row"><span class="v down">▼ 0.42% · −101.10 vs Nifty</span><span class="cite">[1][2]</span></div></div>
+              <div class="tile"><span class="lbl">S&amp;P 500 futures · Sep</span><span class="v big" style="font-size:20px">▼ 0.18%</span><div class="row"><span class="muted">early Asia</span><span class="cite">[7]</span></div></div>
+              <div class="tile"><span class="lbl">Nasdaq-100 futures · Sep</span><span class="v big" style="font-size:20px">▼ 0.31%</span><div class="row"><span class="muted">early Asia</span><span class="cite">[7]</span></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="panel"><div class="ph"><h5>US cash close · 02 Sep</h5><span class="asof">01:30 IST</span></div>
+                <div class="rows">
+                  <div class="r" style="grid-template-columns:1fr auto 70px"><span>S&amp;P 500</span><span class="v">7,402.15</span><span class="v down" style="text-align:right">▼ 0.64%</span></div>
+                  <div class="r" style="grid-template-columns:1fr auto 70px"><span>Nasdaq Composite</span><span class="v">25,418.30</span><span class="v down" style="text-align:right">▼ 0.92%</span></div>
+                  <div class="r" style="grid-template-columns:1fr auto 70px"><span>Dow Jones</span><span class="v">51,287.40</span><span class="v down" style="text-align:right">▼ 0.37%</span></div>
+                </div><span class="muted" style="font-size:11px">Sources <span class="cite">[8]</span><span class="cite">[9]</span></span></div>
+              <div class="panel"><div class="ph"><h5>Asia check · 03 Sep</h5><span class="asof">08:10 IST</span></div>
+                <div class="rows">
+                  <div class="r" style="grid-template-columns:1fr 70px"><span>Nikkei 225</span><span class="v down" style="text-align:right">▼ 1.12%</span></div>
+                  <div class="r" style="grid-template-columns:1fr 70px"><span>Hang Seng</span><span class="v down" style="text-align:right">▼ 0.86%</span></div>
+                  <div class="r" style="grid-template-columns:1fr auto"><span>Kospi</span><span class="vbadge wh"><svg class="ico"><use href="#i-alert"/></svg>Withheld · feeds disagree</span></div>
+                </div><span class="muted" style="font-size:11px">Retrying Kospi at 08:50 <span class="cite">[6]</span></span></div>
+            </div>
+            <div class="panel"><div class="ph"><h5>What matters today</h5><span class="lbl">Cause → effect</span></div>
+              <div class="rows">
+                <div class="r" style="grid-template-columns:110px 1fr"><b style="font-weight:600">Opening cue</b><span>GIFT Nifty is 0.42% below Wednesday's Nifty close, so a gap-down open is likely.<span class="cite">[1]</span><span class="cite">[2]</span></span></div>
+                <div class="r" style="grid-template-columns:110px 1fr"><b style="font-weight:600">Support</b><span>DII buying of ₹3,021.58 Cr and a 24,000 put-OI base offer a cushion.<span class="cite">[5]</span><span class="cite">[10]</span></span></div>
+                <div class="r" style="grid-template-columns:110px 1fr"><b style="font-weight:600">Key risk</b><span>Brent at $96.20 and the US 10-year at 4.71% raise pressure on the rupee and on rate-sensitive stocks.<span class="cite">[3]</span><span class="cite">[11]</span></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel"><div class="ph"><h5>Sources in this section</h5><span class="sub">11</span></div>
+            <div class="rows" style="font-size:12px">
+              <div class="r" style="grid-template-columns:24px 1fr auto"><span class="cite" style="vertical-align:baseline">[1]</span><span>NSE IX · GIFT Nifty quote<br><span class="muted v">07:58:00 · archived</span></span><span class="src"><span class="t">T1</span>data</span></div>
+              <div class="r" style="grid-template-columns:24px 1fr auto"><span class="cite" style="vertical-align:baseline">[2]</span><span>Market data feed B<br><span class="muted v">07:58:02 · Δ 0.00%</span></span><span class="src"><span class="t">T1</span>data</span></div>
+              <div class="r" style="grid-template-columns:24px 1fr auto"><span class="cite" style="vertical-align:baseline">[3]</span><span>ICE Brent via data API<br><span class="muted v">08:12:10 · archived</span></span><span class="src"><span class="t">T1</span>data</span></div>
+              <div class="r" style="grid-template-columns:24px 1fr auto"><span class="cite" style="vertical-align:baseline">[4]</span><span>Reuters · crude story<br><span class="muted v">07:44 · quote matched</span></span><span class="src"><span class="t">T2</span>news</span></div>
+              <div class="r" style="grid-template-columns:24px 1fr auto"><span class="cite" style="vertical-align:baseline">[5]</span><span>NSE · FII/DII provisional<br><span class="muted v">02 Sep 19:12 · archived</span></span><span class="src"><span class="t">T1</span>data</span></div>
+              <div class="r" style="grid-template-columns:24px 1fr auto"><span class="cite" style="vertical-align:baseline">[6]</span><span>Asian index quotes (2 feeds)<br><span class="muted v">08:10 · Kospi mismatch</span></span><span class="src"><span class="t">T1</span>data</span></div>
+            </div>
+            <span class="linkbtn">Show all 11 <svg class="ico"><use href="#i-arrow"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+    <div class="annot"><div><b>Summary bar:</b> the mix of primary data, verified news and withheld claims is visible before reading.</div><div><b>Withheld inline:</b> Kospi is shown as withheld with the reason, never as a guessed number.</div><div><b>One value everywhere:</b> ₹3,021.58 Cr here matches W1 and W7 exactly.</div></div>
+  </div>
+
+  <!-- W3 -->
+  <div class="wf-panel" id="w3" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W3 · Fact-check drawer</h3><p>Opened by tapping <span class="mono" style="color:var(--brass)">[1]</span>. It shows the claim, the rule applied, the number reconciled across sources, matched quotes and archived copies, and a one-tap way to flag an error.</p></div>
+    <div class="frame"><div class="app" data-nav="reports" data-clock="08:54:02" data-day="Thu 03 Sep">
+      <div class="content" style="position:relative;min-height:600px">
+        <div class="panel"><div class="ph"><h5 style="font-size:18px">Morning Insights · Global opening check</h5></div>
+          <div class="skel" style="height:14px;width:70%"></div><div class="skel" style="height:14px;width:55%"></div>
+          <div class="tiles" style="grid-template-columns:repeat(3,1fr)"><div class="tile"><span class="lbl">GIFT Nifty</span><span class="v big" style="font-size:20px">24,118.50</span></div><div class="tile"><span class="lbl">S&amp;P 500 fut</span><span class="v big" style="font-size:20px">▼ 0.18%</span></div><div class="tile"><span class="lbl">Nasdaq-100 fut</span><span class="v big" style="font-size:20px">▼ 0.31%</span></div></div>
+          <div class="skel" style="height:120px"></div><div class="skel" style="height:90px"></div>
+        </div>
+        <div class="dim"></div>
+        <aside class="drawer" aria-label="Citation details">
+          <div class="ph"><div><span class="lbl">Citation [1] of 11</span><h5 style="font-size:16px;margin-top:2px">Fact-check</h5></div><span class="iconbtn"><svg class="ico"><use href="#i-x"/></svg></span></div>
+          <div class="claim">GIFT Nifty at <span class="v">24,118.50</span> points to a weak open, <span class="v down">0.42%</span> below Nifty's previous close.</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="vbadge prim"><svg class="ico"><use href="#i-shield"/></svg>Primary data</span><span class="t2" style="font-size:12px">Rule: market number · T1 source + second feed within ±0.01%</span></div>
+          <div class="panel" style="padding:10px 12px;background:var(--a-panel-2)">
+            <span class="lbl">Number check</span>
+            <div class="rows" style="font-size:12px">
+              <div class="r muted" style="grid-template-columns:1.2fr 1fr .9fr .6fr"><span>Source</span><span>Value</span><span>As of</span><span style="text-align:right">Δ</span></div>
+              <div class="r" style="grid-template-columns:1.2fr 1fr .9fr .6fr"><span>NSE IX</span><span class="v">24,118.50</span><span class="v">07:58:00</span><span class="v" style="text-align:right">—</span></div>
+              <div class="r" style="grid-template-columns:1.2fr 1fr .9fr .6fr"><span>Feed B</span><span class="v">24,118.50</span><span class="v">07:58:02</span><span class="v up" style="text-align:right">0.00%</span></div>
+              <div class="r" style="grid-template-columns:1.2fr 1fr .9fr .6fr"><span>Nifty close (NSE)</span><span class="v">24,219.60</span><span class="v">02 Sep</span><span class="v" style="text-align:right">base</span></div>
+              <div class="r" style="grid-template-columns:1.2fr 1fr .9fr .6fr"><span>Computed move</span><span class="v down">−101.10 pts</span><span class="v down">−0.42%</span><span style="text-align:right" class="up"><svg class="ico" style="width:13px;height:13px"><use href="#i-check"/></svg></span></div>
+            </div>
+          </div>
+          <span class="lbl">Sources</span>
+          <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T1</span>NSE IX</span><span class="muted v" style="font-size:11px">07:58:00 IST</span></span><span class="linkbtn">Open <svg class="ico" style="width:13px;height:13px"><use href="#i-ext"/></svg></span></div><span class="t2" style="font-size:12px">Exchange quote page · value matched exactly</span><span class="linkbtn" style="color:var(--a-text-3)"><svg class="ico" style="width:13px;height:13px"><use href="#i-archive"/></svg>Archived copy · 08:02</span></div>
+          <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T1</span>Feed B</span><span class="muted v" style="font-size:11px">07:58:02 IST</span></span><span class="linkbtn">Open <svg class="ico" style="width:13px;height:13px"><use href="#i-ext"/></svg></span></div><span class="t2" style="font-size:12px">Licensed market-data API · independent of NSE IX page</span></div>
+          <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T2</span>Business daily</span><span class="muted v" style="font-size:11px">08:06 IST</span></span><span class="tag" style="font-size:10.5px">context</span></div><q>GIFT Nifty was trading about 100 points lower, signalling a negative start…</q></div>
+          <div class="tl"><span><i></i>Collected 08:02</span><em></em><span><i></i>Verified 08:19</span><em></em><span><i></i>Published 08:41</span></div>
+          <div style="display:flex;gap:8px"><span class="abtn"><svg class="ico"><use href="#i-flag"/></svg>Flag as wrong</span><span class="abtn">Copy citation</span></div>
+        </aside>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+    <div class="annot"><div><b>Rule shown, not implied:</b> the trader sees which publish rule the claim passed.</div><div><b>Quotes ≤ 25 words</b> plus an archived copy; the original link stays primary.</div><div><b>Flag as wrong</b> starts a re-verification; the result appears in the corrections log (W10).</div></div>
+  </div>
+
+  <!-- W4 -->
+  <div class="wf-panel" id="w4" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W4 · Markets</h3><p>Global indices, macro and crypto in one view. Compare mode puts different markets on one scale by indexing them to 100. A world clock shows which sessions are live; a correlation grid shows what's moving together.</p></div>
+    <div class="frame"><div class="app" data-nav="markets" data-clock="08:55:31" data-day="Thu 03 Sep">
+      <div class="content">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="tabs" style="border:0"><span class="on">All</span><span>India</span><span>US</span><span>Europe</span><span>Asia</span><span>Macro</span><span>Crypto</span></div>
+          <div style="display:flex;gap:8px;align-items:center"><span class="seg"><span>1D</span><span>5D</span><span>1M</span><span class="on">3M</span><span>1Y</span></span><span class="seg"><span>Price</span><span class="on">Compare %</span></span><span class="abtn">+ Add series</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);gap:12px;align-items:start">
+          <div class="panel" style="position:relative">
+            <div class="ph"><div><h5>Nifty 50 vs S&amp;P 500 vs Nikkei 225</h5><span class="sub">Indexed to 100 at start of period · daily closes · 3 months</span></div><span class="asof">closes to 02 Sep</span></div>
+            <div style="display:flex;gap:14px;font-size:12px" class="t2"><span style="display:flex;gap:6px;align-items:center"><i style="width:14px;height:2px;background:var(--s1);display:inline-block"></i>Nifty 50</span><span style="display:flex;gap:6px;align-items:center"><i style="width:14px;height:2px;background:var(--s2);display:inline-block"></i>S&amp;P 500</span><span style="display:flex;gap:6px;align-items:center"><i style="width:14px;height:2px;background:var(--s3);display:inline-block"></i>Nikkei 225</span><span class="muted" style="margin-left:auto">Hover for values · table view available</span></div>
+            <svg id="cmp" class="chart-svg" style="width:100%;height:280px;display:block" role="img" aria-label="Line chart comparing three indices indexed to 100 over three months"></svg>
+            <div class="tip" id="cmpTip" hidden></div>
+          </div>
+          <div class="panel"><div class="ph"><h5>World market clock</h5><span class="v muted">08:55 IST</span></div>
+            <div class="rows">
+              <div class="r" style="grid-template-columns:1fr auto"><span>Tokyo <span class="muted">· 05:30–12:00</span></span><span class="pill open"><span class="d"></span>Open · 3h 05m left</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>Shanghai <span class="muted">· 07:00–12:30</span></span><span class="pill open"><span class="d"></span>Open</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>Hong Kong <span class="muted">· 07:00–13:30</span></span><span class="pill open"><span class="d"></span>Open</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>GIFT Nifty <span class="muted">· NSE IX</span></span><span class="pill open"><span class="d"></span>Trading</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>NSE / BSE <span class="muted">· 09:15</span></span><span class="pill pre"><span class="d"></span>Pre-open in 5m</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>London <span class="muted">· 12:30–21:00</span></span><span class="pill"><span class="d"></span>Opens 12:30</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>New York <span class="muted">· 19:00–01:30</span></span><span class="pill"><span class="d"></span>Opens 19:00</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:12px;align-items:start">
+          <div class="panel"><div class="ph"><h5>30-day correlation</h5><span class="sub">daily returns · −1 to +1</span></div>
+            <div class="corr" id="corr"></div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px" class="muted"><span>−1 moves opposite</span><span>0 unrelated</span><span>+1 moves together</span></div>
+          </div>
+          <div class="minis" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+            <div class="mini"><div class="row"><span class="lbl">Sensex</span><span class="v up">▲ 0.2%</span></div><svg class="spark" data-seed="12" data-trend="1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">Fin Nifty</span><span class="v up">▲ 0.3%</span></div><svg class="spark" data-seed="14" data-trend="1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">India VIX</span><span class="v up">▲ 3.1%</span></div><svg class="spark" data-seed="19" data-trend="1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">Dow Jones</span><span class="v down">▼ 0.4%</span></div><svg class="spark" data-seed="3" data-trend="-1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">FTSE 100</span><span class="v down">▼ 0.3%</span></div><svg class="spark" data-seed="27" data-trend="-1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">DAX</span><span class="v down">▼ 0.5%</span></div><svg class="spark" data-seed="29" data-trend="-1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">DXY</span><span class="v up">▲ 0.2%</span></div><svg class="spark" data-seed="33" data-trend="1"></svg></div>
+            <div class="mini"><div class="row"><span class="lbl">WTI</span><span class="v up">▲ 1.3%</span></div><svg class="spark" data-seed="37" data-trend="1"></svg></div>
+          </div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+    <div class="annot"><div><b>One axis only:</b> compare mode indexes every series to 100 rather than stacking two y-scales.</div><div><b>Colour + label:</b> three series max in compare, each with a legend entry and a direct label.</div><div><b>Clock uses exchange hours</b> and changes automatically after US/UK daylight-saving shifts.</div></div>
+  </div>
+
+  <!-- W5 -->
+  <div class="wf-panel" id="w5" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W5 · Mid-day Markets</h3><p>At 12:15 the question is “what changed?”, so the diff panel sits beside the headline driver. Breadth, leaders and cross-asset checks follow the reference mid-day layout.</p></div>
+    <div class="frame"><div class="app" data-nav="reports" data-clock="12:16:05" data-day="Thu 03 Sep" data-mkt="open">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:12px;align-items:stretch">
+          <div class="panel" style="background:linear-gradient(135deg,var(--a-panel-2),var(--a-panel));gap:12px">
+            <div class="ph"><span class="lbl">Main intraday driver · NSE 11:50</span><span class="tone mix">◆ MIXED</span></div>
+            <h5 style="font-size:24px;line-height:1.2;letter-spacing:-.01em">Metals drag; private banks hold the index near flat</h5>
+            <p class="t2" style="font-size:13.5px">29 of 50 Nifty stocks are higher, but heavyweight metals offset the gains.<span class="cite">[1]</span><span class="cite">[2]</span></p>
+            <div class="tiles" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+              <div class="tile"><span class="lbl">Nifty 50</span><span class="v big">24,207.45</span><span class="v down">▼ 12.15 · 0.05%</span></div>
+              <div class="tile"><span class="lbl">Sensex</span><span class="v big">79,560.10</span><span class="v down">▼ 38.20 · 0.05%</span></div>
+              <div class="tile"><span class="lbl">Bank Nifty</span><span class="v big">55,960.20</span><span class="v up">▲ 117.85 · 0.21%</span></div>
+              <div class="tile"><span class="lbl">India VIX</span><span class="v big">13.02</span><span class="v up">▲ 0.18 · 1.40%</span></div>
+            </div>
+          </div>
+          <div class="panel"><div class="ph"><h5>Changed since 08:45</h5><span class="sub">5 changes</span></div>
+            <div class="rows" style="font-size:12.5px">
+              <div class="r" style="grid-template-columns:52px 1fr"><span class="tag up" style="font-size:10px">▲ UP</span><span>Nifty opened <span class="v down">−0.38%</span>, now <span class="v down">−0.05%</span></span></div>
+              <div class="r" style="grid-template-columns:52px 1fr"><span class="tag up" style="font-size:10px">▲ UP</span><span>Brent <span class="v">$96.20 → $96.85</span> (<span class="v">+0.7%</span>)</span></div>
+              <div class="r" style="grid-template-columns:52px 1fr"><span class="tag down" style="font-size:10px">▼ DOWN</span><span>Nifty Metal <span class="v down">−1.34%</span>, weakest sector</span></div>
+              <div class="r" style="grid-template-columns:52px 1fr"><span class="tag blue" style="font-size:10px">NEW</span><span>3 verified stories since 08:45</span></div>
+              <div class="r" style="grid-template-columns:52px 1fr"><span class="tag" style="font-size:10px">FIXED</span><span>Kospi, withheld at 08:45, is now verified: <span class="v down">−0.94%</span></span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start">
+          <div class="panel"><div class="ph"><h5>Nifty 50 breadth</h5><span class="tone on">▲ POSITIVE</span></div>
+            <div class="bar2" style="height:12px"><i style="flex:29;background:var(--a-up)"></i><i style="flex:21;background:var(--a-down)"></i></div>
+            <div class="kv"><span class="t2">Advances</span><span class="v up">29</span><span class="t2">Declines</span><span class="v down">21</span><span class="t2">Unchanged</span><span class="v">0</span></div>
+          </div>
+          <div class="panel"><div class="ph"><h5>Leadership</h5><span class="asof">NSE 11:50</span></div>
+            <div class="rows" style="font-size:12.5px">
+              <div class="r" style="grid-template-columns:1fr auto"><span>Nifty Pvt Bank</span><span class="v up">▲ 0.62%</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>Nifty FMCG</span><span class="v up">▲ 0.41%</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span>Nifty Metal</span><span class="v down">▼ 1.34%</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span class="v">BANKONE</span><span class="v up">▲ 1.82%</span></div>
+              <div class="r" style="grid-template-columns:1fr auto"><span class="v">STEELCO</span><span class="v down">▼ 2.10%</span></div>
+            </div>
+          </div>
+          <div class="panel"><div class="ph"><h5>Cross-asset check</h5><span class="asof">11:48</span></div>
+            <div class="kv"><span class="t2">WTI Oct</span><span class="v">$93.40 <span class="up">▲</span></span><span class="t2">Brent Nov</span><span class="v">$96.85 <span class="up">▲</span></span><span class="t2">Gold</span><span class="v">$4,205.10 <span class="down">▼</span></span><span class="t2">Silver</span><span class="v">$61.22 <span class="down">▼</span></span><span class="t2">DXY</span><span class="v">99.46 <span class="up">▲</span></span><span class="t2">USD/INR</span><span class="v">94.68 <span class="up">▲</span></span></div>
+            <span class="muted" style="font-size:11px">Euro Stoxx 50 futures ▼ 0.2% ahead of the 12:30 open</span>
+          </div>
+        </div>
+        <div class="panel" style="grid-template-columns:auto 1fr;align-items:center;background:var(--a-brass-fill);border-color:transparent"><span class="lbl" style="color:var(--a-brass)">What this means</span><span>The early gap-down is being bought, but metals cap the upside. Watch whether private banks hold after Europe opens.</span></div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+  <!-- W6 -->
+  <div class="wf-panel" id="w6" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W6 · End-of-day Insights</h3><p>A story-first close. Drivers are ranked by index-point contribution, so the numbering means something. The heat map carries signed labels, so colour is never the only cue.</p></div>
+    <div class="frame"><div class="app" data-nav="reports" data-clock="16:02:48" data-day="Thu 03 Sep" data-mkt="closed">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start">
+          <div class="g">
+            <div class="panel" style="gap:12px">
+              <div class="ph"><span class="lbl">Today's market story · final close 15:30</span><span class="tone off">▼ NEGATIVE CLOSE</span></div>
+              <h5 style="font-size:26px;line-height:1.15;letter-spacing:-.015em">IT and metals pull Nifty lower into the close</h5>
+              <div class="claim" style="font-size:13px"><span class="lbl" style="display:block;margin-bottom:3px">Session in one line</span>Nifty <span class="v">24,105.30</span> (<span class="v down">−0.47%</span>) · Sensex <span class="v">79,184.62</span> (<span class="v down">−0.52%</span>) · Bank Nifty <span class="v">55,691.40</span> (<span class="v down">−0.27%</span>) · 31 of 50 Nifty stocks fell.<span class="cite">[1]</span></div>
+            </div>
+            <div class="panel"><div class="ph"><h5>Why the market moved</h5><span class="sub">ranked by index-point contribution</span></div>
+              <ol class="tk">
+                <li><div><b style="font-weight:600">IT fell on chip-export news.</b> <span class="t2">Nifty IT <span class="v down">−1.62%</span>, the largest drag on the index.</span><span class="cite">[2]</span><span class="cite">[3]</span></div></li>
+                <li><div><b style="font-weight:600">Metals slipped with weak China data.</b> <span class="t2">Nifty Metal <span class="v down">−1.91%</span>.</span><span class="cite">[4]</span><span class="cite">[5]</span></div></li>
+                <li><div><b style="font-weight:600">FMCG cushioned the fall.</b> <span class="t2">Nifty FMCG <span class="v up">+0.52%</span> as private banks gave up their morning gains.</span><span class="cite">[1]</span></div></li>
+              </ol>
+            </div>
+            <div class="panel" style="grid-template-columns:auto 1fr;align-items:center;background:var(--a-brass-fill);border-color:transparent"><span class="lbl" style="color:var(--a-brass)">Market lesson</span><span>A bought gap-down isn't a reversal until breadth confirms it; breadth turned negative after 13:00.</span></div>
+          </div>
+          <div class="g">
+            <div class="panel"><div class="ph"><h5>Sector heat map</h5><span class="asof">NSE 15:30</span></div>
+              <div class="heat" id="heat"></div>
+            </div>
+            <div class="panel"><div class="ph"><h5>Closing derivatives</h5><span class="asof">15:35 snapshot</span></div>
+              <div class="kv"><span class="t2">Nifty PCR</span><span class="v">0.74</span><span class="t2">Max pain</span><span class="v">24,200</span><span class="t2">India VIX</span><span class="v">13.21 <span class="up">▲ 2.9%</span></span><span class="t2">Final OI</span><span class="v muted">in 20:00 report</span></div>
+            </div>
+            <div class="panel"><div class="ph"><h5>Tomorrow</h5><span class="sub">Fri 04 Sep</span></div>
+              <div class="rows" style="font-size:12.5px">
+                <div class="r" style="grid-template-columns:48px 1fr"><span class="v muted">18:00</span><span>US non-farm payrolls <span class="tag warn" style="font-size:10px">High</span></span></div>
+                <div class="r" style="grid-template-columns:48px 1fr"><span class="v muted">01:30</span><span>US close arrives in Morning Insights</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+  <!-- W7 -->
+  <div class="wf-panel" id="w7" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W7 · Institutional Flows</h3><p>The 20:00 report for Wed 02 Sep. Its figures feed W1 and W2 the next morning unchanged. A 20-day bar chart puts one day's flow in context, and participant-wise OI shows positioning.</p></div>
+    <div class="frame"><div class="app" data-nav="flows" data-clock="19:58:10" data-day="Wed 02 Sep" data-mkt="closed">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px">
+          <div class="panel" style="background:linear-gradient(135deg,var(--a-blue-fill),var(--a-panel));gap:8px">
+            <div class="ph"><span class="lbl">Combined net flow · cash market</span><span class="tone on">▲ NET BUYING</span></div>
+            <span class="v" style="font-size:38px;font-weight:500;letter-spacing:-.02em" >+₹837.22 Cr</span>
+            <span class="t2">DII buying more than offset FII selling, keeping the combined cash flow positive.<span class="cite">[1]</span></span>
+          </div>
+          <div class="panel" style="gap:6px"><span class="lbl">Official data</span><span style="font-size:16px;font-weight:600">NSE · BSE · MSEI combined</span><span class="t2">Provisional · ₹ crore</span><span class="asof" style="justify-self:start">released 19:12</span><span class="muted" style="font-size:11.5px">NSDL FPI data (T+1) arrives tomorrow and is reconciled here.</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <div class="panel"><div class="ph"><h5>FII / FPI</h5><span class="v down">Net sell −₹2,184.36 Cr</span></div>
+            <div class="kv"><span class="t2">Bought</span><span class="v up">₹12,406.18 Cr</span></div><div class="bar2"><i style="flex:12406;background:var(--a-up)"></i><i style="flex:2184;background:transparent"></i></div>
+            <div class="kv"><span class="t2">Sold</span><span class="v down">₹14,590.54 Cr</span></div><div class="bar2"><i style="flex:14590;background:var(--a-down)"></i></div>
+          </div>
+          <div class="panel"><div class="ph"><h5>DII</h5><span class="v up">Net buy +₹3,021.58 Cr</span></div>
+            <div class="kv"><span class="t2">Bought</span><span class="v up">₹15,882.40 Cr</span></div><div class="bar2"><i style="flex:15882;background:var(--a-up)"></i></div>
+            <div class="kv"><span class="t2">Sold</span><span class="v down">₹12,860.82 Cr</span></div><div class="bar2"><i style="flex:12860;background:var(--a-down)"></i><i style="flex:3022;background:transparent"></i></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start">
+          <div class="panel" style="position:relative"><div class="ph"><h5>FII / FPI net · last 20 sessions</h5><span class="sub">₹ crore · hover a bar</span></div>
+            <svg id="fiibars" class="chart-svg" style="width:100%;height:220px;display:block" role="img" aria-label="Bar chart of FII net flows over 20 sessions"></svg>
+            <div class="tip" id="barTip" hidden></div>
+          </div>
+          <div class="panel"><div class="ph"><h5>Index futures · participant OI</h5><span class="asof">NSE 02 Sep</span></div>
+            <div class="rows" style="font-size:12px">
+              <div class="r muted" style="grid-template-columns:1fr 1fr 1fr .8fr"><span>Participant</span><span>Long</span><span>Short</span><span style="text-align:right">Long %</span></div>
+              <div class="r" style="grid-template-columns:1fr 1fr 1fr .8fr"><span>FII</span><span class="v">1,12,450</span><span class="v">2,48,920</span><span class="v down" style="text-align:right">31.1%</span></div>
+              <div class="r" style="grid-template-columns:1fr 1fr 1fr .8fr"><span>DII</span><span class="v">86,310</span><span class="v">34,780</span><span class="v up" style="text-align:right">71.3%</span></div>
+              <div class="r" style="grid-template-columns:1fr 1fr 1fr .8fr"><span>Pro</span><span class="v">41,905</span><span class="v">38,220</span><span class="v" style="text-align:right">52.3%</span></div>
+              <div class="r" style="grid-template-columns:1fr 1fr 1fr .8fr"><span>Client</span><span class="v">2,10,640</span><span class="v">1,29,385</span><span class="v up" style="text-align:right">61.9%</span></div>
+            </div>
+            <span class="muted" style="font-size:11px">Contracts, Indian digit grouping</span>
+          </div>
+        </div>
+        <div class="panel" style="grid-template-columns:auto 1fr;align-items:center"><span class="lbl">Simple explanation</span><span>FIIs sold for a fourth straight session and remain net short in index futures; domestic buying is absorbing the supply for now.</span></div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+  <!-- W8 -->
+  <div class="wf-panel" id="w8" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W8 · Crypto &amp; Tech</h3><p>Bitcoin as a risk gauge, with candles that are filled when up and hollow when down so they read without colour. Tech stories come with a transmission chain showing how they reach Indian markets.</p></div>
+    <div class="frame"><div class="app" data-nav="crypto" data-clock="08:57:12" data-day="Thu 03 Sep">
+      <div class="content">
+        <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start">
+          <div class="g">
+            <div class="panel"><div class="ph"><div><h5>BTC / USD · daily</h5><span class="sub">40 sessions · filled = up day · hollow = down day</span></div><div style="text-align:right"><span class="v" style="font-size:18px">$118,420</span><br><span class="v down">▼ 1.80% 24h</span> <span class="asof">08:50</span></div></div>
+              <svg id="btc" class="chart-svg" style="width:100%;height:230px;display:block" role="img" aria-label="Candlestick chart of Bitcoin over 40 days"></svg>
+            </div>
+            <div class="statgrid">
+              <div class="tile"><span class="lbl">ETH</span><span class="v big">$4,610</span><span class="v down">▼ 2.3%</span></div>
+              <div class="tile"><span class="lbl">BTC dominance</span><span class="v big">58.2%</span><span class="v up">▲ 0.4 pt</span></div>
+              <div class="tile"><span class="lbl">Spot BTC ETF flows</span><span class="v big">−$214M</span><span class="muted">US · 02 Sep</span></div>
+              <div class="tile"><span class="lbl">Funding rate</span><span class="v big">0.006%</span><span class="muted">8h avg</span></div>
+              <div class="tile"><span class="lbl">Fear &amp; greed</span><span class="v big">41</span><span class="muted">Fear</span></div>
+            </div>
+          </div>
+          <div class="panel"><div class="ph"><h5>Tech that can move markets</h5><span class="sub">verified</span></div>
+            <article class="story"><div class="meta"><span class="urg brk">BREAKING</span><span class="v muted">08:31</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>2 sources</span></div><h6>US semiconductor futures slip after new chip-export rules</h6><div class="chain"><span>Export rules</span><b>→</b><span>US semis <span class="down">▼</span></span><b>→</b><span>Nasdaq-100 fut <span class="down">−0.31%</span></span><b>→</b><span>Nifty IT sentiment <span class="down">▼</span></span></div></article>
+            <article class="story"><div class="meta"><span class="urg">UPDATE</span><span class="v muted">06:40</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>3 sources</span></div><h6>Large cloud provider raises full-year AI capex guidance</h6><div class="chain"><span>AI capex <span class="up">▲</span></span><b>→</b><span>Data-centre suppliers <span class="up">▲</span></span><b>→</b><span>Indian IT deal pipeline · long term</span></div></article>
+            <article class="story"><div class="meta"><span class="urg">CRYPTO</span><span class="v muted">07:12</span><span class="vbadge ok"><svg class="ico"><use href="#i-check"/></svg>2 sources</span></div><h6>Bitcoin slides as US spot ETFs see a third day of outflows</h6><div class="chain"><span>ETF outflows</span><b>→</b><span>BTC <span class="down">▼ 1.8%</span></span><b>→</b><span>Global risk appetite <span class="down">▼</span></span></div></article>
+            <div class="banner info" style="grid-template-columns:auto 1fr"><svg class="ico"><use href="#i-cal"/></svg><span style="font-size:12.5px">2 big-tech earnings after the US close tonight; results land in Morning Insights.</span></div>
+          </div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+  <!-- W9 -->
+  <div class="wf-panel" id="w9" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W9 · Mobile</h3><p>The morning brief on a phone at 08:47, a verified breaking alert, and the fact-check drawer as a bottom sheet. Bottom tab bar with five items; every tap target is 44 px or larger.</p></div>
+    <div class="frame"><div class="app" style="min-width:0">
+      <div class="phones">
+        <div class="phone"><div class="screen">
+          <div class="pstatus"><span>08:47</span><span>5G · 82%</span></div>
+          <div class="pbody">
+            <div style="display:flex;justify-content:space-between;align-items:center"><svg style="width:26px;height:26px"><use href="#mark"/></svg><span class="v muted" style="font-size:12px">Thu 03 Sep · 08:47 IST</span><span class="iconbtn"><svg class="ico"><use href="#i-bell"/></svg><span class="badge">1</span></span></div>
+            <div class="panel" style="gap:8px"><div class="ph"><span class="lbl">Morning Insights</span><span class="tone off">▼ RISK-OFF</span></div>
+              <ol class="tk" style="gap:7px">
+                <li style="font-size:12.5px"><div>GIFT Nifty <span class="v">24,118.50</span>, <span class="v down">−0.42%</span> vs Nifty close<span class="cite">[1]</span></div></li>
+                <li style="font-size:12.5px"><div>Brent <span class="v up">+1.4%</span> to <span class="v">$96.20</span>; OMCs under pressure<span class="cite">[3]</span></div></li>
+                <li style="font-size:12.5px"><div>FII <span class="v down">−₹2,184 Cr</span>, DII <span class="v up">+₹3,022 Cr</span><span class="cite">[5]</span></div></li>
+              </ol>
+              <span class="abtn pri" style="justify-content:center;min-height:44px">Read full report</span>
+            </div>
+            <div class="tiles" style="grid-template-columns:1fr 1fr">
+              <div class="tile"><span class="lbl">GIFT Nifty</span><span class="v big">24,118.50</span><span class="v down">▼ 0.42%</span></div>
+              <div class="tile"><span class="lbl">Nikkei 225</span><span class="v big">44,812.30</span><span class="v down">▼ 1.12%</span></div>
+              <div class="tile"><span class="lbl">Brent</span><span class="v big">$96.20</span><span class="v up">▲ 1.40%</span></div>
+              <div class="tile"><span class="lbl">USD/INR</span><span class="v big">94.62</span><span class="v up">▲ 0.11%</span></div>
+            </div>
+          </div>
+          <div class="tabbar"><div class="on"><svg class="ico"><use href="#i-home"/></svg>Today</div><div><svg class="ico"><use href="#i-file"/></svg>Reports</div><div><svg class="ico"><use href="#i-chart"/></svg>Markets</div><div><svg class="ico"><use href="#i-flows"/></svg>Flows</div><div><svg class="ico"><use href="#i-list"/></svg>More</div></div>
+        </div></div>
+
+        <div class="phone"><div class="screen">
+          <div class="pstatus"><span>08:31</span><span>5G · 80%</span></div>
+          <div class="pbody">
+            <div class="panel" style="gap:6px;border-color:color-mix(in srgb,var(--a-down) 40%,var(--a-line))" role="alert"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><svg style="width:18px;height:18px"><use href="#mark"/></svg><span class="urg brk">BREAKING</span></span><span class="v muted" style="font-size:11px">now</span></div><b style="font-size:13.5px">US semiconductor futures slip after new chip-export rules</b><span class="vbadge ok" style="justify-self:start"><svg class="ico"><use href="#i-check"/></svg>Verified · 2 sources</span></div>
+            <div class="panel" style="gap:8px">
+              <h6 style="margin:0;font-size:17px;line-height:1.3">US semiconductor futures slip after new chip-export rules</h6>
+              <p class="t2" style="font-size:12.5px">Semis weakness → Nasdaq futures soft → weaker Nifty IT sentiment at the open.<span class="cite">[1]</span><span class="cite">[2]</span></p>
+              <div class="chips"><span class="impact">Nifty IT ▼ · 1–3 days</span></div>
+              <div class="chips"><span class="src"><span class="t">T2</span>Reuters · 08:12</span><span class="src"><span class="t">T2</span>Mint · 08:24</span></div>
+              <svg class="spark" data-seed="8" data-trend="-1" style="height:70px"></svg>
+              <span class="muted" style="font-size:11px">Nasdaq-100 futures · 24h · news at 08:12</span>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><span class="abtn" style="justify-content:center;min-height:44px">Add note</span><span class="abtn pri" style="justify-content:center;min-height:44px">Open chart</span></div>
+            </div>
+          </div>
+          <div class="tabbar"><div class="on"><svg class="ico"><use href="#i-home"/></svg>Today</div><div><svg class="ico"><use href="#i-file"/></svg>Reports</div><div><svg class="ico"><use href="#i-chart"/></svg>Markets</div><div><svg class="ico"><use href="#i-flows"/></svg>Flows</div><div><svg class="ico"><use href="#i-list"/></svg>More</div></div>
+        </div></div>
+
+        <div class="phone"><div class="screen" style="position:relative">
+          <div class="pstatus"><span>08:49</span><span>5G · 81%</span></div>
+          <div class="pbody" style="opacity:.35">
+            <div class="skel" style="height:22px;width:60%"></div><div class="skel" style="height:120px"></div><div class="skel" style="height:80px"></div>
+          </div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:var(--a-panel);border-top:1px solid var(--a-line);border-radius:18px 18px 0 0;padding:10px 14px 18px;display:grid;gap:10px">
+            <i style="width:40px;height:4px;border-radius:2px;background:var(--a-line);justify-self:center"></i>
+            <div class="ph"><span class="lbl">Citation [5]</span><span class="vbadge prim"><svg class="ico"><use href="#i-shield"/></svg>Primary data</span></div>
+            <div class="claim" style="font-size:13px">FIIs sold a net ₹2,184.36 Cr; DIIs bought ₹3,021.58 Cr.</div>
+            <div class="srcitem"><div class="ph"><span class="src"><span class="t">T1</span>NSE · FII/DII</span><span class="v muted" style="font-size:11px">02 Sep 19:12</span></div><span class="t2" style="font-size:12px">Exchange provisional data · exact match</span></div>
+            <div class="tl" style="font-size:10.5px"><span><i></i>Collected</span><em></em><span><i></i>Verified</span><em></em><span><i></i>Published</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><span class="abtn" style="justify-content:center;min-height:44px"><svg class="ico"><use href="#i-flag"/></svg>Flag</span><span class="abtn pri" style="justify-content:center;min-height:44px">Open source</span></div>
+          </div>
+        </div></div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+  <!-- W10 -->
+  <div class="wf-panel" id="w10" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W10 · System states</h3><p>How the product behaves when things aren't perfect, which is when trust is won or lost. Every state explains itself and offers a next step.</p></div>
+    <div class="frame"><div class="app" style="min-width:1000px">
+      <div class="content" style="padding:18px">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <div class="panel"><div class="ph"><span class="lbl">Loading</span><span class="muted" style="font-size:11px">Skeleton reserves space · no layout shift</span></div>
+            <div class="skel" style="height:16px;width:40%"></div><div class="skel" style="height:12px;width:85%"></div><div class="skel" style="height:12px;width:72%"></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px"><div class="skel" style="height:54px"></div><div class="skel" style="height:54px"></div><div class="skel" style="height:54px"></div></div>
+          </div>
+          <div class="panel"><span class="lbl">Section withheld</span>
+            <div class="banner warn" role="status"><svg class="ico"><use href="#i-alert"/></svg><div><b>Data outlook withheld</b><p class="t2" style="font-size:12.5px;margin-top:2px">The NSE derivatives file for 02 Sep isn't published yet, so PCR and OI levels can't be verified. We'll retry at 08:50 and notify you. The last verified values (01 Sep) are shown below with their dates.</p></div><span class="abtn"><svg class="ico"><use href="#i-refresh"/></svg>Retry now</span></div>
+          </div>
+          <div class="panel"><span class="lbl">Report running late</span>
+            <div class="banner info" role="status"><svg class="ico"><use href="#i-clock"/></svg><div><b>Mid-day Markets is 6 minutes late</b><p class="t2" style="font-size:12.5px;margin-top:2px">Verification is 34 of 41 claims done. New ETA 12:21. Verified sections are readable now.</p><div class="prog" style="margin-top:8px"><i style="width:83%"></i></div></div><span class="abtn">Read verified parts</span></div>
+          </div>
+          <div class="panel"><span class="lbl">Empty</span>
+            <div style="display:grid;justify-items:center;text-align:center;gap:6px;padding:14px 10px"><svg class="ico" style="width:26px;height:26px;color:var(--a-text-3)"><use href="#i-coin"/></svg><b>No crypto story met the two-source rule since 08:45</b><span class="t2" style="font-size:12.5px">Two stories are still being checked. Anything that passes will appear here.</span><span class="linkbtn">How verification works <svg class="ico"><use href="#i-arrow"/></svg></span></div>
+          </div>
+          <div class="panel"><span class="lbl">Feed error</span>
+            <div class="banner warn" role="alert"><svg class="ico"><use href="#i-alert"/></svg><div><b>Market data feed B isn't responding</b><p class="t2" style="font-size:12.5px;margin-top:2px">Index levels are showing NSE values only, marked “single source”. Nothing else has changed.</p></div><span class="abtn"><svg class="ico"><use href="#i-refresh"/></svg>Retry</span></div>
+          </div>
+          <div class="panel"><div class="ph"><span class="lbl">Corrections log</span><span class="linkbtn">Public page <svg class="ico" style="width:13px;height:13px"><use href="#i-ext"/></svg></span></div>
+            <div class="rows" style="font-size:12px">
+              <div class="r muted" style="grid-template-columns:70px 1fr 1fr"><span>When</span><span>Claim</span><span>Change</span></div>
+              <div class="r" style="grid-template-columns:70px 1fr 1fr"><span class="v">01 Sep 12:24</span><span>Mid-day · Silver price</span><span><span class="v down" style="text-decoration:line-through">$61.90</span> → <span class="v">$61.09</span> · feed lag, flagged by you</span></div>
+              <div class="r" style="grid-template-columns:70px 1fr 1fr"><span class="v">28 Aug 08:52</span><span>Morning · Results date</span><span>Wrong day → corrected from exchange filing</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+  <!-- W11 -->
+  <div class="wf-panel" id="w11" role="tabpanel" hidden>
+    <div class="wf-cap"><h3>W11 · SaaS: landing, pricing, onboarding</h3><p>For the V3 beta. The landing page offers a sample report before signup, three plans with the middle one highlighted, and a skippable three-step setup. Prices are hypotheses to test, not decisions.</p></div>
+    <div class="frame"><div class="app">
+      <div class="browser"><svg style="width:26px;height:26px"><use href="#mark"/></svg><b style="font-size:17px;letter-spacing:-.02em">citebell</b><nav><span>Product</span><span>Sample report</span><span>Pricing</span><span>Corrections</span></nav><span style="margin-left:auto;display:flex;gap:8px"><span class="abtn">Sign in</span><span class="abtn pri">Start free</span></span></div>
+      <div class="hero">
+        <div>
+          <span class="lbl" style="color:var(--a-brass)">For Indian F&amp;O traders</span>
+          <h2>Verified before the bell.</h2>
+          <p>Four fact-checked market reports every trading day. Every claim cited, every number timestamped, every correction public.</p>
+          <div style="display:flex;gap:10px;margin-top:18px"><span class="abtn brass" style="padding:10px 16px;font-size:13.5px">Read today's sample report</span><span class="abtn" style="padding:10px 16px;font-size:13.5px">Start 14-day trial</span></div>
+          <div class="chips" style="margin-top:18px;gap:14px;font-size:12px" ><span class="t2" style="display:flex;gap:5px;align-items:center"><svg class="ico up"><use href="#i-check"/></svg>Every claim cited</span><span class="t2" style="display:flex;gap:5px;align-items:center"><svg class="ico up"><use href="#i-check"/></svg>Exchange data first</span><span class="t2" style="display:flex;gap:5px;align-items:center"><svg class="ico up"><use href="#i-check"/></svg>Public corrections</span></div>
+          <p class="muted" style="font-size:11px;margin-top:10px">Market information, not investment advice.</p>
+        </div>
+        <div class="panel" style="gap:8px;box-shadow:0 20px 60px rgba(0,0,0,.35)">
+          <div class="ph"><span class="lbl">Morning Insights · 08:45</span><span class="tone off">▼ RISK-OFF</span></div>
+          <ol class="tk"><li><div>GIFT Nifty points to a weak open, <span class="v down">0.42%</span> below Nifty's close.<span class="cite">[1]</span><span class="cite">[2]</span></div></li><li><div>Brent up <span class="v up">1.4%</span> on supply concerns.<span class="cite">[3]</span><span class="cite">[4]</span></div></li></ol>
+          <div class="srcitem"><div class="ph"><span class="src"><span class="t">T1</span>NSE IX</span><span class="vbadge prim">Primary data</span></div><span class="t2" style="font-size:12px">Value matched across two feeds · archived 08:02</span></div>
+        </div>
+      </div>
+      <div style="padding:6px 22px 24px;display:grid;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">Plans</b><span class="seg"><span>Monthly</span><span class="on">Annual · save 25%</span></span></div>
+        <div class="plans">
+          <div class="plan"><span class="lbl">Free</span><span class="price">₹0</span><ul><li>Morning Insights, 30 min delayed</li><li>Every claim cited</li><li>7-day archive</li></ul><span class="abtn" style="justify-content:center">Start free</span></div>
+          <div class="plan pop"><div class="ph"><span class="lbl">Pro</span><span class="tag brass" style="font-size:10.5px">Most popular</span></div><span class="price">₹599<span class="muted" style="font-size:13px">/mo</span></span><ul><li>All 4 reports, on time</li><li>Verified breaking alerts</li><li>Markets, Flows, Crypto &amp; Tech</li><li>Full archive and PDF</li></ul><span class="abtn brass" style="justify-content:center">Start 14-day trial</span></div>
+          <div class="plan"><span class="lbl">Desk</span><span class="price">₹1,499<span class="muted" style="font-size:13px">/mo</span></span><ul><li>Everything in Pro</li><li>Ask Citebell (cited answers)</li><li>Trade journal and pattern stats</li><li>Audio brief and export</li></ul><span class="abtn" style="justify-content:center">Start trial</span></div>
+        </div>
+        <span class="muted" style="font-size:11px">Illustrative pricing (annual rate shown) · hypothesis to validate with beta users · all prices incl. GST TBD</span>
+        <div class="panel" style="grid-template-columns:1fr auto;align-items:center;gap:14px;margin-top:6px">
+          <div style="display:grid;gap:8px"><span class="lbl">Setup · step 1 of 3</span><b style="font-size:16px">What do you trade?</b><div class="opt"><span class="on"><svg class="ico"><use href="#i-check"/></svg>Nifty options</span><span class="on"><svg class="ico"><use href="#i-check"/></svg>Bank Nifty options</span><span>Stock F&amp;O</span><span>Equity cash</span><span>Crypto</span></div></div>
+          <div style="display:flex;gap:8px"><span class="abtn">Skip for now</span><span class="abtn pri">Continue</span></div>
+        </div>
+      </div>
+      <span class="ill">Illustrative data</span>
+    </div></div>
+  </div>
+
+</section>
+
+<!-- 13 -->
+<section class="sec" id="s13">
+  <div class="sec-h"><span class="label">§13</span><h2>Success metrics</h2></div>
+  <div class="callout brass"><span class="label">North star</span><p><strong style="color:var(--ink)">Time to trade plan:</strong> minutes from the 08:45 drop until the trader marks today's plan as set, using only Citebell. Target <strong style="color:var(--ink)">≤ 15 minutes</strong>.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Definition</th><th>Target</th><th>How it's measured</th></tr></thead>
+    <tbody>
+      <tr><td>Sole-source days</td><td>Share of trading days with no outside research before the open</td><td class="n">≥ 90%</td><td>One-tap daily check-in</td></tr>
+      <tr><td>On-time delivery</td><td>Reports ready by 08:45, 12:15, 16:00 and 20:00</td><td class="n">≥ 98% each</td><td>Scheduler logs</td></tr>
+      <tr><td>Citation coverage</td><td>Factual claims with at least one working citation</td><td class="n">100%</td><td>Publish-gate audit</td></tr>
+      <tr><td>Corroboration depth</td><td>News events backed by two or more independent sources</td><td class="n">≥ 90%</td><td>Claim store</td></tr>
+      <tr><td>User-found errors</td><td>Claims flagged by the user and confirmed wrong</td><td class="n">0 target · ≤ 1 per 20 reports</td><td>“Flag as wrong” + corrections log</td></tr>
+      <tr><td>Missed major events</td><td>Market-moving events the user saw elsewhere first</td><td class="n">≤ 1 / month</td><td>“Missed story” button</td></tr>
+      <tr><td>Usefulness</td><td>Rating per report</td><td class="n">≥ 4.2 / 5</td><td>In-report rating</td></tr>
+      <tr><td>Relevance</td><td>Items marked relevant to the day's plan</td><td class="n">≥ 30%</td><td>Relevant toggle</td></tr>
+      <tr><td>Engagement</td><td>Morning report opened; median read time</td><td class="n">≥ 90% of days · 5–8 min</td><td>Product analytics</td></tr>
+      <tr><td>Alert usefulness</td><td>Verified alerts rated useful</td><td class="n">≥ 80%</td><td>Rate in notification</td></tr>
+      <tr><td>Decision linkage (V2)</td><td>Trades with a linked news rationale in the journal</td><td class="n">≥ 70%</td><td>Journal</td></tr>
+    </tbody>
+  </table></div>
+  <h3>When it becomes a SaaS (hypotheses to calibrate in beta)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Definition</th><th>Starting hypothesis</th></tr></thead>
+    <tbody>
+      <tr><td>Activation</td><td>New users who read 3 morning reports in their first 7 days</td><td class="n">≥ 60%</td></tr>
+      <tr><td>Week-4 retention</td><td>Users still opening a report in week 4</td><td class="n">≥ 50%</td></tr>
+      <tr><td>Trial → paid</td><td>Trials that convert to a paid plan</td><td class="n">≥ 15%</td></tr>
+      <tr><td>Monthly churn</td><td>Paid users cancelling each month</td><td class="n">≤ 4%</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 14 -->
+<section class="sec" id="s14">
+  <div class="sec-h"><span class="label">§14</span><h2>Guardrail metrics</h2></div>
+  <p class="lede">Guardrails protect trust while the success metrics push for speed and coverage. The first three are hard stops.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Guardrail</th><th>Threshold</th><th>If breached</th></tr></thead>
+    <tbody>
+      <tr><td>Unverified claims published</td><td class="n">0</td><td><span class="tag down">Sev-1</span> Pull the claim, publish a correction, freeze the rule or source, post-mortem within 24 h.</td></tr>
+      <tr><td>Fabricated or non-matching citations</td><td class="n">0</td><td><span class="tag down">Sev-1</span> Same as above, and add the case to the verifier's regression tests.</td></tr>
+      <tr><td>Numbers outside tolerance of primary data</td><td class="n">0</td><td><span class="tag down">Sev-1</span> Auto-withhold, alert, review the feed.</td></tr>
+      <tr><td>Stale numbers</td><td class="n">0 without a valid as-of time</td><td>Block publishing that number.</td></tr>
+      <tr><td>Dead citation links</td><td class="n">0 at publish · &lt; 2% after 7 days</td><td>Serve the archived copy; replace the link.</td></tr>
+      <tr><td>Corrections</td><td class="n">≤ 1% of claims · fixed ≤ 30 min after a flag</td><td>Review that source's tier.</td></tr>
+      <tr><td>Source concentration</td><td class="n">No outlet &gt; 30% of a report's citations</td><td>Rebalance collectors; syndicated copies count once.</td></tr>
+      <tr><td>Advice leakage</td><td class="n">0 buy/sell calls or targets in Citebell's voice</td><td>Gate blocks those phrasings; review the template.</td></tr>
+      <tr><td>Late or missed reports</td><td class="n">&gt; 15 min late ≤ 1 / month · missed = 0</td><td>Incident review; add schedule buffer.</td></tr>
+      <tr><td>Alert fatigue</td><td class="n">≤ 5 pushes per trading day</td><td>Fold extra alerts into a digest.</td></tr>
+      <tr><td>Report length</td><td class="n">Morning read ≤ 8 min</td><td>Tighten the template.</td></tr>
+      <tr><td>Cost</td><td class="n">Within the monthly LLM + data budget</td><td>Use cheaper models for non-critical steps; alert at 80%.</td></tr>
+      <tr><td>Licensing</td><td class="n">0 full-article copies · snippets ≤ 25 words</td><td>Remove the content; audit the collectors.</td></tr>
+      <tr><td>Security</td><td class="n">0 exposed secrets</td><td>Rotate keys; scan the repo in CI.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- Appendix -->
+<section class="sec" id="s15">
+  <div class="sec-h"><span class="label">Appendix</span><h2>Risks, assumptions, open questions, sources</h2></div>
+  <h3 style="margin-top:0">Risks &amp; mitigations</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>Why it matters</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>Data licensing</td><td>Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms.</td><td>Personal-use broker and licensed APIs in V0–V2; RSS and official feeds only; get an exchange or vendor licence before any SaaS launch.</td></tr>
+      <tr><td>Regulation</td><td>Charging users for market analysis may bring in SEBI research-analyst or investment-adviser rules.</td><td>Stay factual and attributed; no advice in Citebell's own voice; get legal advice before V3 billing.</td></tr>
+      <tr><td>LLM errors</td><td>A model can invent a number or a source.</td><td>Numbers come from data, never generated text; independent verifier; fail-closed gate; regression set of known-tricky claims.</td></tr>
+      <tr><td>Source outages and delays</td><td>Exchange files and feeds can arrive late.</td><td>Second feed; withheld states with retry times; last verified values shown with their dates.</td></tr>
+      <tr><td>Paywalls</td><td>Some claims can't be read in full.</td><td>Cite only what's verifiable in the free portion, or use an alternative source.</td></tr>
+      <tr><td>Over-reliance</td><td>A trusted tool can be followed blindly.</td><td>Clear badges, attributed views, journaling prompts, “information, not advice” copy.</td></tr>
+      <tr><td>Name and trademark</td><td>A conflict discovered late forces a rebrand.</td><td>Register domains now; formal trademark search before public launch.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid2">
+    <div class="item"><span class="label">Assumptions to validate</span><ul class="clean" style="font-size:14.5px"><li>Current pre-market research takes 60–90 min (measure in V0).</li><li>The named outlets offer usable RSS or official feeds.</li><li>Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.</li><li>A broker API gives index data for personal use at acceptable cost.</li></ul></div>
+    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Kite, Dhan or Upstox?</li><li>What monthly budget for data and LLM calls?</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
+  </div>
+  <h3>Sources</h3>
+  <ol class="clean" style="font-size:14px;list-style:none;padding:0">
+    <li><span class="mono" style="color:var(--brass)">[R1]</span> Moneycontrol Pro: <a href="https://traderhq.com/moneycontrol-pro-review-expert-insights-smart-investors/">traderhq.com review</a> · <a href="https://www.topstockmarketbroker.com/2026/08/moneycontrol-pro-review-2026-app.html">topstockmarketbroker.com 2026 review</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R2]</span> Zerodha Pulse: <a href="https://pulse.zerodha.com/">pulse.zerodha.com</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R3]</span> Perplexity Finance India: <a href="https://www.medianama.com/2025/08/223-perplexity-launches-bse-nse-tracking-tool-india/">MediaNama</a> · <a href="https://techcrunch.com/2025/08/18/perplexity-now-supports-live-earnings-call-transcripts-for-indian-stocks/">TechCrunch</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R4]</span> Sensibull and Opstra: <a href="https://algotest.in/blog/opstra-vs-sensibull/">AlgoTest comparison</a> · <a href="https://www.strike.money/reviews/sensibull-alternatives">Strike review</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R5]</span> LSEG Workspace: <a href="https://www.lseg.com/en/data-analytics/products/workspace">lseg.com</a> · Bloomberg Terminal: <a href="https://www.bloomberg.com/professional/products/bloomberg-terminal/">bloomberg.com</a> (page blocked the automated check)</li>
+    <li><span class="mono" style="color:var(--brass)">[R6]</span> TradingView Lightweight Charts: <a href="https://www.tradingview.com/lightweight-charts/">tradingview.com</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R7]</span> Koyfin: <a href="https://www.askatlantis.com/blog/koyfin-review-2026">Atlantis review 2026</a> · <a href="https://bullishbears.com/koyfin-review/">Bullish Bears review</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R8]</span> Benzinga Pro: <a href="https://www.benzinga.com/pro/blog/live-trading-audio-news-benzinga-pros-squawk">Squawk overview</a> · <a href="https://investingwithai.com/benzinga-pro-review/">InvestingWithAI review</a> · <a href="https://daytradingz.com/benzinga-pro-review/">DayTradingz review</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R9]</span> StockEdge and Trendlyne: <a href="https://algotest.in/blog/sensibull-alternatives-india/">AlgoTest alternatives</a> · <a href="https://www.strike.money/stock-market/trading-softwares">Strike trading software list</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R10]</span> Investing.com: <a href="https://www.investing.com/economic-calendar/">economic calendar</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R11]</span> AI-native tools: <a href="https://trytradar.com/">Tradar</a> · <a href="https://marketseasy.in/">MarketsEasy</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R12]</span> Design system: <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill">ui-ux-pro-max-skill</a> (MIT) · data-viz palette slots for compare charts</li>
+    <li><span class="mono" style="color:var(--brass)">[R13]</span> Domain checks: RDAP at rdap.verisign.com (.com), pubapi.registry.google (.app), rdap.nixiregistry.in (.in), rdap.identitydigital.services (.ai, .io), 14 Sep 2026</li>
+  </ol>
+</section>
+
+  </main>
+</div>
+
+<footer style="max-width:1320px;margin:0 auto;padding:6px 28px 40px;color:var(--ink-3);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between">
+  <span>Citebell PRD v1.0 · 14 Sep 2026</span>
+  <span>Wireframe data is illustrative. Market information, not investment advice.</span>
+</footer>
+
+<script>
+(function(){
+  /* ---------- App shell (side nav + top bar) ---------- */
+  var NAV=[['today','i-home','Today'],['reports','i-file','Reports'],['markets','i-chart','Markets'],['flows','i-flows','Flows'],['crypto','i-coin','Crypto & Tech'],['calendar','i-cal','Calendar'],['corrections','i-list','Corrections']];
+  function pills(t){
+    var p=t.split(':'),x=(+p[0])*60+(+p[1]);
+    var nse=x>=555&&x<930?['open','NSE · Open']:(x>=540&&x<555?['pre','NSE · Pre-open']:(x<540?['pre','NSE · Pre-open 09:00']:['','NSE · Closed']));
+    var tyo=x>=330&&x<720?['open','Tokyo · Open']:['','Tokyo · Closed'];
+    var lon=x>=750&&x<1260?['open','London · Open']:['',x<750?'London · 12:30':'London · Closed'];
+    var ny=(x>=1140||x<90)?['open','New York · Open']:['','New York · 19:00'];
+    return [nse,tyo,lon,ny].map(function(a){return '<span class="pill '+a[0]+'"><span class="d"></span>'+a[1]+'</span>'}).join('');
+  }
+  document.querySelectorAll('.app[data-nav]').forEach(function(app){
+    var content=app.querySelector('.content'), ill=app.querySelector('.ill');
+    var nav=app.dataset.nav, clock=app.dataset.clock||'08:52:14', day=app.dataset.day||'';
+    var side='<aside class="side"><span class="logo"><svg><use href="#mark"/></svg></span>'+NAV.map(function(n){return '<span class="nav-i'+(n[0]===nav?' on':'')+'" title="'+n[2]+'" aria-label="'+n[2]+'"><svg class="ico"><use href="#'+n[1]+'"/></svg></span>'}).join('')+'<span class="spacer"></span><span class="nav-i" title="Settings" aria-label="Settings"><svg class="ico"><use href="#i-gear"/></svg></span></aside>';
+    var top='<header class="top"><span class="search"><svg class="ico"><use href="#i-search"/></svg>Search stories, tickers, sources<kbd>/</kbd></span><span class="mkt">'+pills(clock)+'</span><span class="clock">'+clock+' <small>IST · '+day+'</small></span><span class="iconbtn" aria-label="Notifications"><svg class="ico"><use href="#i-bell"/></svg><span class="badge">2</span></span><span class="avatar">You</span></header>';
+    var shell=document.createElement('div'); shell.className='shell';
+    shell.innerHTML=side+'<div class="mainp" style="min-width:0;position:relative;display:grid;grid-template-rows:auto 1fr">'+top+'</div>';
+    shell.querySelector('.mainp').appendChild(content);
+    app.insertBefore(shell, ill);
+  });
+
+  /* ---------- Seeded data helpers ---------- */
+  function rng(seed){var a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  function walk(seed,n,trend,vol){var r=rng(seed),v=100,o=[v];for(var i=1;i<n;i++){v+=(r()-0.5)*vol*2+trend*vol*0.12;o.push(v)}
+    if((trend<0&&o[n-1]>o[0])||(trend>0&&o[n-1]<o[0])){var b=o[0];o=o.map(function(x){return 2*b-x})}return o}
+  function weekdaysBack(endY,endM,endD,n){var d=new Date(Date.UTC(endY,endM-1,endD)),out=[];while(out.length<n){var w=d.getUTCDay();if(w!==0&&w!==6)out.unshift(new Date(d));d.setUTCDate(d.getUTCDate()-1)}return out}
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function dm(d){return ('0'+d.getUTCDate()).slice(-2)+' '+MON[d.getUTCMonth()]}
+  function niceStep(span,count){var raw=span/count,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p}
+  var NS='http://www.w3.org/2000/svg';
+  function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+
+  /* ---------- Sparklines ---------- */
+  var gid=0;
+  function drawSpark(svg){
+    var w=svg.clientWidth,h=svg.clientHeight;if(!w||!h)return;
+    var d=walk(+svg.dataset.seed,48,+svg.dataset.trend,1.1),mn=Math.min.apply(null,d),mx=Math.max.apply(null,d);
+    var X=function(i){return 2+i/(d.length-1)*(w-8)},Y=function(v){return h-4-(v-mn)/((mx-mn)||1)*(h-8)};
+    var col=(+svg.dataset.trend)<0?'var(--a-down)':'var(--a-up)',id='sg'+(++gid);
+    var line=d.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join('');
+    svg.setAttribute('viewBox','0 0 '+w+' '+h);
+    svg.innerHTML='<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:'+col+';stop-opacity:.22"/><stop offset="1" style="stop-color:'+col+';stop-opacity:0"/></linearGradient></defs>'+
+      '<line x1="0" x2="'+w+'" y1="'+Y(d[0]).toFixed(1)+'" y2="'+Y(d[0]).toFixed(1)+'" style="stroke:var(--a-text-3);stroke-width:1;stroke-dasharray:2 3;opacity:.6"/>'+
+      '<path d="'+line+'L'+X(d.length-1).toFixed(1)+' '+h+'L'+X(0)+' '+h+'Z" style="fill:url(#'+id+')"/>'+
+      '<path d="'+line+'" style="fill:none;stroke:'+col+';stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round"/>'+
+      '<circle cx="'+X(d.length-1).toFixed(1)+'" cy="'+Y(d[d.length-1]).toFixed(1)+'" r="3" style="fill:'+col+';stroke:var(--a-panel);stroke-width:2"/>';
+  }
+
+  /* ---------- Compare chart (indexed to 100) ---------- */
+  function drawCompare(){
+    var svg=document.getElementById('cmp'),tip=document.getElementById('cmpTip');if(!svg)return;
+    var w=svg.clientWidth,h=svg.clientHeight;if(!w)return;
+    var n=64,dates=weekdaysBack(2026,9,2,n);
+    var S=[{name:'Nifty 50',c:'var(--s1)',d:walk(101,n,0.7,0.9)},{name:'S&P 500',c:'var(--s2)',d:walk(202,n,1,0.8)},{name:'Nikkei 225',c:'var(--s3)',d:walk(307,n,-0.5,1.1)}];
+    S.forEach(function(s){var b=s.d[0];s.d=s.d.map(function(v){return v/b*100})});
+    var all=[].concat.apply([],S.map(function(s){return s.d})),mn=Math.min.apply(null,all),mx=Math.max.apply(null,all);
+    var step=niceStep(mx-mn,4),lo=Math.floor(mn/step)*step,hi=Math.ceil(mx/step)*step;
+    var L=38,R=92,T=10,B=24,pw=w-L-R,ph=h-T-B;
+    var X=function(i){return L+i/(n-1)*pw},Y=function(v){return T+(hi-v)/(hi-lo)*ph};
+    svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.innerHTML='';
+    for(var t=lo;t<=hi+1e-9;t+=step){var yy=Y(t);el('line',{x1:L,x2:L+pw,y1:yy,y2:yy,style:'stroke:var(--a-line);stroke-width:1'+(Math.abs(t-100)<1e-9?';stroke:var(--a-text-3);stroke-dasharray:3 3':'')},svg);var tx=el('text',{x:L-6,y:yy+3,'text-anchor':'end'},svg);tx.textContent=(+t.toFixed(1))}
+    var lastM=-1;dates.forEach(function(d,i){if(d.getUTCMonth()!==lastM&&d.getUTCDate()<=7){lastM=d.getUTCMonth();var tx=el('text',{x:X(i),y:h-6,'text-anchor':'middle'},svg);tx.textContent=MON[lastM]}});
+    S.forEach(function(s){el('path',{d:s.d.map(function(v,i){return(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join(''),style:'fill:none;stroke:'+s.c+';stroke-width:2;stroke-linejoin:round'},svg)});
+    var ends=S.map(function(s){return{s:s,y:Y(s.d[n-1])}}).sort(function(a,b){return a.y-b.y});
+    for(var k=1;k<ends.length;k++)if(ends[k].y-ends[k-1].y<14)ends[k].y=ends[k-1].y+14;
+    ends.forEach(function(e){el('circle',{cx:X(n-1),cy:Y(e.s.d[n-1]),r:3.5,style:'fill:'+e.s.c+';stroke:var(--a-panel);stroke-width:2'},svg);var chg=e.s.d[n-1]-100;var tx=el('text',{x:L+pw+8,y:e.y+3.5,style:'fill:var(--a-text-2);font-size:10.5px'},svg);tx.textContent=e.s.name+' '+(chg>=0?'+':'−')+Math.abs(chg).toFixed(1)+'%'});
+    var cross=el('line',{y1:T,y2:T+ph,style:'stroke:var(--a-text-3);stroke-width:1;opacity:0'},svg);
+    var dots=S.map(function(s){return el('circle',{r:4,style:'fill:'+s.c+';stroke:var(--a-panel);stroke-width:2;opacity:0'},svg)});
+    var hit=el('rect',{x:L,y:T,width:pw,height:ph,style:'fill:transparent;cursor:crosshair'},svg);
+    function move(ev){var r=svg.getBoundingClientRect(),mxp=ev.clientX-r.left,i=Math.max(0,Math.min(n-1,Math.round((mxp-L)/pw*(n-1)))),x=X(i);
+      cross.setAttribute('x1',x);cross.setAttribute('x2',x);cross.style.opacity=1;
+      dots.forEach(function(dt,j){dt.setAttribute('cx',x);dt.setAttribute('cy',Y(S[j].d[i]));dt.style.opacity=1});
+      tip.innerHTML='<div class="lbl" style="margin-bottom:3px">'+dm(dates[i])+' 2026</div>'+S.map(function(s){var c=s.d[i]-100;return '<div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span style="display:flex;gap:6px;align-items:center"><i style="width:10px;height:2px;background:'+s.c+';display:inline-block"></i>'+s.name+'</span><span class="v">'+(c>=0?'+':'−')+Math.abs(c).toFixed(2)+'%</span></div>'}).join('');
+      tip.hidden=false;var px=svg.offsetLeft+x+14;if(px+170>svg.offsetLeft+w)px=svg.offsetLeft+x-184;tip.style.left=px+'px';tip.style.top=(svg.offsetTop+T+8)+'px';}
+    function leave(){cross.style.opacity=0;dots.forEach(function(dt){dt.style.opacity=0});tip.hidden=true}
+    hit.addEventListener('mousemove',move);hit.addEventListener('mouseleave',leave);
+  }
+
+  /* ---------- FII 20-day bars ---------- */
+  function drawBars(){
+    var svg=document.getElementById('fiibars'),tip=document.getElementById('barTip');if(!svg)return;
+    var w=svg.clientWidth,h=svg.clientHeight;if(!w)return;
+    var n=20,dates=weekdaysBack(2026,9,2,n),r=rng(77),vals=[];
+    for(var i=0;i<n;i++)vals.push(Math.round((r()*7400-4200)*100)/100);
+    vals[16]=-1650.4;vals[17]=-3120.75;vals[18]=-905.1;vals[19]=-2184.36;
+    var mx=Math.max.apply(null,vals.map(Math.abs)),step=niceStep(mx,2),lim=Math.ceil(mx/step)*step;
+    var L=46,R=8,T=8,B=22,pw=w-L-R,ph=h-T-B,Y=function(v){return T+(lim-v)/(2*lim)*ph},bw=pw/n,barW=Math.max(6,bw*0.6);
+    svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.innerHTML='';
+    for(var t=-lim;t<=lim+1e-9;t+=step){var yy=Y(t);el('line',{x1:L,x2:L+pw,y1:yy,y2:yy,style:'stroke:'+(t===0?'var(--a-text-3)':'var(--a-line)')+';stroke-width:1'},svg);var tx=el('text',{x:L-6,y:yy+3,'text-anchor':'end'},svg);tx.textContent=(t<0?'−':t>0?'+':'')+Math.abs(t).toLocaleString('en-IN')}
+    var bars=[];
+    vals.forEach(function(v,i){
+      var x=L+i*bw+(bw-barW)/2,y0=Y(0),y1=Y(v),rr=Math.min(4,Math.abs(y1-y0)),up=v>=0,col=up?'var(--a-up)':'var(--a-down)',p;
+      if(up)p='M'+x+' '+y0+'V'+(y1+rr)+'Q'+x+' '+y1+' '+(x+rr)+' '+y1+'H'+(x+barW-rr)+'Q'+(x+barW)+' '+y1+' '+(x+barW)+' '+(y1+rr)+'V'+y0+'Z';
+      else p='M'+x+' '+y0+'V'+(y1-rr)+'Q'+x+' '+y1+' '+(x+rr)+' '+y1+'H'+(x+barW-rr)+'Q'+(x+barW)+' '+y1+' '+(x+barW)+' '+(y1-rr)+'V'+y0+'Z';
+      bars.push(el('path',{d:p,style:'fill:'+col+';transition:opacity .15s'},svg));
+      if(i%5===4||i===0){var tx=el('text',{x:x+barW/2,y:h-6,'text-anchor':'middle'},svg);tx.textContent=dm(dates[i])}
+      var hitr=el('rect',{x:L+i*bw,y:T,width:bw,height:ph,style:'fill:transparent;cursor:default'},svg);
+      hitr.addEventListener('mouseenter',function(){bars.forEach(function(b,j){b.style.opacity=j===i?1:.35});
+        tip.innerHTML='<div class="lbl">'+dm(dates[i])+' 2026</div><div>FII net <span class="v '+(up?'up':'down')+'">'+(up?'+':'−')+'₹'+Math.abs(v).toLocaleString('en-IN',{minimumFractionDigits:2})+' Cr</span></div>';
+        tip.hidden=false;var px=svg.offsetLeft+L+i*bw+bw+6;if(px+170>svg.offsetLeft+w)px=svg.offsetLeft+L+i*bw-176;tip.style.left=px+'px';tip.style.top=(svg.offsetTop+T+4)+'px'});
+      hitr.addEventListener('mouseleave',function(){bars.forEach(function(b){b.style.opacity=1});tip.hidden=true});
+    });
+  }
+
+  /* ---------- BTC candles (filled up / hollow down) ---------- */
+  function drawCandles(){
+    var svg=document.getElementById('btc');if(!svg)return;var w=svg.clientWidth,h=svg.clientHeight;if(!w)return;
+    var n=40,r=rng(909),c=[],p=112000;
+    for(var i=0;i<n;i++){var o=p,trend=i>30?-260:140,cl=o+(r()-0.5)*3200+trend,hi=Math.max(o,cl)+r()*1300,lo=Math.min(o,cl)-r()*1300;c.push([o,hi,lo,cl]);p=cl}
+    var off=118420-c[n-1][3];c=c.map(function(k){return k.map(function(v){return v+off})});
+    if(c[n-1][3]>c[n-1][0]){c[n-1][0]=c[n-1][3]+2170;c[n-1][1]=Math.max(c[n-1][1],c[n-1][0]+400)}
+    var mn=Math.min.apply(null,c.map(function(k){return k[2]})),mx=Math.max.apply(null,c.map(function(k){return k[1]}));
+    var step=niceStep(mx-mn,4),lo=Math.floor(mn/step)*step,hi=Math.ceil(mx/step)*step;
+    var L=44,R=8,T=8,B=20,pw=w-L-R,ph=h-T-B,Y=function(v){return T+(hi-v)/(hi-lo)*ph},bw=pw/n,cw=Math.max(4,bw*0.6);
+    svg.setAttribute('viewBox','0 0 '+w+' '+h);svg.innerHTML='';
+    for(var t=lo;t<=hi+1e-9;t+=step){var yy=Y(t);el('line',{x1:L,x2:L+pw,y1:yy,y2:yy,style:'stroke:var(--a-line);stroke-width:1'},svg);var tx=el('text',{x:L-6,y:yy+3,'text-anchor':'end'},svg);tx.textContent='$'+(t/1000).toFixed(t%1000?1:0)+'k'}
+    c.forEach(function(k,i){var x=L+i*bw+bw/2,up=k[3]>=k[0],col=up?'var(--a-up)':'var(--a-down)';
+      el('line',{x1:x,x2:x,y1:Y(k[1]),y2:Y(k[2]),style:'stroke:'+col+';stroke-width:1.2'},svg);
+      var yt=Y(Math.max(k[0],k[3])),yb=Y(Math.min(k[0],k[3]));
+      el('rect',{x:x-cw/2,y:yt,width:cw,height:Math.max(1.5,yb-yt),rx:1,style:up?'fill:'+col:'fill:var(--a-panel);stroke:'+col+';stroke-width:1.2'},svg)});
+  }
+
+  /* ---------- Correlation grid & sector heat map ---------- */
+  var CL=['Nifty','Bank Nifty','S&P 500','Nasdaq','Brent','USD/INR'];
+  var CM=[[1,.91,.42,.38,-.21,-.47],[.91,1,.35,.29,-.18,-.44],[.42,.35,1,.93,-.08,-.22],[.38,.29,.93,1,-.12,-.19],[-.21,-.18,-.08,-.12,1,.31],[-.47,-.44,-.22,-.19,.31,1]];
+  var corr=document.getElementById('corr');
+  if(corr){var html='<div></div>'+CL.map(function(l){return '<div class="ch">'+l+'</div>'}).join('');
+    CM.forEach(function(row,i){html+='<div class="h">'+CL[i]+'</div>'+row.map(function(v){var a=Math.round(Math.abs(v)*82),bg='color-mix(in srgb,'+(v>=0?'var(--s1)':'var(--a-down)')+' '+a+'%,var(--a-panel-2))',fg=Math.abs(v)>.55?'#fff':'var(--a-text)';return '<div title="'+v.toFixed(2)+'" style="background:'+bg+';color:'+fg+'">'+(v<0?'−':'')+Math.abs(v).toFixed(2)+'</div>'}).join('')});
+    corr.innerHTML=html}
+  var HEAT=[['Nifty IT',-1.62],['Nifty Metal',-1.91],['Nifty Realty',-1.10],['Nifty Energy',-0.72],['Nifty PSU Bank',-0.66],['Nifty Auto',-0.48],['Nifty Pharma',-0.35],['Nifty Infra',-0.29],['Nifty Pvt Bank',-0.12],['Nifty Fin Service',0.12],['Nifty Media',0.18],['Nifty FMCG',0.52]];
+  var heat=document.getElementById('heat');
+  if(heat)heat.innerHTML=HEAT.map(function(s){var v=s[1],a=Math.round(14+Math.min(Math.abs(v)/2,1)*52);return '<div style="background:color-mix(in srgb,'+(v>=0?'var(--a-up)':'var(--a-down)')+' '+a+'%,var(--a-panel-2))"><b>'+s[0].replace('Nifty ','')+'</b><span class="v">'+(v>=0?'▲ +':'▼ −')+Math.abs(v).toFixed(2)+'%</span></div>'}).join('');
+
+  /* ---------- Draw, tabs, toggles ---------- */
+  function drawIn(root){root.querySelectorAll('svg.spark').forEach(drawSpark);if(root.querySelector('#cmp'))drawCompare();if(root.querySelector('#fiibars'))drawBars();if(root.querySelector('#btc'))drawCandles()}
+  var tabs=[].slice.call(document.querySelectorAll('.wf-tabs [role="tab"]')),panels=[].slice.call(document.querySelectorAll('.wf-panel')),allBtn=document.getElementById('allBtn'),themeBtn=document.getElementById('themeBtn'),showAll=false;
+  function show(id){tabs.forEach(function(t){t.setAttribute('aria-selected',String(t.dataset.wf===id));t.tabIndex=t.dataset.wf===id?0:-1});panels.forEach(function(p){p.hidden=!showAll&&p.id!==id});drawIn(showAll?document:document.getElementById(id))}
+  tabs.forEach(function(t,i){t.addEventListener('click',function(){showAll=false;allBtn.setAttribute('aria-pressed','false');allBtn.textContent='Show all screens';show(t.dataset.wf)});
+    t.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){var j=(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[j].focus();tabs[j].click()}})});
+  allBtn.addEventListener('click',function(){showAll=!showAll;allBtn.setAttribute('aria-pressed',String(showAll));allBtn.textContent=showAll?'Show one screen':'Show all screens';var cur=tabs.filter(function(t){return t.getAttribute('aria-selected')==='true'})[0];show(cur?cur.dataset.wf:'w1')});
+  themeBtn.addEventListener('click',function(){var on=themeBtn.getAttribute('aria-pressed')!=='true';themeBtn.setAttribute('aria-pressed',String(on));themeBtn.textContent=on?'Preview dark theme':'Preview light theme';document.querySelectorAll('.app').forEach(function(a){a.classList.toggle('is-light',on)})});
+  show('w1');
+  var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){drawIn(document)},150)});
+
+  /* ---------- TOC highlight ---------- */
+  var links=[].slice.call(document.querySelectorAll('.toc a'));
+  if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.toggle('on',l.getAttribute('href')==='#'+e.target.id)})}})},{rootMargin:'-20% 0px -70% 0px'});
+    document.querySelectorAll('main > section').forEach(function(s){io.observe(s)})}
+})();
+</script>

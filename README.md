@@ -1,6 +1,10 @@
-# Market Intel Console
+# Citebell
 
-A personal news and market-intelligence console for an Indian F&O trader. Scheduled Claude agents collect financial, geopolitical, tech and crypto news from trusted sources. Every claim is fact-checked and cited before it appears.
+**Verified before the bell.**
+
+A fact-checked market console for an Indian F&O trader. Scheduled Claude agents collect financial, geopolitical, tech and crypto news from trusted sources. Every claim is fact-checked and cited before it appears. Built for one trader first, and shaped so it can become a subscription product later.
+
+*(Working name was "Market Intel Console"; the repo keeps that slug for now.)*
 
 ## Daily reports (IST)
 
@@ -19,13 +23,19 @@ The console also shows charts for Indian and global indices (Nifty 50, Bank Nift
 
 ## Docs
 
-- [Product Requirements Document](docs/PRD.md)
-- [PRD with hi-fi wireframes (HTML)](docs/prd.html). Download it and open it in a browser.
+- [Product Requirements Document](docs/PRD.md) (Markdown)
+- [PRD with hi-fi clickable wireframes](docs/prd.html). Download it and open it in a browser.
+- [Planning record](docs/PLAN.md)
+- [Design system](design-system/citebell/MASTER.md), generated with ui-ux-pro-max plus brand refinements
+
+## Project tooling
+
+- `vendor/ui-ux-pro-max-skill`: [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT) as a git submodule, registered as a Claude Code plugin in `.claude/settings.json`. Clone with `git clone --recurse-submodules`.
 
 ## Status
 
-Planning. The PRD defines the V0 → Nirvana phases; V0 build has not started.
+PRD v1.0 is drafted. The V0 build ("proof of trust") has not started.
 
 ## Disclaimer
 
-For personal information only. Not investment advice. Market data and news belong to their respective publishers and exchanges.
+Market information for personal use, not investment advice. Market data and news belong to their respective publishers and exchanges.

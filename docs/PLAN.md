@@ -13,6 +13,12 @@ The user trades Indian F&O on their own account and starts work at the 9:00 AM I
 - **Naming:** the user's sample report templates are layout and content references only. Any business name, tagline or registration number printed on them must never be used in this project. Working product name: **Market Intel Console (MIC)**.
 - **Reference templates stay out of git** (third-party material). `.gitignore` excludes `reference-templates/`.
 
+## Later decisions (same session)
+- **Brand name: Citebell**, tagline "Verified before the bell." Chosen as design lead with the ui-ux-pro-max design system. Around 80 candidates were screened; all five Citebell domains (.com, .app, .in, .ai, .io) were unregistered via RDAP on 14 Sep 2026. A formal trademark search is still required. Details in PRD §5.
+- **Market-ready UX** section (PRD §11) and SaaS screens (W11: landing, pricing, onboarding) added.
+- **Design system** persisted to `design-system/citebell/MASTER.md`, with design-lead refinements at the top.
+- **Skill:** ui-ux-pro-max added as a git submodule at `vendor/ui-ux-pro-max-skill` and enabled via `.claude/settings.json`.
+
 ## Inputs reviewed
 - Sample morning outlook reports (3 pages: Global Opening Check / India Setup & Flows / Data Outlook).
 - Older text pre-market briefs (May–Jul 2026).
