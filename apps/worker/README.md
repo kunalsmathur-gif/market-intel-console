@@ -25,6 +25,7 @@ Checks: `pytest`, `ruff check src tests ../../packages/schemas/src`, `mypy src t
 | `llm/` | Provider-neutral JSON calls: Gemini (direct key) and OpenRouter, with a model and backup per step |
 | `queue.py` | Report runs as a Postgres queue: idempotent enqueue, `SKIP LOCKED` claims, one scheduler via an advisory lock |
 | `private_config.py` | Loads prompts, the source registry and NSE holidays from the private config repo |
+| `private_config_remote.py` | Downloads that repo's config files from GitHub at a pinned commit (production) |
 | `examples/private-config/` | A fake stand-in for that repo, used by tests |
 
 ## Not built yet
@@ -33,7 +34,10 @@ Collectors (Upstox with the daily login, FRED, CoinGecko, NSDL, RSS, GDELT, sear
 
 ## Deploying on Railway
 
-Create a service from this repo with root directory `/` and config file `apps/worker/railway.json`. Set the variables from `.env.example`. The private config repo still needs a way into the container, for example cloning it at build time with a read-only deploy token; that's decided with the deploy task.
+Follow [docs/setup/production.md](../../docs/setup/production.md). In short:
+- Create a service from this repo with root directory `/` and config file `apps/worker/railway.json`, and set the variables from `.env.example`.
+- The private config is downloaded at startup from `PRIVATE_CONFIG_REPO` at `PRIVATE_CONFIG_REF`, using a read-only fine-grained token (`private_config_remote.py`). Only `sources.toml`, `nse_holidays.txt` and `prompts/` are fetched, never the recorded eval days. Each commit is cached, and the log names the commit in use.
+- The scheduler pings `HEALTHCHECK_PING_URL` every 5 minutes after checking the database connection.
 
 ## Windows note
 
