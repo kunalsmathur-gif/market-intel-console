@@ -34,7 +34,7 @@ The console also shows charts for Indian and global indices (Nifty 50, Bank Nift
 
 ## Status
 
-PRD v1.0 is drafted. The V0 build ("proof of trust") has not started.
+PRD v1.1 is drafted, including technical architecture decisions (PRD §8). The V0 build ("proof of trust") has not started.
 
 ## Disclaimer
 

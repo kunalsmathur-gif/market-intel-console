@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| Version | v1.0, draft for review |
+| Version | v1.1, draft for review (adds §8 Technical architecture decisions) |
 | Date | 14 Sep 2026 |
 | Product | Citebell (working name was "Market Intel Console") |
 | Audience | Personal use first; SaaS-ready by design |
@@ -22,13 +22,14 @@
 5. [Brand: name & identity](#5-brand-name--identity)
 6. [Features to copy from competitors](#6-features-to-copy-from-competitors)
 7. [High-level solution](#7-high-level-solution)
-8. [Phasing: V0 → Nirvana](#8-phasing-v0--nirvana)
-9. [What else makes it holistic](#9-what-else-makes-it-a-holistic-platform)
-10. [User flows](#10-user-flows)
-11. [Market-ready UX](#11-market-ready-ux)
-12. [High-fidelity wireframes](#12-high-fidelity-wireframes)
-13. [Success metrics](#13-success-metrics)
-14. [Guardrail metrics](#14-guardrail-metrics)
+8. [Technical architecture decisions](#8-technical-architecture-decisions)
+9. [Phasing: V0 → Nirvana](#9-phasing-v0--nirvana)
+10. [What else makes it holistic](#10-what-else-makes-it-a-holistic-platform)
+11. [User flows](#11-user-flows)
+12. [Market-ready UX](#12-market-ready-ux)
+13. [High-fidelity wireframes](#13-high-fidelity-wireframes)
+14. [Success metrics](#14-success-metrics)
+15. [Guardrail metrics](#15-guardrail-metrics)
 - [Appendix: risks, assumptions, open questions, sources](#appendix)
 
 ---
@@ -106,7 +107,7 @@ Features and prices were checked by web search on 14 Sep 2026. Prices come from 
 Every competitor either has trust without synthesis (wires, terminals) or synthesis without proof (apps, AI summaries). Citebell's position is **synthesis with proof, delivered at fixed times in the trading day.**
 
 1. **Verification-first.** Each claim goes through source tiers, corroboration, a numeric check, a recency check and a publish gate. Anything unverified never appears.
-2. **Citations that show their work.** Every citation carries a link, publisher, timestamp, matched quote, source tier and an archived snapshot.
+2. **Citations that show their work.** Every citation carries a link, publisher, timestamp, matched quote, source tier, a Wayback Machine capture and a content fingerprint.
 3. **Figures come from data, not articles.** Figures come from exchange and primary feeds and are checked against a second feed. A number has one value everywhere in a report (fixes P3).
 4. **Written for F&O.** Each story is tagged with the index or sector it affects, likely direction and time horizon, plus a one-line cause → effect.
 5. **Built around the trading day.** Four fixed drops in IST, each opening with what changed since the last report.
@@ -183,7 +184,7 @@ Built from the ui-ux-pro-max design-system output for a financial dashboard (dat
 flowchart LR
   SCH[Scheduler<br/>IST cron] --> COL
   SRC[(Exchange data · market APIs<br/>RSS · regulators)] --> COL
-  subgraph AGENTS[Agent pipeline · Claude Agent SDK]
+  subgraph AGENTS[Worker pipeline · Python + Anthropic SDK]
     COL[Collectors<br/>India · Global · Geopolitics<br/>Tech · Crypto · Flows] --> EXT[Claim extractor]
     EXT --> VER[Independent verifier]
     VER --> WRI[Writer<br/>fills template]
@@ -203,13 +204,14 @@ flowchart LR
 2. **Tier sources:** T1 primary (exchange, regulator, central bank, government statistics, company filing) · T2 established press and wires · T3 context only · TX never publishable (social media, Telegram, unnamed).
 3. **Corroborate:** find independent support. Syndicated PTI or Reuters copies count as one source.
 4. **Reconcile numbers:** match against T1 data or a second feed within tolerance.
-5. **Check links:** HTTP 200, the claim text is on the page, publish time captured, snapshot archived.
+5. **Check links:** HTTP 200, the claim text is on the page, publish time captured, Wayback capture requested.
 6. **Check recency:** reject stale or resurfaced stories; stamp every number with its as-of time.
 7. **Gate:** pass → publish with a badge; fail → withhold and log.
 
 | Claim type | Rule to publish | Badge |
 |---|---|---|
 | Market number | Matches T1 data, or two independent feeds agree within tolerance (index ±0.01%, flows exact to ₹0.01 Cr); always shows an as-of time | Primary data |
+| Market number with no primary feed (V0) | Two independent T2 news reports agree within tolerance, with both times shown; replaced by a data feed in V1 (§8.4) | News-reported |
 | News event | One T1 source, or two independent T2 sources | Verified · N sources |
 | Forecast / opinion | Attributed to its author ("Brokerage X expects…") with a link; never in Citebell's voice | Attributed view |
 | Fails any rule | Left out and written to the audit log. If a whole section misses its deadline, a banner shows the reason and retry time | Withheld |
@@ -237,22 +239,295 @@ Report fields follow the structure of the sample reports reviewed for this PRD.
 
 ### Data & stack
 
-- **India data:** NSE/BSE indices, bhavcopy, F&O ban list, participant-wise OI, FII/DII provisional; NSDL FPI; NSE IX (GIFT Nifty); broker API (Kite, Dhan or Upstox); SEBI, RBI and PIB circulars; exchange corporate announcements.
-- **Global data:** a licensed market-data API (e.g. Twelve Data, EODHD or Polygon) plus a second feed for reconciliation; CME FedWatch; US Treasury; Fed, ECB, BoJ, PBoC; US BLS. Crypto: CoinGecko or Binance public APIs plus ETF flow data.
-- **News feeds:** RSS and official feeds from Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, Reuters, AP, CNBC, FT and WSJ headlines, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block.
-- **Stack:** Next.js + Tailwind PWA · Supabase Postgres · Claude Agent SDK (a strong model for verification and synthesis, a fast model for classification and dedupe) · cloud-scheduled runs · Telegram bot + email. Store headlines, links and snippets of 25 words or fewer; never full articles.
+- **India data:** a broker API (Upstox, Kite or Dhan) for indices, VIX, option chain, and India-traded USD/INR, gold and crude. NSE-published reports (FII/DII, participant OI, ban list, bhavcopy) only via NSE's consent, a licensed vendor or manual download. NSDL FPI data; SEBI, RBI and PIB circulars; exchange announcements. Details in §8.4.
+- **Global data:** FRED, US Treasury, Fed, ECB, BoJ, PBoC and US BLS (free, official). Live global indices and commodity futures: news-reported in V0, then one paid feed (e.g. EODHD) in V1. Crypto: CoinGecko Demo API plus a public exchange price.
+- **News feeds:** RSS and official feeds from Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, CNBC, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block. Reuters, AP, Bloomberg, FT and WSJ through web search limited to those sites (Reuters has no public RSS).
+- **Stack:** Next.js + Tailwind web app on Vercel · Python worker with the Anthropic SDK on an always-on container · Supabase (Postgres, Auth, Storage, Realtime) · Claude Opus 5 for every AI step at launch · Telegram bot + email. Store headlines, links and quotes of 25 words or fewer; never full articles. Reasoning in §8.
 
-## 8. Phasing: V0 → Nirvana
+## 8. Technical architecture decisions
+
+The twelve decisions the build depends on. Each one gives the recommendation, the reason, and what changes by phase. Prices and limits were checked on 14 Sep 2026; check them again before buying anything.
+
+| # | Question | Decision |
+|---|---|---|
+| 8.1 | Separate frontend and backend? | Yes. Three parts in one repo: a Next.js web app that only reads and displays, a Python worker that does all fetching and AI work, and Supabase for data and accounts. |
+| 8.2 | LangChain / Python? | No LangChain. Python for the worker with the official Anthropic SDK; TypeScript for the web app. |
+| 8.3 | APIs or MCP? | Direct APIs wherever a number or fact enters the system. MCP for exploring data while building, and later for Ask Citebell and outside access. |
+| 8.4 | Free or paid data? | V0 can run for ₹0–500 a month with the same correctness, because accuracy comes from primary sources and cross-checks. Two gaps: live global prices, and NSE-only reports that need NSE's permission or a licence. |
+| 8.5 | Sign-in / sign-out | Supabase Auth from V0: magic link or Google, authenticator-app 2FA, owner-only allowlist. Roles, plans and billing arrive in V3. |
+| 8.6 | Downloads | Report PDFs and a citation pack from V0; data CSVs and a calendar feed in V1; journal and account export later. |
+| 8.7 | Alerts | Telegram and email in V0, web push in V1, WhatsApp only if needed (paid per message). Only verified content triggers an alert. |
+| 8.8 | Build on stored data? | Yes, from day one: store time-stamped facts and claims, not just finished reports. Trends in V1, patterns in V2–V3; no buy/sell recommendations. |
+| 8.9 | Caching / RAG | Caching from V0 (data, prompts, pages). No RAG in V0–V1; database search instead. RAG over verified claims comes with Ask Citebell in V2. |
+| 8.10 | Eval suites | Seven suites (UX, code, data sanity, data quality, AI pipeline, system stability, cost), run in CI and in a nightly replay of past days. |
+| 8.11 | Low latency and scale | Precompute, then serve: nobody waits on an AI call. Mumbai hosting, finished pages, and each report computed once no matter how many users read it. |
+| 8.12 | Which model? | Claude Opus 5 for every AI step at launch, and the model never produces numbers. Cheaper models and lower effort are tested on low-risk steps; you decide on any switch from the measured results. |
+
+### Deployment at a glance
+
+```mermaid
+flowchart LR
+  U[Browser / phone app] --> WEB[Next.js web app<br/>Vercel · Mumbai<br/>reads only · no AI calls · no provider keys]
+  WEB --> DB[(Supabase · Mumbai<br/>Postgres · Auth · Storage · Realtime)]
+  subgraph WORKER[Worker · always-on Python container]
+    SCH[Scheduler · IST] --> PIPE[Collect → extract → verify → write → check → publish → PDF]
+    PIPE --> OUT[Notifier · outbox]
+  end
+  PIPE --> DB
+  EXT[Broker API · FRED · RBI · CoinGecko<br/>Publisher RSS · GDELT<br/>Anthropic API + allow-listed web search] --> PIPE
+  OUT --> TG[Telegram · email · web push]
+```
+
+### 8.1 Should frontend and backend be separate?
+
+**Decision: yes, split by job rather than into many small services.** The web app only reads and displays. All fetching, AI calls and publishing happen in a separate worker.
+
+| Part | Runs on | Does | Never does |
+|---|---|---|---|
+| Web app (Next.js + Tailwind) | Vercel | Renders pages from the database; manages sessions; saves your flags, notes and settings | Call Claude or data providers; hold their keys |
+| Worker (Python) | A small always-on container (e.g. Railway, Render or Fly.io) | Schedules and runs report jobs: fetch, verify, write, render PDFs, send alerts | Serve web pages |
+| Supabase | Managed service, Mumbai region | Postgres database, sign-in, file storage, live updates | Business logic beyond per-user access rules |
+
+- **Different speeds.** A report run takes minutes; a page must load in milliseconds. Web hosting functions time out on long jobs.
+- **Safer keys.** Claude, broker and data keys live only in the worker, so a web-app bug can't expose them.
+- **Separate scaling.** More users add web load; more reports add worker load.
+- **One contract.** The database schema, plus data shapes defined once in Python and generated as TypeScript types for the web app.
+- **Not GitHub Actions for scheduling.** GitHub's docs say scheduled workflows can be delayed under heavy load and some queued jobs dropped [R16], which is too risky for an 08:45 deadline. A monitor alerts you if a run doesn't check in on time.
+
+Repo layout: `apps/web` · `apps/worker` · `packages/schemas` · `evals/` · `infra/`.
+
+### 8.2 Do we need LangChain or Python?
+
+**Decision: no LangChain or LangGraph. Python for the worker, using the official Anthropic SDK; TypeScript for the web app.**
+
+Why no LangChain:
+- The pipeline is a fixed sequence (collect → extract → verify → write → check → publish), not an open-ended agent. Plain code is easier to test, re-run and debug.
+- What we need is built into the Claude API: tool use, structured JSON output, citations, prompt caching, and web search limited to chosen sites.
+- Framework layers hide the exact prompt and request, and that's what you need to see when tracing a wrong claim.
+- Fewer dependencies to break or upgrade.
+
+Why Python for the worker:
+- Indian brokers' official API clients (Kite, Upstox, Dhan) all support Python.
+- pandas for comparing numbers across sources; Pydantic for strict data shapes.
+- Good tooling for evals and replaying past days.
+- Each step is a plain function with typed inputs and outputs, logged per run, so any report can be rebuilt from its inputs.
+
+> **Correction to v1.0:** v1.0 named the "Claude Agent SDK". That SDK packages Claude Code's file-and-terminal agent, which suits open-ended tasks. This pipeline fits direct Claude API calls driven by our own code better. Reconsider only if Ask Citebell (V2) needs open-ended multi-step research.
+
+### 8.3 APIs or MCPs?
+
+**Decision: direct APIs wherever a number or fact enters a report. MCP only where a person or an assistant explores interactively.** No AI model sits between a data source and a published number.
+
+| Use | Choose | Why | Phase |
+|---|---|---|---|
+| Prices, flows, OI, macro data | Direct API calls in code | Predictable, typed, testable, cacheable | V0 |
+| News collection | Publisher RSS feeds | Cheap, predictable, fully logged | V0 |
+| Checking a story across outlets | Claude's built-in web search, limited to a list of trusted T1/T2 sites | No extra service to run; searches can't wander to untrusted sites; about US$10 per 1,000 searches [R17] | V0 |
+| Exploring data while building | MCP in Claude Code, e.g. Zerodha's hosted Kite MCP, which leaves out trading actions [R29] | Fast exploration; kept out of the production pipeline | Now |
+| Ask Citebell | Claude tools that query Citebell's own verified database | Answers can only draw on verified claims | V2 |
+| Access from other AI assistants | Publish a Citebell MCP server | Subscribers can query verified data from their own assistant; a possible paid feature | V3+ |
+
+### 8.4 Are the data sources free or paid? Can V0 be free and just as accurate?
+
+**Accuracy comes from using the primary source and cross-checking it, not from paying.** The official source is often free. What free tiers give up is speed, coverage and the right to share the data with others.
+
+| Data needed | V0 source | Cost | Limits and licence notes |
+|---|---|---|---|
+| Nifty, Bank Nifty, Sensex, sector indices, India VIX, option chain (OI, PCR; max pain computed), breadth (computed from index stocks) | A broker API: Upstox (data APIs free) [R27] or Kite Connect (₹500/month including live and historical data; the free Kite Personal plan has no market data) [R14]. Dhan's data API is ₹499/month [R32]. | ₹0–500/mo | Personal-use terms and a broker account needed. Broker logins expire daily, so the worker needs a daily login step. Showing this data to other users needs an exchange or vendor licence. |
+| USD/INR, gold, crude as traded in India | Same broker API: NSE USD/INR futures, MCX gold and crude futures | included | Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). RBI's daily reference rate is the official cross-check. |
+| FII/DII provisional cash, participant-wise OI, F&O ban list, bhavcopy | Published only by NSE | Free to view | **NSE's Terms of Use prohibit automated data collection without written consent** [R15]. **Decision needed:** ask NSE for consent for low-volume personal use, use a licensed data vendor, or download these by hand. The PRD doesn't assume scraping. |
+| FPI flows (cross-check) | NSDL's daily FPI data | Free | Published a day later; check the site's terms. |
+| US index closes, US 10-year yield, US economic data | FRED API (free key, ~120 requests/minute) [R18]; US Treasury yield data | Free | Daily closing values, not live futures. |
+| Live S&P and Nasdaq futures, Nikkei, Hang Seng, Kospi, Brent, WTI, GIFT Nifty before 08:15 | No dependable free API found. **V0:** use values quoted by two independent pre-market news reports, with a "News-reported" badge. **V1:** add one paid feed, e.g. EODHD at €19.99–29.99/month [R19], after confirming it covers these indices. | ₹0 → ~€20–30/mo | Twelve Data's free tier covers US stocks, forex and crypto only [R20]. |
+| Bitcoin, Ethereum, dominance | CoinGecko Demo API (free key, 10,000 calls/month) [R21], plus a public exchange price as the second source | Free | A report uses about 4–10 calls, far below the limit. |
+| Indian and global business, tech and crypto news | Publisher RSS feeds: Moneycontrol, Livemint, Business Standard, BusinessLine, CNBC, Nikkei Asia, TechCrunch, The Verge, CoinDesk | Free | Store headlines, links and quotes of 25 words or fewer only. |
+| Reuters, AP, Bloomberg | Claude web search limited to those sites | ~US$10 / 1,000 searches | Reuters stopped its public RSS feeds in 2020 [R22]. |
+| Finding geopolitical events | GDELT | Free | For spotting events only; never cited as a source. |
+| Economic and central-bank calendars | Official schedules (RBI, Fed, ECB, BoJ, MoSPI, BLS), entered and checked once a year, plus FRED release dates | Free | Economists' consensus forecasts usually cost money; decide in V1. |
+| Don't use | NewsAPI.org free plan (development only, articles 24 hours late) [R23]; scraping Yahoo Finance | — | Their terms don't allow this use. |
+
+> **Verdict: mostly yes.** Correctness holds because numbers come from exchange, broker and official sources and are cross-checked. Three gaps: (1) live global prices at 08:15 are "News-reported" until a paid feed is added; (2) NSE-only datasets need a legal route; (3) where only one free source exists, the item gets a "Single source" badge or is withheld, never presented as double-checked. Estimated V0 data cost: ₹0–500 a month.
+
+### 8.5 How do sign-in and sign-out work?
+
+**Decision: Supabase Auth from V0, even for a single user,** so moving to a SaaS doesn't need a rewrite.
+
+| Phase | What's in place |
+|---|---|
+| V0 · owner only | Email magic link or Google sign-in; one allowed email; authenticator-app 2FA; no public sign-up page. |
+| V1 | List of signed-in devices; "sign out everywhere"; Telegram linking with a one-time code. |
+| V3 · SaaS | Public sign-up with email verification; roles (subscriber, admin); plans as feature entitlements; Razorpay subscriptions; account deletion and data export, in line with India's data-protection law. |
+
+1. **Sign in:** enter email → magic link or Google → 6-digit code if 2FA is on → secure session cookie → Today.
+2. **Stay signed in:** the session refreshes quietly. After 30 days unused (default, adjustable), sign in again.
+3. **Sign out:** this device (ends this session) or everywhere (ends every session).
+4. **Lost phone:** one-time recovery codes are shown when 2FA is set up.
+5. **Link Telegram:** the app shows a one-time code → send it to the Citebell bot → linked. Unlink from Settings.
+6. **Connect a broker (V3, optional, read-only):** the broker's own login page; tokens stored encrypted; a daily reconnect prompt, because broker logins expire daily.
+7. **Delete account (V3):** confirm → data export offered → deletion completed and logged.
+
+Security basics: per-user access rules on every table, rate limits on sign-in attempts, a sign-in history, and no data-provider keys ever sent to the browser.
+
+### 8.6 Which documents can be downloaded?
+
+| Document | Format | Created | Phase | Notes |
+|---|---|---|---|---|
+| Each report (Morning, Mid-day, End of day, Flows) | PDF | At publish | V0 | Same content and citations as the page, with version and correction stamps. |
+| Citation pack for a report | CSV + JSON | At publish | V0 | Each claim with its sources, tier, times, quote, archive link and verdict: the audit trail, checkable offline. |
+| Daily bundle | One PDF of all 4 reports | After 20:00 | V1 | For your records. |
+| Data tables | CSV | On demand | V1 | 20-day flows, OI levels, breadth, calendar. Personal use. |
+| Calendar feed | .ics subscription | Nightly | V1 | Economic events, results, expiry dates and holidays in your own calendar app. |
+| Corrections log | CSV | On demand | V1 | Export of the public log. |
+| Weekly review | PDF | Saturday | V2 | The week's drivers, flags raised, journal summary. |
+| Trade journal | CSV | On demand | V2 | Your notes and the stories linked to them. |
+| Account data | JSON archive | On request | V3 | Part of the account-deletion flow. |
+
+Files sit in Supabase Storage behind links that expire after a short time. Exports contain headlines, links and short quotes, never full articles. Exchange data in exports stays personal-use until it's licensed.
+
+### 8.7 Alerts and notifications
+
+| Alert | Trigger | Channels | Phase |
+|---|---|---|---|
+| Report ready | A report passes the publish gate | Telegram, email; web push from V1 | V0 |
+| Report late / section withheld | Deadline missed, or a section withheld | Telegram | V0 |
+| Correction issued | A published claim changes | Telegram + banner in the app | V0 |
+| System health (owner) | Run failed, a feed is down, spend reaches 80% of budget | Telegram | V0 |
+| Verified breaking news | A story passes verification and is tagged high-impact for your instruments | Telegram, web push | V1 |
+| Event reminder | 15 minutes before a high-importance event | Web push | V1 |
+| Price or level alert | A watchlist level is crossed during market hours (broker live feed) | Web push | V1 |
+| Digest | Lower-priority items batched together | Email | V1 |
+| WhatsApp | Only if Telegram isn't enough | WhatsApp Business: ₹0.115 per utility message + GST, and Meta starts charging for service messages from 1 Oct 2026 [R24] | V3 |
+
+- **Rules:** only verified content triggers an alert. At most 5 breaking-news alerts per trading day (report-ready and your own price alerts don't count toward this). Quiet hours 22:00–07:00 IST by default. One alert per story. Every alert links straight to the story.
+- **How it's sent:** publishing writes alerts to an outbox table in the same step, so nothing is lost. The notifier sends with retries and never sends the same alert twice. Delivery status is recorded.
+- **Channel notes:** the Telegram Bot API is free. Email via Resend's free tier covers 3,000 emails a month, 100 a day [R30]. Web push on iPhone works only after the app is added to the Home Screen.
+- **Targets:** report-ready alert within 60 s of publish; verified breaking alert within 10 min of the first source (V1).
+
+### 8.8 Do we build on stored data for trends and suggestions?
+
+**Decision: yes, and storage has to start in V0.** Price history can be downloaded later; a record of what the news said, when, and whether it held up can't.
+
+Stored from day one (never overwritten; every row has an as-of time and a recorded time):
+- **Market facts:** every number used, with its source, time and cross-check result.
+- **Claims:** each claim, its sources, quotes, tier, verdict and reason.
+- **Stories:** groups of related articles over time, with impact tags.
+- **Reports:** every version, with what changed from the last one.
+- **Source track record:** agreements, mismatches and corrections per outlet.
+- **Your signals:** relevant marks, flags, ratings, and journal entries from V2.
+
+What it unlocks:
+- **V1 · Trends:** 20-day flows, FII long/short ratio over time, PCR history, "what changed" views.
+- **V2 · Context:** story timelines; historical comparisons such as "when Brent rose 3%+ overnight, how did Nifty open?", shown with the number of cases; source reliability scores.
+- **V3 · Patterns:** pattern library, what-if scenarios, which kinds of news came before your best and worst trades.
+
+> **Guardrail on "recommendations":** outputs are descriptive statistics with sample size and date range, never buy/sell calls. Giving trade recommendations to other people would require SEBI registration. Retention: facts and claims are kept indefinitely. Article text isn't stored (links, fingerprints and 25-word quotes only). Raw API responses are kept 90 days for debugging and replays.
+
+### 8.9 Do we need caching and RAG in V0/V1?
+
+| Layer | What it does | Phase |
+|---|---|---|
+| Data cache | Stores raw API responses by source, query and time window. Refresh times: live quotes 60 s; end-of-day data until the next session; RSS only when the feed changes. Protects free-tier limits and makes runs replayable. | V0 |
+| Prompt caching (Claude) | Fixed instructions, the source list, templates and tier rules go first in each request; cached input costs about a tenth of the normal rate. | V0 |
+| Page cache | A published report never changes, so its page is built once and rebuilt only on correction. | V0–V1 |
+| Live updates | "Report ready" is pushed to open tabs instead of the page checking repeatedly. | V1 |
+| Search without RAG | Archive search uses Postgres full-text search. Grouping similar stories uses title similarity plus a quick model check. | V0–V1 |
+| RAG for Ask Citebell | Searches verified claims (keyword + meaning-based), not raw articles; answers cite claim IDs. Anthropic has no embedding model of its own and points to Voyage AI [R25]. | V2 |
+
+**Why no RAG early:** reports are built from today's fresh data, which needs no retrieval. RAG also adds a new way to go wrong (pulling in stale or unverified text) that isn't worth the risk until there's a verified archive to search.
+
+### 8.10 Which eval suites run?
+
+| Suite | Question it answers | Checks | When · blocks release? |
+|---|---|---|---|
+| UX | Can you get to a trade plan quickly, on any device? | Timed "trade plan in ≤15 min" session with you every two weeks; zero serious accessibility issues (axe-core); page load under 2.5 s on mobile (Lighthouse); screenshot comparison of screens W1–W11 (Playwright). | Every change · blocks |
+| Code | Does the logic work? | Tests for each data parser using saved real responses; tests that fail when a provider changes its format; ≥90% coverage of verification and gate code; type checks, lint, dependency and leaked-secret scans. | Every change · blocks |
+| Data sanity | Is each number plausible and internally consistent? | FII + DII = combined (to ₹0.01 Cr); advances + declines + unchanged = 50; an index move above 5% or VIX move above 30% goes to review; no future timestamps; holidays respected; units (₹ crore vs lakh) correct. | Every run · failing items withheld |
+| Data quality | Is data complete, fresh, and agreeing across sources? | Cross-source agreement ≥99%; each field within its freshness window; share of planned sections verified; source uptime; correct detection of syndicated copies. | Every run · weekly review |
+| AI pipeline | Is the model's work faithful? | Claim extraction recall and precision; wrongly accepted claims (target 0 on the critical set) and wrongly rejected claims; quote actually supports the claim; no number in the text except from verified data; impact-tag accuracy against your labels; advice-language detector; template followed. | Every prompt or model change · blocks; nightly on the previous day |
+| System stability | Does it deliver on time when things fail? | Replay the last 20 trading days from saved inputs; simulated failures (provider timeout, rate limit, broken file, AI refusal or overload); slowest runs vs deadline margin; scheduled-run success rate; missed-check-in alarm test. | Nightly replay; weekly failure drill |
+| Cost | Is spend within budget? | Tokens, searches and data calls per report; cost per report; alert at 80% of the monthly budget. | Every run |
+
+> **Golden test set:** start with ~300 hand-labelled claims from 20 recorded trading days, including deliberate traps: an old article resurfacing, a rumour carried by one outlet, provisional vs final FII data, front-month vs next-month Brent, syndicated copies posing as separate sources, paywalled partial text, and a headline that misquotes a number. Every confirmed "flag as wrong" becomes a new test case.
+
+### 8.11 How do we build for low latency and scale from the start?
+
+**Decision: precompute, then serve.** Fetching, verifying and writing happen on the worker before each deadline; the app only reads finished results. Page speed never depends on Claude or data providers, and **cost grows with the number of reports, not the number of users.**
+
+| Morning Insights step | IST |
+|---|---|
+| Collection starts; raw data cached | 07:30 |
+| Data cutoff | 08:15 |
+| Extraction and verification (claims in parallel) | 08:15–08:32 |
+| Writing, checks, PDF | 08:32–08:38 |
+| Publish target (7-minute buffer) | 08:38 |
+| Hard deadline | 08:45 |
+
+| Target | Goal |
+|---|---|
+| Today page load (India, mobile 4G) | LCP < 2.5 s · server p95 < 300 ms |
+| Report publish | By deadline on ≥ 98% of runs |
+| Report-ready alert | p95 < 60 s after publish |
+| Verified breaking alert (V1) | p95 < 10 min |
+| Price alert (V1) | p95 < 5 s from price change |
+
+- **Hosting close to you:** Supabase and Vercel in Mumbai; worker in the nearest available region.
+- **Failures stay contained:** each source has a timeout, retries with increasing waits, and a cut-off when it keeps failing. A failing source affects one section, not the whole report.
+- **Publish as you go:** verified sections go live as they pass; late sections show "withheld" with a retry time.
+- **Safe retries:** each run is identified by report type, trading date and version, so a retry never publishes twice.
+- **Simple queue:** jobs queue in Postgres (no Redis until needed), and a database lock ensures only one scheduler starts a run.
+- **Measured from V0:** a trace of every run, with step durations, errors and cost.
+
+| Stage | Users | What changes |
+|---|---|---|
+| V0–V2 | 1 | Vercel Hobby, Supabase Free, one small worker. Vercel Hobby is for non-commercial use only [R26]. Supabase Free pauses after a week of inactivity [R28]; the worker's daily writes keep it active. |
+| V3 beta | ≤ 100 | Vercel and Supabase paid plans; a second worker for alerts; licensed data for redistribution. |
+| SaaS | 1k–50k | The same reports serve every user from cache. Per-user work (watchlists, price alerts) runs as simple rules without AI. Separate alert workers; a read-only database copy; live prices delivered through a licensed vendor. |
+
+### 8.12 Model evals: which model works best?
+
+**Decision for launch: Claude Opus 5 (`claude-opus-5`) for every AI step.** At four reports a day, verification quality matters more than cost. Cheaper options are tested, not assumed.
+
+**The model never produces numbers.** The writer drafts text with data placeholders such as `{{fact:nifty50.close}}`, the renderer fills them from verified facts, and the final check rejects any number in the text that didn't come from a placeholder or a quoted source.
+
+| Step | Launch setting | Also test | Must hold to switch |
+|---|---|---|---|
+| Filtering, tagging, story grouping | Opus 5 · low effort | Haiku 4.5; Sonnet 5 | Tag accuracy ≥ 95% against your labels |
+| Claim extraction (structured output) | Opus 5 · medium effort | Sonnet 5 | Recall ≥ 95%, precision ≥ 98% |
+| Verification (exact quotes via Citations) | Opus 5 · high effort | No switch before V1 data exists | Zero wrongly accepted claims on the critical set |
+| Writing | Opus 5 · medium effort | Sonnet 5 | 100% faithful to verified claims; template followed |
+| Final checks (advice language, style) | Opus 5 · low effort, plus rule-based checks | Haiku 4.5 | Catches 100% of planted defects |
+| Ask Citebell (V2) | Opus 5 | — | Answers only from verified claims |
+
+How the comparison runs:
+1. Record 20 trading days of inputs.
+2. Run each option (model and effort level) on the golden test set and score it with the AI pipeline suite. Checks graded by a model are compared against your own labels on a sample first.
+3. Compare quality, slowest-run time and cost per report. Try lower effort on Opus 5 before a cheaper model; it's often the better trade, and one model keeps prompt caching simpler.
+4. You approve any switch. Verification stays on the strongest model unless an option shows zero wrong accepts on the critical set.
+5. Re-run on every model or prompt change. The Batch API (half price, results within 24 hours) suits eval runs and backfills, never live reports.
+
+Claude features used: structured output for extraction; Citations for exact quotes (the two can't be combined in one request, so they're separate steps); web search limited to trusted sites; prompt caching; automatic fallback on refusals, with every response's stop reason checked.
+
+| Monthly cost (estimate · measure in V0) | Assumption | 21 trading days |
+|---|---|---|
+| Claude Opus 5 | ~85k input + ~19k output tokens per report (thinking counts as output) × 4 a day, at US$5 / US$25 per million | ~US$75; ~US$60–65 with prompt caching |
+| Web search | ~25 searches per report × 4 a day, at US$10 per 1,000 | ~US$21 |
+| Market data | Upstox free or Kite ₹500 | ₹0–500 |
+| Hosting | Free web and database tiers; one small worker | ~US$5–10 |
+| **Total V0** | | **~US$85–100 + ₹0–500** |
+
+If evals show no quality loss, moving extraction and writing to Sonnet 5 (US$2 / US$10 per million tokens) would save roughly US$20 a month.
+
+## 9. Phasing: V0 → Nirvana
 
 | Phase | Scope | Exit gate |
 |---|---|---|
-| **V0 · Proof of trust** (~3 wks) | Four scheduled reports as HTML/PDF to Telegram and email; ~15 curated sources; verification gate v1 (tiers, link check, match against one feed); citation on every claim; "flag as wrong" on each claim; simple archive; Markets page on chart widgets | 20 trading days in a row: ≥95% on time, zero unverified or wrong claims in spot checks, baseline research time measured |
+| **V0 · Proof of trust** (~3 wks) | Four scheduled reports as HTML/PDF to Telegram and email; ~15 curated sources; verification gate v1 (tiers, link check, match against one feed); citation on every claim; "flag as wrong" on each claim; simple archive; Markets page on chart widgets; every fact and claim stored from day one (§8.8) | 20 trading days in a row: ≥95% on time, zero unverified or wrong claims in spot checks, baseline research time measured |
 | **V1 · Console** (~6 wks) | Full web app (Today, Reports, Markets, Flows, Crypto & Tech, Calendar); "what changed" view; story clustering; verification badges; fact-check drawer; corrections log; search and archive; derivatives panel; economic, results and expiry calendars; verified breaking alerts; second-feed reconciliation | Research time ≤ 15 min; usefulness ≥ 4.2/5 |
 | **V2 · Analyst** | Ask Citebell (verified corpus only, cited); story timelines; impact tags with historical analogues; trade journal (manual or tradebook import, read-only); watchlist ranking; 2-min audio brief; weekly review | ≥ 70% of trades have a linked rationale |
 | **V3 · Co-pilot + SaaS beta** | Descriptive pattern library; scenario planner (crude +5% → sector sensitivity); IV and OI shifts over news times; read-only broker positions → news on held stocks; accounts, onboarding, plans and billing; licensed data for redistribution; legal review of SEBI research-analyst rules | Primary source on ≥ 90% of days; 20 beta users meet the trust guardrails |
 | **Nirvana** | A personal trading-intelligence system: continuous verified event stream; source reliability scores learned from each outlet's accuracy and corrections; analysis of which news types came before the best and worst trades; risk-regime detection; Hindi business press; voice interaction; fully auditable; a human in the loop, no auto-trading | The trader opens one app at 08:45 and trusts every line in it |
 
-## 9. What else makes it a holistic platform
+## 10. What else makes it a holistic platform
 
 - **Calendars:** economic (India + global) with actual, consensus and prior; results and corporate actions; expiry calendar; NSE, US and Asia holidays.
 - **Rules tracker:** SEBI F&O changes (lot sizes, margins, expiry rules), taken straight from exchange and SEBI circulars.
@@ -264,7 +539,7 @@ Report fields follow the structure of the sample reports reviewed for this PRD.
 - **Records:** PDF export, searchable archive, public corrections log.
 - **Operations:** system health page (agent runs, source uptime, spend); 2FA; secrets vault.
 
-## 10. User flows
+## 11. User flows
 
 ```mermaid
 flowchart TD
@@ -295,7 +570,7 @@ flowchart TD
 - **G · Late or withheld:** banner with reason and retry time → verified sections still readable → last verified data kept with dates → push when complete.
 - **H · New subscriber (SaaS, later):** landing → sample report without signup → sign up → 3-step setup (skippable) → first morning report → trial → plan.
 
-## 11. Market-ready UX
+## 12. Market-ready UX
 
 UX rules drawn from **ui-ux-pro-max** (financial dashboard, data-dense, density 8/10, subtle motion) and adapted to a product whose main feature is trust.
 
@@ -308,19 +583,19 @@ UX rules drawn from **ui-ux-pro-max** (financial dashboard, data-dense, density 
 | Colour & accessibility | ▲▼ glyphs and signs on every change; candles filled vs hollow; 4.5:1 text contrast in both themes; a table view for every chart; aria-live on breaking alerts |
 | Motion | 150–300 ms transitions for state changes only; no scrolling tickers or flashing prices; respects reduced-motion settings |
 | Speed | `/` search · `J`/`K` next and previous story · `C` citations · `G` then `M` Markets; visible focus rings; 44 px touch targets on mobile |
-| Notifications | Report-ready pushes plus verified breaking alerts, capped at 5 per day; quiet hours; digest option; toasts auto-dismiss after 3–5 s |
+| Notifications | Report-ready pushes plus verified breaking alerts (breaking alerts capped at 5 per day); quiet hours; digest option; toasts auto-dismiss after 3–5 s |
 | Onboarding & pricing (SaaS) | Sample report without signup; 3 skippable setup steps (instruments, report times and channels, watchlist); three plans with the middle one highlighted and 20–30% off annual; FAQ answers "Is this investment advice?" (No.) |
 | Themes & screens | Dark by default with a full light theme; breakpoints 375 / 768 / 1024 / 1440; no horizontal scroll; 5-item bottom tab bar on mobile |
 
-## 12. High-fidelity wireframes
+## 13. High-fidelity wireframes
 
-The clickable, themed mockups are in **[`prd.html`](prd.html) → §12**, with tabs W1–W11, a light/dark preview toggle and hover tooltips on charts. Layout specs:
+The clickable, themed mockups are in **[`prd.html`](prd.html) → §13**, with tabs W1–W11, a light/dark preview toggle and hover tooltips on charts. Layout specs:
 
 | # | Screen | Layout | Key elements |
 |---|---|---|---|
 | W1 | Today (desktop, 08:52) | Side nav · top bar (search, market pills, IST clock) · report strip ×4 · main column (2.25fr) + right rail (1fr) | 3 ranked takeaways with citations and impact chips; 10 cross-market tiles with as-of chips; 6 sparklines; verified feed with tabs, urgency tags, source chips, "+N similar"; rail: calendar, previous-day flows, F&O ban, derivatives setup, verification health |
 | W2 | Morning Insights report | Header with verification summary bar (primary / verified / withheld) · section tabs · content + source rail | Key takeaway with tone chip; GIFT Nifty and US futures tiles; US close and Asia tables; Kospi shown as withheld with reason; cue / support / risk rows; numbered source list with tier and archive |
-| W3 | Fact-check drawer | Dimmed report + 440 px right drawer | Claim; rule applied; number check across NSE IX, Feed B and base close; sources with tier, time, quote ≤ 25 words, archived copy; collected → verified → published timeline; Flag as wrong |
+| W3 | Fact-check drawer | Dimmed report + 440 px right drawer | Claim; rule applied; number check across NSE IX, Feed B and base close; sources with tier, time, quote ≤ 25 words, Wayback copy; collected → verified → published timeline; Flag as wrong |
 | W4 | Markets | Region tabs · timeframe and compare toggles · compare chart (2.1fr) + world clock · correlation grid + small multiples | Three indices indexed to 100 on one axis, legend and direct labels, crosshair tooltip; live session pills; 6×6 correlation grid with signed values |
 | W5 | Mid-day Markets | Driver hero with 4 tiles + "changed since 08:45" panel · breadth / leadership / cross-asset · "what this means" | Diff rows tagged UP / DOWN / NEW / FIXED (Kospi withheld at 08:45, now verified) |
 | W6 | End-of-day Insights | Story + drivers + lesson (1.5fr) · heat map, closing derivatives, tomorrow (1fr) | Close badge; session in one line; drivers ranked by index-point contribution; 12-sector heat map with signed labels |
@@ -332,7 +607,7 @@ The clickable, themed mockups are in **[`prd.html`](prd.html) → §12**, with t
 
 Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/mo annual) is a hypothesis to test with beta users, not a decision.
 
-## 13. Success metrics
+## 14. Success metrics
 
 **North star: time to trade plan.** Minutes from the 08:45 drop until the trader marks today's plan as set, using only Citebell. Target **≤ 15 minutes**.
 
@@ -352,7 +627,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 
 **SaaS stage (hypotheses to calibrate in beta):** activation (3 morning reports read in the first 7 days) ≥ 60% · week-4 retention ≥ 50% · trial → paid ≥ 15% · monthly churn ≤ 4%.
 
-## 14. Guardrail metrics
+## 15. Guardrail metrics
 
 | Guardrail | Threshold | If breached |
 |---|---|---|
@@ -365,7 +640,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 | Source concentration | No outlet > 30% of a report's citations | Rebalance collectors; syndicated copies count once |
 | Advice leakage | 0 buy/sell calls or targets in Citebell's voice | Gate blocks those phrasings; review the template |
 | Late or missed reports | > 15 min late ≤ 1 / month · missed = 0 | Incident review; add schedule buffer |
-| Alert fatigue | ≤ 5 pushes per trading day | Fold extra alerts into a digest |
+| Alert fatigue | ≤ 5 breaking-news alerts per trading day | Fold extra alerts into a digest |
 | Report length | Morning read ≤ 8 min | Tighten the template |
 | Cost | Within the monthly LLM + data budget | Cheaper models for non-critical steps; alert at 80% |
 | Licensing | 0 full-article copies · snippets ≤ 25 words | Remove the content; audit the collectors |
@@ -379,9 +654,9 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 
 | Risk | Why it matters | Mitigation |
 |---|---|---|
-| Data licensing | Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms | Personal-use broker and licensed APIs in V0–V2; RSS and official feeds only; exchange or vendor licence before any SaaS launch |
+| Data licensing | Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms | Broker APIs under personal-use terms in V0–V2; RSS and official feeds only; NSE-only reports via NSE's consent, a licensed vendor or manual download (§8.4); an exchange or vendor licence before any SaaS launch |
 | Regulation | Charging users for market analysis may bring in SEBI research-analyst or investment-adviser rules | Stay factual and attributed; no advice in Citebell's voice; legal advice before V3 billing |
-| LLM errors | A model can invent a number or a source | Numbers come from data, never generated text; independent verifier; fail-closed gate; regression set of known-tricky claims |
+| LLM errors | A model can invent a number or a source | Numbers are filled in from verified data via placeholders, never written by the model (§8.12); independent verifier; fail-closed gate; golden test set of known traps |
 | Source outages and delays | Exchange files and feeds can arrive late | Second feed; withheld states with retry times; last verified values shown with dates |
 | Paywalls | Some claims can't be read in full | Cite only what's verifiable in the free portion, or use an alternative source |
 | Over-reliance | A trusted tool can be followed blindly | Clear badges, attributed views, journaling prompts, "information, not advice" copy |
@@ -391,14 +666,15 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 - Current pre-market research takes 60–90 min (measure in V0).
 - The named outlets offer usable RSS or official feeds.
 - Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.
-- A broker API gives index data for personal use at acceptable cost.
+- A broker API gives index and option-chain data for personal use (Upstox's data APIs are free; Kite Connect is ₹500/month).
 
 ### Open questions
-1. Which broker API: Kite, Dhan or Upstox?
-2. What monthly budget for data and LLM calls?
-3. Delivery channel: Telegram, WhatsApp or email first?
-4. Hindi business press in V1 or later?
-5. The repo is public: should prompts and the source registry live in a private repo?
+1. Which broker API: Upstox, Kite or Dhan?
+2. Route for NSE-only data (FII/DII, participant OI, ban list): ask NSE for consent, license a vendor, or download by hand? (§8.4)
+3. Worker host: Railway, Render or Fly.io?
+4. Monthly budget for data and AI calls (estimate ~US$85–100 + ₹0–500, §8.12)?
+5. Hindi business press in V1 or later?
+6. The repo is public: should prompts and the source registry live in a private repo?
 
 ### Sources
 - **[R1]** Moneycontrol Pro: [traderhq.com review](https://traderhq.com/moneycontrol-pro-review-expert-insights-smart-investors/) · [topstockmarketbroker.com 2026 review](https://www.topstockmarketbroker.com/2026/08/moneycontrol-pro-review-2026-app.html)
@@ -414,3 +690,22 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 - **[R11]** [Tradar](https://trytradar.com/) · [MarketsEasy](https://marketseasy.in/)
 - **[R12]** Design system: [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT)
 - **[R13]** Domain checks: RDAP at rdap.verisign.com (.com), pubapi.registry.google (.app), rdap.nixiregistry.in (.in), rdap.identitydigital.services (.ai, .io), 14 Sep 2026
+- **[R14]** Kite Connect pricing: [Zerodha Z-Connect](https://zerodha.com/z-connect/updates/free-personal-apis-from-kite-connect) · [Zerodha support](https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/historical-data-and-live-market-data-payment-plan)
+- **[R15]** [NSE Terms of Use](https://www.nseindia.com/static/nse-terms-of-use)
+- **[R16]** [GitHub Actions: schedule event](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)
+- **[R17]** [Claude API pricing](https://platform.claude.com/docs/en/about-claude/pricing) (web search, models)
+- **[R18]** [FRED API](https://fred.stlouisfed.org/docs/api/fred/) · [rate limit summary](https://apispine.com/fred/pricing)
+- **[R19]** [EODHD pricing](https://eodhd.com/pricing)
+- **[R20]** [Twelve Data pricing](https://twelvedata.com/pricing)
+- **[R21]** [CoinGecko API pricing](https://www.coingecko.com/en/api/pricing) · [rate limits](https://docs.coingecko.com/docs/common-errors-rate-limit)
+- **[R22]** [Reuters RSS feeds ended (FiveFilters)](https://www.fivefilters.org/2021/reuters-rss-feeds/)
+- **[R23]** [NewsAPI pricing and plan limits](https://newsapi.org/pricing)
+- **[R24]** [WhatsApp Business API pricing in India, 2026](https://myoperator.com/blog/whatsapp-business-api-pricing-india-2026)
+- **[R25]** [Claude docs: embeddings](https://platform.claude.com/docs/en/build-with-claude/embeddings)
+- **[R26]** [Vercel Hobby plan](https://vercel.com/docs/plans/hobby)
+- **[R27]** [Upstox trading and data APIs](https://upstox.com/trading-api/)
+- **[R28]** [Supabase pricing](https://supabase.com/pricing) · [Supabase regions](https://supabase.com/docs/guides/platform/regions)
+- **[R29]** [Zerodha Kite MCP server](https://github.com/zerodha/kite-mcp-server)
+- **[R30]** [Resend quotas and limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits)
+- **[R31]** [Wayback Machine Save Page Now API](https://archive.org/details/spn-2-public-api-page-docs)
+- **[R32]** [DhanHQ Data API subscription](https://dhan.co/support/platforms/dhanhq-api/how-does-the-dhanhq-data-api-subscription-work/)

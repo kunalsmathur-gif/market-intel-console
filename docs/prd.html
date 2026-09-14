@@ -369,7 +369,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="head-row">
       <div class="lockup"><svg aria-label="Citebell logo"><use href="#mark"/></svg><span class="wordmark">citebell<sup>[1]</sup></span></div>
       <div class="meta">
-        <span class="chip brass">PRD v1.0 · draft for review</span>
+        <span class="chip brass">PRD v1.1 · draft for review</span>
         <span class="chip">14 Sep 2026</span>
         <span class="chip">Personal use first · SaaS-ready</span>
       </div>
@@ -417,14 +417,15 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <li><a href="#s5"><span>05</span>Brand: name &amp; identity</a></li>
       <li><a href="#s6"><span>06</span>Features to copy</a></li>
       <li><a href="#s7"><span>07</span>High-level solution</a></li>
-      <li><a href="#s8"><span>08</span>Phasing V0 → Nirvana</a></li>
-      <li><a href="#s9"><span>09</span>Making it holistic</a></li>
-      <li><a href="#s10"><span>10</span>User flows</a></li>
-      <li><a href="#s11"><span>11</span>Market-ready UX</a></li>
-      <li><a href="#s12"><span>12</span>Hi-fi wireframes</a></li>
-      <li><a href="#s13"><span>13</span>Success metrics</a></li>
-      <li><a href="#s14"><span>14</span>Guardrail metrics</a></li>
-      <li><a href="#s15"><span>A</span>Risks, assumptions, sources</a></li>
+      <li><a href="#s8"><span>08</span>Architecture decisions</a></li>
+      <li><a href="#s9"><span>09</span>Phasing V0 → Nirvana</a></li>
+      <li><a href="#s10"><span>10</span>Making it holistic</a></li>
+      <li><a href="#s11"><span>11</span>User flows</a></li>
+      <li><a href="#s12"><span>12</span>Market-ready UX</a></li>
+      <li><a href="#s13"><span>13</span>Hi-fi wireframes</a></li>
+      <li><a href="#s14"><span>14</span>Success metrics</a></li>
+      <li><a href="#s15"><span>15</span>Guardrail metrics</a></li>
+      <li><a href="#s16"><span>A</span>Risks, assumptions, sources</a></li>
     </ol>
   </nav>
 
@@ -503,7 +504,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   <p class="lede">Every competitor either has trust without synthesis (wires, terminals) or synthesis without proof (apps, AI summaries). Citebell's position is synthesis with proof, delivered at fixed times in the trading day.</p>
   <div class="grid3">
     <div class="item"><span class="label">Trust</span><h4>Verification-first</h4><p>Each claim goes through source tiers, corroboration, a numeric check, a recency check and a publish gate. Anything unverified never appears.</p></div>
-    <div class="item"><span class="label">Proof</span><h4>Citations that show their work</h4><p>Every citation carries a link, publisher, timestamp, matched quote, source tier and an archived snapshot, so link rot and silent edits can't break it.</p></div>
+    <div class="item"><span class="label">Proof</span><h4>Citations that show their work</h4><p>Every citation carries a link, publisher, timestamp, matched quote, source tier, a Wayback Machine capture and a content fingerprint, so link rot and silent edits can't break it.</p></div>
     <div class="item"><span class="label">Numbers</span><h4>Figures come from data, not articles</h4><p>Figures come from exchange and primary feeds and are checked against a second feed. A number has one value everywhere in a report, which fixes P3.</p></div>
     <div class="item"><span class="label">Lens</span><h4>Written for F&amp;O</h4><p>Each story is tagged with the index or sector it affects, likely direction and time horizon, plus a one-line cause → effect.</p></div>
     <div class="item"><span class="label">Rhythm</span><h4>Built around the trading day</h4><p>Four fixed drops in IST. Each one opens with what changed since the last report.</p></div>
@@ -601,12 +602,12 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   <div class="arch" role="img" aria-label="Architecture: scheduler triggers collector agents, whose claims pass extraction, independent verification, writing and QA, then a publish gate, storage and the console">
     <div class="arch-in">
       <div class="stack">
-        <div class="node"><b>Scheduler</b><small>IST cron: 07:30, 11:20, 15:35, 19:15</small></div>
+        <div class="node"><b>Scheduler</b><small>Always-on worker, IST: 07:30, 11:20, 15:35, 19:15</small></div>
         <div class="node"><b>Sources</b><small>Exchange data, market APIs, RSS feeds, regulators</small></div>
       </div>
       <div class="arrow"></div>
       <div class="pipeline">
-        <span class="label">Agent pipeline · Claude Agent SDK</span>
+        <span class="label">Worker pipeline · Python + Anthropic SDK (§8)</span>
         <div class="row">
           <div class="node"><b>Collectors</b><small>India · Global macro · Geopolitics · Tech · Crypto · Flows &amp; derivatives</small></div>
           <div class="arrow"></div>
@@ -625,7 +626,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <div class="arrow"></div>
       <div class="stack">
         <div class="node store"><b>Postgres (Supabase)</b><small>Reports, claims, sources, snapshots, prices, audit log</small></div>
-        <div class="node"><b>Link archiver</b><small>Snapshot of every cited page</small></div>
+        <div class="node"><b>Link archiver</b><small>Wayback capture + fingerprint of every cited page</small></div>
       </div>
       <div class="arrow"></div>
       <div class="stack">
@@ -641,7 +642,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="step"><b>Tier sources</b><p>T1 primary · T2 established press · T3 context only · TX never publishable.</p></div>
     <div class="step"><b>Corroborate</b><p>Find independent support. Syndicated PTI or Reuters copies count as one source.</p></div>
     <div class="step"><b>Reconcile numbers</b><p>Match against T1 data or a second feed within tolerance.</p></div>
-    <div class="step"><b>Check links</b><p>HTTP 200, the claim text is on the page, publish time captured, snapshot archived.</p></div>
+    <div class="step"><b>Check links</b><p>HTTP 200, the claim text is on the page, publish time captured, Wayback capture requested.</p></div>
     <div class="step"><b>Check recency</b><p>Reject stale or resurfaced stories; stamp every number with its as-of time.</p></div>
     <div class="step"><b>Gate</b><p>Pass → publish with a badge. Fail → withhold and log. Nothing unverified gets through.</p></div>
   </div>
@@ -649,6 +650,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <thead><tr><th>Claim type</th><th>Rule to publish</th><th>Badge shown</th></tr></thead>
     <tbody>
       <tr><td>Market number</td><td>Matches T1 data, or two independent feeds agree within tolerance (index ±0.01%, flows exact to ₹0.01 Cr). Always shows an as-of time.</td><td><span class="tag blue">Primary data</span></td></tr>
+      <tr><td>Market number with no primary feed (V0)</td><td>Two independent T2 news reports agree within tolerance, with both times shown. Replaced by a data feed in V1 (§8.4).</td><td><span class="tag">News-reported</span></td></tr>
       <tr><td>News event</td><td>One T1 source, or two independent T2 sources.</td><td><span class="tag up">Verified · 2 sources</span></td></tr>
       <tr><td>Forecast or opinion</td><td>Attributed to its author (“Brokerage X expects …”) with a link. Never in Citebell's own voice.</td><td><span class="tag">Attributed view</span></td></tr>
       <tr><td>Fails any rule</td><td>Left out and written to the audit log. If a whole section misses its deadline, a “withheld” banner shows the reason and the retry time.</td><td><span class="tag warn">Withheld</span></td></tr>
@@ -669,21 +671,356 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 
   <h3>Data &amp; stack</h3>
   <div class="grid2">
-    <div class="item"><span class="label">India data</span><p>NSE/BSE indices, bhavcopy, F&amp;O ban list, participant-wise OI, FII/DII provisional data; NSDL FPI; NSE IX for GIFT Nifty; a broker API (Kite, Dhan or Upstox) for index data; SEBI, RBI and PIB circulars; exchange corporate announcements.</p></div>
-    <div class="item"><span class="label">Global data</span><p>A licensed market-data API (e.g. Twelve Data, EODHD or Polygon) plus a second feed for reconciliation; CME FedWatch; US Treasury; Fed, ECB, BoJ and PBoC; US BLS. Crypto: CoinGecko or Binance public APIs, plus ETF flow data.</p></div>
-    <div class="item"><span class="label">News feeds</span><p>RSS and official feeds: Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, Reuters, AP, CNBC, FT and WSJ headlines, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block.</p></div>
-    <div class="item"><span class="label">Stack</span><p>Next.js + Tailwind PWA · Supabase Postgres · Claude Agent SDK (a strong model for verification and synthesis, a fast model for classification and dedupe) · cloud-scheduled runs · Telegram bot + email. Store headlines, links and snippets of 25 words or fewer; never full articles.</p></div>
+    <div class="item"><span class="label">India data</span><p>A broker API (Upstox, Kite or Dhan) for indices, VIX, option chain, and India-traded USD/INR, gold and crude. NSE-published reports (FII/DII, participant OI, ban list, bhavcopy) only via NSE's consent, a licensed vendor or manual download. NSDL FPI data; SEBI, RBI and PIB circulars; exchange announcements. Details in §8.4.</p></div>
+    <div class="item"><span class="label">Global data</span><p>FRED, US Treasury, Fed, ECB, BoJ, PBoC and US BLS (free, official). Live global indices and commodity futures: news-reported in V0, then one paid feed (e.g. EODHD) in V1. Crypto: CoinGecko Demo API plus a public exchange price.</p></div>
+    <div class="item"><span class="label">News feeds</span><p>RSS and official feeds: Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, CNBC, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block. Reuters, AP, Bloomberg, FT and WSJ through web search limited to those sites (Reuters has no public RSS).</p></div>
+    <div class="item"><span class="label">Stack</span><p>Next.js + Tailwind web app on Vercel · Python worker with the Anthropic SDK on an always-on container · Supabase (Postgres, Auth, Storage, Realtime) · Claude Opus 5 for every AI step at launch · Telegram bot + email. Store headlines, links and quotes of 25 words or fewer; never full articles. Reasoning in §8.</p></div>
   </div>
 </section>
 
 <!-- 8 -->
 <section class="sec" id="s8">
-  <div class="sec-h"><span class="label">§8</span><h2>Phasing: V0 → Nirvana</h2></div>
+  <style>
+    .topo{overflow-x:auto}
+    .topo-in{min-width:960px;display:grid;grid-template-columns:minmax(130px,.8fr) 20px minmax(165px,1fr) 20px minmax(175px,1fr) 20px minmax(205px,1.25fr) 20px minmax(165px,1fr);align-items:center}
+    .topo .col{display:grid;gap:6px}
+    .topo .col .label{margin-bottom:2px}
+    .topo .node{font-size:12.5px}
+    .dec-h{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:baseline;margin-top:14px;padding-top:18px;border-top:1px solid var(--line)}
+    .dec-h h3{margin:0}
+    .dec-h .tag{font-size:11px}
+    .decision{border-left:3px solid var(--brass);background:var(--bg);border-radius:0 10px 10px 0;padding:10px 14px;max-width:92ch}
+    .decision b{color:var(--ink)}
+    .decision p{color:var(--ink-2)}
+  </style>
+  <div class="sec-h"><span class="label">§8</span><h2>Technical architecture decisions</h2></div>
+  <p class="lede">The twelve decisions the build depends on. Each one gives the recommendation, the reason, and what changes by phase. Prices and limits were checked on 14 Sep 2026; check them again before buying anything.</p>
+
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Question</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td class="n"><a href="#d1">8.1</a></td><td>Separate frontend and backend?</td><td>Yes. Three parts in one repo: a Next.js web app that only reads and displays, a Python worker that does all fetching and AI work, and Supabase for data and accounts.</td></tr>
+      <tr><td class="n"><a href="#d2">8.2</a></td><td>LangChain / Python?</td><td>No LangChain. Python for the worker with the official Anthropic SDK; TypeScript for the web app.</td></tr>
+      <tr><td class="n"><a href="#d3">8.3</a></td><td>APIs or MCP?</td><td>Direct APIs wherever a number or fact enters the system. MCP for exploring data while building, and later for Ask Citebell and outside access.</td></tr>
+      <tr><td class="n"><a href="#d4">8.4</a></td><td>Free or paid data?</td><td>V0 can run for ₹0–500 a month with the same correctness, because accuracy comes from primary sources and cross-checks. Two gaps: live global prices, and NSE-only reports that need NSE's permission or a licence.</td></tr>
+      <tr><td class="n"><a href="#d5">8.5</a></td><td>Sign-in / sign-out</td><td>Supabase Auth from V0: magic link or Google, authenticator-app 2FA, owner-only allowlist. Roles, plans and billing arrive in V3.</td></tr>
+      <tr><td class="n"><a href="#d6">8.6</a></td><td>Downloads</td><td>Report PDFs and a citation pack from V0; data CSVs and a calendar feed in V1; journal and account export later.</td></tr>
+      <tr><td class="n"><a href="#d7">8.7</a></td><td>Alerts</td><td>Telegram and email in V0, web push in V1, WhatsApp only if needed (paid per message). Only verified content triggers an alert.</td></tr>
+      <tr><td class="n"><a href="#d8">8.8</a></td><td>Build on stored data?</td><td>Yes, from day one: store time-stamped facts and claims, not just finished reports. Trends in V1, patterns in V2–V3; no buy/sell recommendations.</td></tr>
+      <tr><td class="n"><a href="#d9">8.9</a></td><td>Caching / RAG</td><td>Caching from V0 (data, prompts, pages). No RAG in V0–V1; database search instead. RAG over verified claims comes with Ask Citebell in V2.</td></tr>
+      <tr><td class="n"><a href="#d10">8.10</a></td><td>Eval suites</td><td>Seven suites (UX, code, data sanity, data quality, AI pipeline, system stability, cost), run in CI and in a nightly replay of past days.</td></tr>
+      <tr><td class="n"><a href="#d11">8.11</a></td><td>Low latency and scale</td><td>Precompute, then serve: nobody waits on an AI call. Mumbai hosting, finished pages, and each report computed once no matter how many users read it.</td></tr>
+      <tr><td class="n"><a href="#d12">8.12</a></td><td>Which model?</td><td>Claude Opus 5 for every AI step at launch, and the model never produces numbers. Cheaper models and lower effort are tested on low-risk steps; you decide on any switch from the measured results.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Deployment at a glance</h3>
+  <div class="topo" role="img" aria-label="Users reach the web app on Vercel, which reads Supabase. A separate always-on Python worker fetches from external sources, calls Claude, writes to Supabase and sends notifications.">
+    <div class="topo-in">
+      <div class="col"><span class="label">People</span>
+        <div class="node"><b>Browser / phone app</b><small>Installable web app</small></div>
+        <div class="node"><b>Telegram · email</b><small>Alerts and reports</small></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="col"><span class="label">Web · Vercel, Mumbai</span>
+        <div class="node"><b>Next.js app</b><small>Shows finished reports and charts; saves your flags, notes and settings. No AI calls, no data-provider keys.</small></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="col"><span class="label">Supabase · Mumbai</span>
+        <div class="node store"><b>Postgres</b><small>Facts, claims, reports, audit log, job queue</small></div>
+        <div class="node"><b>Auth · Storage · Realtime</b><small>Accounts, PDFs, “report ready” pings</small></div>
+      </div>
+      <div class="arrow" style="transform:scaleX(-1)"></div>
+      <div class="col"><span class="label">Worker · always-on Python container</span>
+        <div class="node"><b>Scheduler (IST)</b><small>Starts each report run; health check-in</small></div>
+        <div class="node gate"><b>Pipeline</b><small>Collect → extract → verify → write → check → publish → render PDF</small></div>
+        <div class="node"><b>Notifier</b><small>Sends Telegram, email and push from an outbox</small></div>
+      </div>
+      <div class="arrow" style="transform:scaleX(-1)"></div>
+      <div class="col"><span class="label">Outside services</span>
+        <div class="node"><b>Market data</b><small>Broker API, FRED, RBI, CoinGecko</small></div>
+        <div class="node"><b>News</b><small>Publisher RSS, GDELT</small></div>
+        <div class="node"><b>Anthropic API</b><small>Claude + allow-listed web search</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8.1 -->
+  <div class="dec-h" id="d1"><h3>8.1 · Should frontend and backend be separate?</h3><span class="tag brass">Decided</span></div>
+  <div class="decision"><p><b>Yes, split by job rather than into many small services.</b> The web app only reads and displays. All fetching, AI calls and publishing happen in a separate worker.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Part</th><th>Runs on</th><th>Does</th><th>Never does</th></tr></thead>
+    <tbody>
+      <tr><td>Web app (Next.js + Tailwind)</td><td>Vercel</td><td>Renders pages from the database; manages sessions; saves your flags, notes and settings</td><td>Call Claude or data providers; hold their keys</td></tr>
+      <tr><td>Worker (Python)</td><td>A small always-on container (e.g. Railway, Render or Fly.io)</td><td>Schedules and runs report jobs: fetch, verify, write, render PDFs, send alerts</td><td>Serve web pages</td></tr>
+      <tr><td>Supabase</td><td>Managed service, Mumbai region</td><td>Postgres database, sign-in, file storage, live updates</td><td>Business logic beyond per-user access rules</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="clean">
+    <li><strong>Different speeds.</strong> A report run takes minutes; a page must load in milliseconds. Web hosting functions time out on long jobs.</li>
+    <li><strong>Safer keys.</strong> Claude, broker and data keys live only in the worker, so a web-app bug can't expose them.</li>
+    <li><strong>Separate scaling.</strong> More users add web load; more reports add worker load.</li>
+    <li><strong>One contract.</strong> The database schema, plus data shapes defined once in Python and generated as TypeScript types for the web app.</li>
+    <li><strong>Not GitHub Actions for scheduling.</strong> GitHub's docs say scheduled workflows can be delayed under heavy load and some queued jobs dropped [R16], which is too risky for an 08:45 deadline. A monitor alerts you if a run doesn't check in on time.</li>
+  </ul>
+  <p class="lede" style="font-size:15px">Repo layout: <code>apps/web</code> · <code>apps/worker</code> · <code>packages/schemas</code> · <code>evals/</code> · <code>infra/</code>.</p>
+
+  <!-- 8.2 -->
+  <div class="dec-h" id="d2"><h3>8.2 · Do we need LangChain or Python?</h3><span class="tag brass">Decided</span></div>
+  <div class="decision"><p><b>No LangChain or LangGraph. Python for the worker, using the official Anthropic SDK; TypeScript for the web app.</b></p></div>
+  <div class="grid2">
+    <div class="item"><span class="label">Why no LangChain</span><ul class="clean" style="font-size:14.5px">
+      <li>The pipeline is a fixed sequence (collect → extract → verify → write → check → publish), not an open-ended agent. Plain code is easier to test, re-run and debug.</li>
+      <li>What we need is built into the Claude API: tool use, structured JSON output, citations, prompt caching, and web search limited to chosen sites.</li>
+      <li>Framework layers hide the exact prompt and request, and that's what you need to see when tracing a wrong claim.</li>
+      <li>Fewer dependencies to break or upgrade.</li>
+    </ul></div>
+    <div class="item"><span class="label">Why Python for the worker</span><ul class="clean" style="font-size:14.5px">
+      <li>Indian brokers' official API clients (Kite, Upstox, Dhan) all support Python.</li>
+      <li>pandas for comparing numbers across sources; Pydantic for strict data shapes.</li>
+      <li>Good tooling for evals and replaying past days.</li>
+      <li>Each step is a plain function with typed inputs and outputs, logged per run, so any report can be rebuilt from its inputs.</li>
+    </ul></div>
+  </div>
+  <div class="callout"><span class="label">Correction to v1.0</span><p>v1.0 named the “Claude Agent SDK”. That SDK packages Claude Code's file-and-terminal agent, which suits open-ended tasks. This pipeline fits direct Claude API calls driven by our own code better. Reconsider only if Ask Citebell (V2) needs open-ended multi-step research.</p></div>
+
+  <!-- 8.3 -->
+  <div class="dec-h" id="d3"><h3>8.3 · APIs or MCPs?</h3><span class="tag brass">Decided</span></div>
+  <div class="decision"><p><b>Direct APIs wherever a number or fact enters a report. MCP only where a person or an assistant explores interactively.</b> No AI model sits between a data source and a published number.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Use</th><th>Choose</th><th>Why</th><th>Phase</th></tr></thead>
+    <tbody>
+      <tr><td>Prices, flows, OI, macro data</td><td>Direct API calls in code</td><td>Predictable, typed, testable, cacheable</td><td class="n">V0</td></tr>
+      <tr><td>News collection</td><td>Publisher RSS feeds</td><td>Cheap, predictable, fully logged</td><td class="n">V0</td></tr>
+      <tr><td>Checking a story across outlets</td><td>Claude's built-in web search, limited to a list of trusted T1/T2 sites</td><td>No extra service to run; searches can't wander to untrusted sites; about US$10 per 1,000 searches [R17]</td><td class="n">V0</td></tr>
+      <tr><td>Exploring data while building</td><td>MCP in Claude Code, e.g. Zerodha's hosted Kite MCP, which leaves out trading actions [R29]</td><td>Fast exploration; kept out of the production pipeline</td><td class="n">Now</td></tr>
+      <tr><td>Ask Citebell</td><td>Claude tools that query Citebell's own verified database</td><td>Answers can only draw on verified claims</td><td class="n">V2</td></tr>
+      <tr><td>Access from other AI assistants</td><td>Publish a Citebell MCP server</td><td>Subscribers can query verified data from their own assistant; a possible paid feature</td><td class="n">V3+</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- 8.4 -->
+  <div class="dec-h" id="d4"><h3>8.4 · Are the data sources free or paid? Can V0 be free and just as accurate?</h3><span class="tag warn">One decision open</span></div>
+  <div class="decision"><p><b>Accuracy comes from using the primary source and cross-checking it, not from paying.</b> The official source is often free. What free tiers give up is speed, coverage and the right to share the data with others.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Data needed</th><th>V0 source</th><th>Cost</th><th>Limits and licence notes</th></tr></thead>
+    <tbody>
+      <tr><td>Nifty, Bank Nifty, Sensex, sector indices, India VIX, option chain (OI, PCR; max pain computed), breadth (computed from index stocks)</td><td>A broker API: Upstox (data APIs free) [R27] or Kite Connect (₹500/month including live and historical data; the free Kite Personal plan has no market data) [R14]. Dhan's data API is ₹499/month [R32].</td><td class="n">₹0–500/mo</td><td>Personal-use terms and a broker account needed. Broker logins expire daily, so the worker needs a daily login step. Showing this data to other users needs an exchange or vendor licence.</td></tr>
+      <tr><td>USD/INR, gold, crude as traded in India</td><td>Same broker API: NSE USD/INR futures, MCX gold and crude futures</td><td class="n">included</td><td>Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). RBI's daily reference rate is the official cross-check.</td></tr>
+      <tr><td>FII/DII provisional cash, participant-wise OI, F&amp;O ban list, bhavcopy</td><td>Published only by NSE</td><td class="n">Free to view</td><td><strong>NSE's Terms of Use prohibit automated data collection without written consent</strong> [R15]. <span class="tag warn">Decision needed</span> Ask NSE for consent for low-volume personal use, use a licensed data vendor, or download these by hand. The PRD doesn't assume scraping.</td></tr>
+      <tr><td>FPI flows (cross-check)</td><td>NSDL's daily FPI data</td><td class="n">Free</td><td>Published a day later; check the site's terms.</td></tr>
+      <tr><td>US index closes, US 10-year yield, US economic data</td><td>FRED API (free key, ~120 requests/minute) [R18]; US Treasury yield data</td><td class="n">Free</td><td>Daily closing values, not live futures.</td></tr>
+      <tr><td>Live S&amp;P and Nasdaq futures, Nikkei, Hang Seng, Kospi, Brent, WTI, GIFT Nifty before 08:15</td><td>No dependable free API found. <strong>V0:</strong> use values quoted by two independent pre-market news reports, with a “News-reported” badge. <strong>V1:</strong> add one paid feed, e.g. EODHD at €19.99–29.99/month [R19], after confirming it covers these indices.</td><td class="n">₹0 → ~€20–30/mo</td><td>Twelve Data's free tier covers US stocks, forex and crypto only [R20].</td></tr>
+      <tr><td>Bitcoin, Ethereum, dominance</td><td>CoinGecko Demo API (free key, 10,000 calls/month) [R21], plus a public exchange price as the second source</td><td class="n">Free</td><td>A report uses about 4–10 calls, far below the limit.</td></tr>
+      <tr><td>Indian and global business, tech and crypto news</td><td>Publisher RSS feeds: Moneycontrol, Livemint, Business Standard, BusinessLine, CNBC, Nikkei Asia, TechCrunch, The Verge, CoinDesk</td><td class="n">Free</td><td>Store headlines, links and quotes of 25 words or fewer only.</td></tr>
+      <tr><td>Reuters, AP, Bloomberg</td><td>Claude web search limited to those sites</td><td class="n">~US$10 / 1,000 searches</td><td>Reuters stopped its public RSS feeds in 2020 [R22].</td></tr>
+      <tr><td>Finding geopolitical events</td><td>GDELT</td><td class="n">Free</td><td>For spotting events only; never cited as a source.</td></tr>
+      <tr><td>Economic and central-bank calendars</td><td>Official schedules (RBI, Fed, ECB, BoJ, MoSPI, BLS), entered and checked once a year, plus FRED release dates</td><td class="n">Free</td><td>Economists' consensus forecasts usually cost money; decide in V1.</td></tr>
+      <tr><td>Don't use</td><td>NewsAPI.org free plan (development only, articles 24 hours late) [R23]; scraping Yahoo Finance</td><td>—</td><td>Their terms don't allow this use.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout brass"><span class="label">Verdict</span><p><strong style="color:var(--ink)">Mostly yes.</strong> Correctness holds because numbers come from exchange, broker and official sources and are cross-checked. Three gaps: (1) live global prices at 08:15 are “News-reported” until a paid feed is added; (2) NSE-only datasets need a legal route; (3) where only one free source exists, the item gets a “Single source” badge or is withheld, never presented as double-checked. Estimated V0 data cost: ₹0–500 a month.</p></div>
+
+  <!-- 8.5 -->
+  <div class="dec-h" id="d5"><h3>8.5 · How do sign-in and sign-out work?</h3><span class="tag brass">Decided</span></div>
+  <div class="decision"><p><b>Supabase Auth from V0, even for a single user,</b> so moving to a SaaS doesn't need a rewrite.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Phase</th><th>What's in place</th></tr></thead>
+    <tbody>
+      <tr><td>V0 · owner only</td><td>Email magic link or Google sign-in; one allowed email; authenticator-app 2FA; no public sign-up page.</td></tr>
+      <tr><td>V1</td><td>List of signed-in devices; “sign out everywhere”; Telegram linking with a one-time code.</td></tr>
+      <tr><td>V3 · SaaS</td><td>Public sign-up with email verification; roles (subscriber, admin); plans as feature entitlements; Razorpay subscriptions; account deletion and data export, in line with India's data-protection law.</td></tr>
+    </tbody>
+  </table></div>
+  <ol class="clean">
+    <li><strong>Sign in:</strong> enter email → magic link or Google → 6-digit code if 2FA is on → secure session cookie → Today.</li>
+    <li><strong>Stay signed in:</strong> the session refreshes quietly. After 30 days unused (default, adjustable), sign in again.</li>
+    <li><strong>Sign out:</strong> this device (ends this session) or everywhere (ends every session).</li>
+    <li><strong>Lost phone:</strong> one-time recovery codes are shown when 2FA is set up.</li>
+    <li><strong>Link Telegram:</strong> the app shows a one-time code → send it to the Citebell bot → linked. Unlink from Settings.</li>
+    <li><strong>Connect a broker (V3, optional, read-only):</strong> the broker's own login page; tokens stored encrypted; a daily reconnect prompt, because broker logins expire daily.</li>
+    <li><strong>Delete account (V3):</strong> confirm → data export offered → deletion completed and logged.</li>
+  </ol>
+  <p class="lede" style="font-size:15px">Security basics: per-user access rules on every table, rate limits on sign-in attempts, a sign-in history, and no data-provider keys ever sent to the browser.</p>
+
+  <!-- 8.6 -->
+  <div class="dec-h" id="d6"><h3>8.6 · Which documents can be downloaded?</h3><span class="tag brass">Decided</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Document</th><th>Format</th><th>Created</th><th>Phase</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Each report (Morning, Mid-day, End of day, Flows)</td><td>PDF</td><td>At publish</td><td class="n">V0</td><td>Same content and citations as the page, with version and correction stamps.</td></tr>
+      <tr><td>Citation pack for a report</td><td>CSV + JSON</td><td>At publish</td><td class="n">V0</td><td>Each claim with its sources, tier, times, quote, archive link and verdict: the audit trail, checkable offline.</td></tr>
+      <tr><td>Daily bundle</td><td>One PDF of all 4 reports</td><td>After 20:00</td><td class="n">V1</td><td>For your records.</td></tr>
+      <tr><td>Data tables</td><td>CSV</td><td>On demand</td><td class="n">V1</td><td>20-day flows, OI levels, breadth, calendar. Personal use.</td></tr>
+      <tr><td>Calendar feed</td><td>.ics subscription</td><td>Nightly</td><td class="n">V1</td><td>Economic events, results, expiry dates and holidays in your own calendar app.</td></tr>
+      <tr><td>Corrections log</td><td>CSV</td><td>On demand</td><td class="n">V1</td><td>Export of the public log.</td></tr>
+      <tr><td>Weekly review</td><td>PDF</td><td>Saturday</td><td class="n">V2</td><td>The week's drivers, flags raised, journal summary.</td></tr>
+      <tr><td>Trade journal</td><td>CSV</td><td>On demand</td><td class="n">V2</td><td>Your notes and the stories linked to them.</td></tr>
+      <tr><td>Account data</td><td>JSON archive</td><td>On request</td><td class="n">V3</td><td>Part of the account-deletion flow.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="lede" style="font-size:15px">Files sit in Supabase Storage behind links that expire after a short time. Exports contain headlines, links and short quotes, never full articles. Exchange data in exports stays personal-use until it's licensed.</p>
+
+  <!-- 8.7 -->
+  <div class="dec-h" id="d7"><h3>8.7 · Alerts and notifications</h3><span class="tag brass">Decided</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Alert</th><th>Trigger</th><th>Channels</th><th>Phase</th></tr></thead>
+    <tbody>
+      <tr><td>Report ready</td><td>A report passes the publish gate</td><td>Telegram, email; web push from V1</td><td class="n">V0</td></tr>
+      <tr><td>Report late / section withheld</td><td>Deadline missed, or a section withheld</td><td>Telegram</td><td class="n">V0</td></tr>
+      <tr><td>Correction issued</td><td>A published claim changes</td><td>Telegram + banner in the app</td><td class="n">V0</td></tr>
+      <tr><td>System health (owner)</td><td>Run failed, a feed is down, spend reaches 80% of budget</td><td>Telegram</td><td class="n">V0</td></tr>
+      <tr><td>Verified breaking news</td><td>A story passes verification and is tagged high-impact for your instruments</td><td>Telegram, web push</td><td class="n">V1</td></tr>
+      <tr><td>Event reminder</td><td>15 minutes before a high-importance event</td><td>Web push</td><td class="n">V1</td></tr>
+      <tr><td>Price or level alert</td><td>A watchlist level is crossed during market hours (broker live feed)</td><td>Web push</td><td class="n">V1</td></tr>
+      <tr><td>Digest</td><td>Lower-priority items batched together</td><td>Email</td><td class="n">V1</td></tr>
+      <tr><td>WhatsApp</td><td>Only if Telegram isn't enough</td><td>WhatsApp Business: ₹0.115 per utility message + GST, and Meta starts charging for service messages from 1 Oct 2026 [R24]</td><td class="n">V3</td></tr>
+    </tbody>
+  </table></div>
+  <ul class="clean">
+    <li><strong>Rules:</strong> only verified content triggers an alert. At most 5 breaking-news alerts per trading day (report-ready and your own price alerts don't count toward this). Quiet hours 22:00–07:00 IST by default. One alert per story. Every alert links straight to the story.</li>
+    <li><strong>How it's sent:</strong> publishing writes alerts to an outbox table in the same step, so nothing is lost. The notifier sends with retries and never sends the same alert twice. Delivery status is recorded.</li>
+    <li><strong>Channel notes:</strong> the Telegram Bot API is free. Email via Resend's free tier covers 3,000 emails a month, 100 a day [R30]. Web push on iPhone works only after the app is added to the Home Screen.</li>
+    <li><strong>Targets:</strong> report-ready alert within 60 s of publish; verified breaking alert within 10 min of the first source (V1).</li>
+  </ul>
+
+  <!-- 8.8 -->
+  <div class="dec-h" id="d8"><h3>8.8 · Do we build on stored data for trends and suggestions?</h3><span class="tag brass">Decided</span></div>
+  <div class="decision"><p><b>Yes, and storage has to start in V0.</b> Price history can be downloaded later; a record of what the news said, when, and whether it held up can't.</p></div>
+  <div class="grid2">
+    <div class="item"><span class="label">Stored from day one (never overwritten; every row has an as-of time and a recorded time)</span><ul class="clean" style="font-size:14.5px">
+      <li><strong>Market facts:</strong> every number used, with its source, time and cross-check result.</li>
+      <li><strong>Claims:</strong> each claim, its sources, quotes, tier, verdict and reason.</li>
+      <li><strong>Stories:</strong> groups of related articles over time, with impact tags.</li>
+      <li><strong>Reports:</strong> every version, with what changed from the last one.</li>
+      <li><strong>Source track record:</strong> agreements, mismatches and corrections per outlet.</li>
+      <li><strong>Your signals:</strong> relevant marks, flags, ratings, and journal entries from V2.</li>
+    </ul></div>
+    <div class="item"><span class="label">What it unlocks</span><ul class="clean" style="font-size:14.5px">
+      <li><strong>V1 · Trends:</strong> 20-day flows, FII long/short ratio over time, PCR history, “what changed” views.</li>
+      <li><strong>V2 · Context:</strong> story timelines; historical comparisons such as “when Brent rose 3%+ overnight, how did Nifty open?”, shown with the number of cases; source reliability scores.</li>
+      <li><strong>V3 · Patterns:</strong> pattern library, what-if scenarios, which kinds of news came before your best and worst trades.</li>
+    </ul></div>
+  </div>
+  <div class="callout"><span class="label">Guardrail on “recommendations”</span><p>Outputs are descriptive statistics with sample size and date range, never buy/sell calls. Giving trade recommendations to other people would require SEBI registration. Retention: facts and claims are kept indefinitely. Article text isn't stored (links, fingerprints and 25-word quotes only). Raw API responses are kept 90 days for debugging and replays.</p></div>
+
+  <!-- 8.9 -->
+  <div class="dec-h" id="d9"><h3>8.9 · Do we need caching and RAG in V0/V1?</h3><span class="tag brass">Decided</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Layer</th><th>What it does</th><th>Phase</th></tr></thead>
+    <tbody>
+      <tr><td>Data cache</td><td>Stores raw API responses by source, query and time window. Refresh times: live quotes 60 s; end-of-day data until the next session; RSS only when the feed changes. Protects free-tier limits and makes runs replayable.</td><td class="n">V0</td></tr>
+      <tr><td>Prompt caching (Claude)</td><td>Fixed instructions, the source list, templates and tier rules go first in each request; cached input costs about a tenth of the normal rate.</td><td class="n">V0</td></tr>
+      <tr><td>Page cache</td><td>A published report never changes, so its page is built once and rebuilt only on correction.</td><td class="n">V0–V1</td></tr>
+      <tr><td>Live updates</td><td>“Report ready” is pushed to open tabs instead of the page checking repeatedly.</td><td class="n">V1</td></tr>
+      <tr><td>Search without RAG</td><td>Archive search uses Postgres full-text search. Grouping similar stories uses title similarity plus a quick model check.</td><td class="n">V0–V1</td></tr>
+      <tr><td>RAG for Ask Citebell</td><td>Searches verified claims (keyword + meaning-based), not raw articles; answers cite claim IDs. Anthropic has no embedding model of its own and points to Voyage AI [R25].</td><td class="n">V2</td></tr>
+    </tbody>
+  </table></div>
+  <p class="lede" style="font-size:15px"><strong style="color:var(--ink)">Why no RAG early:</strong> reports are built from today's fresh data, which needs no retrieval. RAG also adds a new way to go wrong (pulling in stale or unverified text) that isn't worth the risk until there's a verified archive to search.</p>
+
+  <!-- 8.10 -->
+  <div class="dec-h" id="d10"><h3>8.10 · Which eval suites run?</h3><span class="tag brass">Decided</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Suite</th><th>Question it answers</th><th>Checks</th><th>When · blocks release?</th></tr></thead>
+    <tbody>
+      <tr><td>UX</td><td>Can you get to a trade plan quickly, on any device?</td><td>Timed “trade plan in ≤15 min” session with you every two weeks; zero serious accessibility issues (axe-core); page load under 2.5 s on mobile (Lighthouse); screenshot comparison of screens W1–W11 (Playwright).</td><td>Every change; <span class="tag down">blocks</span></td></tr>
+      <tr><td>Code</td><td>Does the logic work?</td><td>Tests for each data parser using saved real responses; tests that fail when a provider changes its format; ≥90% coverage of verification and gate code; type checks, lint, dependency and leaked-secret scans.</td><td>Every change; <span class="tag down">blocks</span></td></tr>
+      <tr><td>Data sanity</td><td>Is each number plausible and internally consistent?</td><td>FII + DII = combined (to ₹0.01 Cr); advances + declines + unchanged = 50; an index move above 5% or VIX move above 30% goes to review; no future timestamps; holidays respected; units (₹ crore vs lakh) correct.</td><td>Every run; failing items <span class="tag warn">withheld</span></td></tr>
+      <tr><td>Data quality</td><td>Is data complete, fresh, and agreeing across sources?</td><td>Cross-source agreement ≥99%; each field within its freshness window; share of planned sections verified; source uptime; correct detection of syndicated copies.</td><td>Every run; weekly review</td></tr>
+      <tr><td>AI pipeline</td><td>Is the model's work faithful?</td><td>Claim extraction recall and precision; wrongly accepted claims (target 0 on the critical set) and wrongly rejected claims; quote actually supports the claim; no number in the text except from verified data; impact-tag accuracy against your labels; advice-language detector; template followed.</td><td>Every prompt or model change; <span class="tag down">blocks</span>. Nightly on the previous day.</td></tr>
+      <tr><td>System stability</td><td>Does it deliver on time when things fail?</td><td>Replay the last 20 trading days from saved inputs; simulated failures (provider timeout, rate limit, broken file, AI refusal or overload); slowest runs vs deadline margin; scheduled-run success rate; missed-check-in alarm test.</td><td>Nightly replay; weekly failure drill</td></tr>
+      <tr><td>Cost</td><td>Is spend within budget?</td><td>Tokens, searches and data calls per report; cost per report; alert at 80% of the monthly budget.</td><td>Every run</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><span class="label">Golden test set</span><p>Start with ~300 hand-labelled claims from 20 recorded trading days, including deliberate traps: an old article resurfacing, a rumour carried by one outlet, provisional vs final FII data, front-month vs next-month Brent, syndicated copies posing as separate sources, paywalled partial text, and a headline that misquotes a number. Every confirmed “flag as wrong” becomes a new test case.</p></div>
+
+  <!-- 8.11 -->
+  <div class="dec-h" id="d11"><h3>8.11 · How do we build for low latency and scale from the start?</h3><span class="tag brass">Decided</span></div>
+  <div class="decision"><p><b>Precompute, then serve.</b> Fetching, verifying and writing happen on the worker before each deadline; the app only reads finished results. Page speed never depends on Claude or data providers, and <b>cost grows with the number of reports, not the number of users.</b></p></div>
+  <div class="grid2">
+    <div class="tbl"><table>
+      <thead><tr><th>Morning Insights step</th><th>IST</th></tr></thead>
+      <tbody>
+        <tr><td>Collection starts; raw data cached</td><td class="n">07:30</td></tr>
+        <tr><td>Data cutoff</td><td class="n">08:15</td></tr>
+        <tr><td>Extraction and verification (claims in parallel)</td><td class="n">08:15–08:32</td></tr>
+        <tr><td>Writing, checks, PDF</td><td class="n">08:32–08:38</td></tr>
+        <tr><td>Publish target (7-minute buffer)</td><td class="n">08:38</td></tr>
+        <tr><td>Hard deadline</td><td class="n">08:45</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Target</th><th>Goal</th></tr></thead>
+      <tbody>
+        <tr><td>Today page load (India, mobile 4G)</td><td class="n">LCP &lt; 2.5 s · server p95 &lt; 300 ms</td></tr>
+        <tr><td>Report publish</td><td class="n">By deadline on ≥ 98% of runs</td></tr>
+        <tr><td>Report-ready alert</td><td class="n">p95 &lt; 60 s after publish</td></tr>
+        <tr><td>Verified breaking alert (V1)</td><td class="n">p95 &lt; 10 min</td></tr>
+        <tr><td>Price alert (V1)</td><td class="n">p95 &lt; 5 s from price change</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <ul class="clean">
+    <li><strong>Hosting close to you:</strong> Supabase and Vercel in Mumbai; worker in the nearest available region.</li>
+    <li><strong>Failures stay contained:</strong> each source has a timeout, retries with increasing waits, and a cut-off when it keeps failing. A failing source affects one section, not the whole report.</li>
+    <li><strong>Publish as you go:</strong> verified sections go live as they pass; late sections show “withheld” with a retry time.</li>
+    <li><strong>Safe retries:</strong> each run is identified by report type, trading date and version, so a retry never publishes twice.</li>
+    <li><strong>Simple queue:</strong> jobs queue in Postgres (no Redis until needed), and a database lock ensures only one scheduler starts a run.</li>
+    <li><strong>Measured from V0:</strong> a trace of every run, with step durations, errors and cost.</li>
+  </ul>
+  <div class="tbl"><table>
+    <thead><tr><th>Stage</th><th>Users</th><th>What changes</th></tr></thead>
+    <tbody>
+      <tr><td>V0–V2</td><td class="n">1</td><td>Vercel Hobby, Supabase Free, one small worker. Vercel Hobby is for non-commercial use only [R26]. Supabase Free pauses after a week of inactivity [R28]; the worker's daily writes keep it active.</td></tr>
+      <tr><td>V3 beta</td><td class="n">≤ 100</td><td>Vercel and Supabase paid plans; a second worker for alerts; licensed data for redistribution.</td></tr>
+      <tr><td>SaaS</td><td class="n">1k–50k</td><td>The same reports serve every user from cache. Per-user work (watchlists, price alerts) runs as simple rules without AI. Separate alert workers; a read-only database copy; live prices delivered through a licensed vendor.</td></tr>
+    </tbody>
+  </table></div>
+
+  <!-- 8.12 -->
+  <div class="dec-h" id="d12"><h3>8.12 · Model evals: which model works best?</h3><span class="tag brass">Decided for launch</span></div>
+  <div class="decision"><p><b>Claude Opus 5 (<code>claude-opus-5</code>) for every AI step at launch.</b> At four reports a day, verification quality matters more than cost. Cheaper options are tested, not assumed.</p><p style="margin-top:6px"><b>The model never produces numbers.</b> The writer drafts text with data placeholders such as <code>{{fact:nifty50.close}}</code>, the renderer fills them from verified facts, and the final check rejects any number in the text that didn't come from a placeholder or a quoted source.</p></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Step</th><th>Launch setting</th><th>Also test</th><th>Must hold to switch</th></tr></thead>
+    <tbody>
+      <tr><td>Filtering, tagging, story grouping</td><td>Opus 5 · low effort</td><td>Haiku 4.5; Sonnet 5</td><td>Tag accuracy ≥ 95% against your labels</td></tr>
+      <tr><td>Claim extraction (structured output)</td><td>Opus 5 · medium effort</td><td>Sonnet 5</td><td>Recall ≥ 95%, precision ≥ 98%</td></tr>
+      <tr><td>Verification (exact quotes via Citations)</td><td>Opus 5 · high effort</td><td>No switch before V1 data exists</td><td>Zero wrongly accepted claims on the critical set</td></tr>
+      <tr><td>Writing</td><td>Opus 5 · medium effort</td><td>Sonnet 5</td><td>100% faithful to verified claims; template followed</td></tr>
+      <tr><td>Final checks (advice language, style)</td><td>Opus 5 · low effort, plus rule-based checks</td><td>Haiku 4.5</td><td>Catches 100% of planted defects</td></tr>
+      <tr><td>Ask Citebell (V2)</td><td>Opus 5</td><td>—</td><td>Answers only from verified claims</td></tr>
+    </tbody>
+  </table></div>
+  <ol class="clean">
+    <li>Record 20 trading days of inputs.</li>
+    <li>Run each option (model and effort level) on the golden test set and score it with the AI pipeline suite. Checks graded by a model are compared against your own labels on a sample first.</li>
+    <li>Compare quality, slowest-run time and cost per report. Try lower effort on Opus 5 before a cheaper model; it's often the better trade, and one model keeps prompt caching simpler.</li>
+    <li>You approve any switch. Verification stays on the strongest model unless an option shows zero wrong accepts on the critical set.</li>
+    <li>Re-run on every model or prompt change. The Batch API (half price, results within 24 hours) suits eval runs and backfills, never live reports.</li>
+  </ol>
+  <p class="lede" style="font-size:15px">Claude features used: structured output for extraction; Citations for exact quotes (the two can't be combined in one request, so they're separate steps); web search limited to trusted sites; prompt caching; automatic fallback on refusals, with every response's stop reason checked.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Monthly cost (estimate · measure in V0)</th><th>Assumption</th><th>21 trading days</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Opus 5</td><td>~85k input + ~19k output tokens per report (thinking counts as output) × 4 a day, at US$5 / US$25 per million</td><td class="n">~US$75; ~US$60–65 with prompt caching</td></tr>
+      <tr><td>Web search</td><td>~25 searches per report × 4 a day, at US$10 per 1,000</td><td class="n">~US$21</td></tr>
+      <tr><td>Market data</td><td>Upstox free or Kite ₹500</td><td class="n">₹0–500</td></tr>
+      <tr><td>Hosting</td><td>Free web and database tiers; one small worker</td><td class="n">~US$5–10</td></tr>
+      <tr><td><strong>Total V0</strong></td><td></td><td class="n"><strong>~US$85–100 + ₹0–500</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p class="lede" style="font-size:15px">If evals show no quality loss, moving extraction and writing to Sonnet 5 (US$2 / US$10 per million tokens) would save roughly US$20 a month.</p>
+</section>
+
+<!-- 9 -->
+<section class="sec" id="s9">
+  <div class="sec-h"><span class="label">§9</span><h2>Phasing: V0 → Nirvana</h2></div>
   <p class="lede">Each phase has to pass its exit gate before the next one starts. Trust is earned first, then scope grows.</p>
   <div class="phases">
     <div class="phase">
       <div><h4>V0 · Proof of trust</h4><span class="when">~3 weeks</span></div>
-      <ul><li>Four scheduled reports as HTML/PDF, sent to Telegram and email</li><li>About 15 curated sources; verification gate v1 (tiers, link check, match against one feed)</li><li>A citation on every claim; a “flag as wrong” button on each claim</li><li>Simple archive page; Markets page built on chart widgets</li></ul>
+      <ul><li>Four scheduled reports as HTML/PDF, sent to Telegram and email</li><li>About 15 curated sources; verification gate v1 (tiers, link check, match against one feed)</li><li>A citation on every claim; a “flag as wrong” button on each claim</li><li>Simple archive page; Markets page built on chart widgets; every fact and claim stored from day one (§8.8)</li></ul>
       <div class="gate-box"><span class="label">Exit gate</span>20 trading days in a row: ≥95% on time, zero unverified or wrong claims found in spot checks, and baseline research time measured.</div>
     </div>
     <div class="phase">
@@ -710,8 +1047,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 9 -->
-<section class="sec" id="s9">
-  <div class="sec-h"><span class="label">§9</span><h2>What else makes it a holistic platform</h2></div>
+<section class="sec" id="s10">
+  <div class="sec-h"><span class="label">§10</span><h2>What else makes it a holistic platform</h2></div>
   <div class="grid3">
     <div class="item"><span class="label">Calendars</span><p>Economic (India + global) with actual, consensus and prior; results and corporate actions; expiry calendar; NSE, US and Asia holidays.</p></div>
     <div class="item"><span class="label">Rules tracker</span><p>SEBI F&amp;O changes (lot sizes, margins, expiry rules), taken straight from exchange and SEBI circulars.</p></div>
@@ -726,8 +1063,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 10 -->
-<section class="sec" id="s10">
-  <div class="sec-h"><span class="label">§10</span><h2>User flows</h2></div>
+<section class="sec" id="s11">
+  <div class="sec-h"><span class="label">§11</span><h2>User flows</h2></div>
   <div class="grid2">
     <div class="flowcard"><header><span class="label">08:45</span><b>A · Pre-market</b></header>
       <div class="flow"><span class="s key">Push: Morning ready</span><span class="to">→</span><span class="s">Today</span><span class="to">→</span><span class="s">3 takeaways (≈2 min)</span><span class="to">→</span><span class="s">Tap [1] → fact-check drawer</span><span class="to">→</span><span class="s">GIFT &amp; Asia charts</span><span class="to">→</span><span class="s">Calendar + ban list</span><span class="to">→</span><span class="s">Mark items relevant</span><span class="to">→</span><span class="s key">Trade plan by 09:00</span></div></div>
@@ -749,8 +1086,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 11 -->
-<section class="sec" id="s11">
-  <div class="sec-h"><span class="label">§11</span><h2>Market-ready UX</h2></div>
+<section class="sec" id="s12">
+  <div class="sec-h"><span class="label">§12</span><h2>Market-ready UX</h2></div>
   <p class="lede">UX rules drawn from ui-ux-pro-max (financial dashboard, data-dense, density 8/10, subtle motion) and adapted to a product whose main feature is trust.</p>
   <div class="grid2">
     <div class="item"><span class="label">Trust patterns</span><h4>Proof on every surface</h4><p>Citation superscripts on every claim. Three verification badges (Primary data · Verified · Attributed view). An as-of chip on every number. Source-tier chips. Visible withheld states. A changelog on corrected reports.</p></div>
@@ -760,15 +1097,15 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="item"><span class="label">Colour &amp; access</span><h4>Up/down never colour-only</h4><p>▲▼ glyphs and signs on every change; candles filled vs hollow; 4.5:1 text contrast in both themes; a table view for every chart; aria-live on breaking alerts.</p></div>
     <div class="item"><span class="label">Motion</span><h4>Calm at 09:00</h4><p>Transitions of 150–300 ms for state changes only. No scrolling tickers or flashing prices. Respects reduced-motion settings.</p></div>
     <div class="item"><span class="label">Speed</span><h4>Keyboard-first</h4><p><code>/</code> search · <code>J</code>/<code>K</code> next and previous story · <code>C</code> open citations · <code>G</code> then <code>M</code> go to Markets. Visible focus rings; 44 px touch targets on mobile.</p></div>
-    <div class="item"><span class="label">Notifications</span><h4>Few, verified, useful</h4><p>Report-ready pushes plus verified breaking alerts, capped at 5 per day, with quiet hours and a digest option. Toasts auto-dismiss after 3–5 s; alerts stay until read.</p></div>
+    <div class="item"><span class="label">Notifications</span><h4>Few, verified, useful</h4><p>Report-ready pushes plus verified breaking alerts (breaking alerts capped at 5 per day), with quiet hours and a digest option. Toasts auto-dismiss after 3–5 s; alerts stay until read.</p></div>
     <div class="item"><span class="label">Onboarding &amp; pricing (SaaS)</span><h4>Value before signup</h4><p>A sample report without signup. Three skippable setup steps: instruments, report times and channels, watchlist. Three plans with the middle one highlighted and 20–30% off annual; the FAQ answers “Is this investment advice?” (No.)</p></div>
     <div class="item"><span class="label">Themes &amp; screens</span><h4>Dark-first, light supported</h4><p>Dark by default for early-morning screens, with a full light theme. Breakpoints 375 / 768 / 1024 / 1440; no horizontal scroll; bottom tab bar with 5 items on mobile.</p></div>
   </div>
 </section>
 
 <!-- 12 -->
-<section class="sec" id="s12">
-  <div class="sec-h"><span class="label">§12</span><h2>High-fidelity wireframes</h2></div>
+<section class="sec" id="s13">
+  <div class="sec-h"><span class="label">§13</span><h2>High-fidelity wireframes</h2></div>
   <p class="lede">Clickable mockups of the product in its default dark theme. Every number, headline and ticker below is illustrative sample data, not real market information. Hover the charts to see the tooltip layer.</p>
   <div class="wf-bar">
     <div class="wf-tabs" role="tablist" aria-label="Wireframe screens">
@@ -1030,7 +1367,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
             </div>
           </div>
           <span class="lbl">Sources</span>
-          <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T1</span>NSE IX</span><span class="muted v" style="font-size:11px">07:58:00 IST</span></span><span class="linkbtn">Open <svg class="ico" style="width:13px;height:13px"><use href="#i-ext"/></svg></span></div><span class="t2" style="font-size:12px">Exchange quote page · value matched exactly</span><span class="linkbtn" style="color:var(--a-text-3)"><svg class="ico" style="width:13px;height:13px"><use href="#i-archive"/></svg>Archived copy · 08:02</span></div>
+          <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T1</span>NSE IX</span><span class="muted v" style="font-size:11px">07:58:00 IST</span></span><span class="linkbtn">Open <svg class="ico" style="width:13px;height:13px"><use href="#i-ext"/></svg></span></div><span class="t2" style="font-size:12px">Exchange quote page · value matched exactly</span><span class="linkbtn" style="color:var(--a-text-3)"><svg class="ico" style="width:13px;height:13px"><use href="#i-archive"/></svg>Wayback copy · 08:02</span></div>
           <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T1</span>Feed B</span><span class="muted v" style="font-size:11px">07:58:02 IST</span></span><span class="linkbtn">Open <svg class="ico" style="width:13px;height:13px"><use href="#i-ext"/></svg></span></div><span class="t2" style="font-size:12px">Licensed market-data API · independent of NSE IX page</span></div>
           <div class="srcitem"><div class="ph"><span style="display:flex;gap:6px;align-items:center"><span class="src"><span class="t">T2</span>Business daily</span><span class="muted v" style="font-size:11px">08:06 IST</span></span><span class="tag" style="font-size:10.5px">context</span></div><q>GIFT Nifty was trading about 100 points lower, signalling a negative start…</q></div>
           <div class="tl"><span><i></i>Collected 08:02</span><em></em><span><i></i>Verified 08:19</span><em></em><span><i></i>Published 08:41</span></div>
@@ -1039,7 +1376,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       </div>
       <span class="ill">Illustrative data</span>
     </div></div>
-    <div class="annot"><div><b>Rule shown, not implied:</b> the trader sees which publish rule the claim passed.</div><div><b>Quotes ≤ 25 words</b> plus an archived copy; the original link stays primary.</div><div><b>Flag as wrong</b> starts a re-verification; the result appears in the corrections log (W10).</div></div>
+    <div class="annot"><div><b>Rule shown, not implied:</b> the trader sees which publish rule the claim passed.</div><div><b>Quotes ≤ 25 words</b> plus a Wayback copy; the original link stays primary.</div><div><b>Flag as wrong</b> starts a re-verification; the result appears in the corrections log (W10).</div></div>
   </div>
 
   <!-- W4 -->
@@ -1398,8 +1735,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 13 -->
-<section class="sec" id="s13">
-  <div class="sec-h"><span class="label">§13</span><h2>Success metrics</h2></div>
+<section class="sec" id="s14">
+  <div class="sec-h"><span class="label">§14</span><h2>Success metrics</h2></div>
   <div class="callout brass"><span class="label">North star</span><p><strong style="color:var(--ink)">Time to trade plan:</strong> minutes from the 08:45 drop until the trader marks today's plan as set, using only Citebell. Target <strong style="color:var(--ink)">≤ 15 minutes</strong>.</p></div>
   <div class="tbl"><table>
     <thead><tr><th>Metric</th><th>Definition</th><th>Target</th><th>How it's measured</th></tr></thead>
@@ -1430,8 +1767,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 14 -->
-<section class="sec" id="s14">
-  <div class="sec-h"><span class="label">§14</span><h2>Guardrail metrics</h2></div>
+<section class="sec" id="s15">
+  <div class="sec-h"><span class="label">§15</span><h2>Guardrail metrics</h2></div>
   <p class="lede">Guardrails protect trust while the success metrics push for speed and coverage. The first three are hard stops.</p>
   <div class="tbl"><table>
     <thead><tr><th>Guardrail</th><th>Threshold</th><th>If breached</th></tr></thead>
@@ -1445,7 +1782,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <tr><td>Source concentration</td><td class="n">No outlet &gt; 30% of a report's citations</td><td>Rebalance collectors; syndicated copies count once.</td></tr>
       <tr><td>Advice leakage</td><td class="n">0 buy/sell calls or targets in Citebell's voice</td><td>Gate blocks those phrasings; review the template.</td></tr>
       <tr><td>Late or missed reports</td><td class="n">&gt; 15 min late ≤ 1 / month · missed = 0</td><td>Incident review; add schedule buffer.</td></tr>
-      <tr><td>Alert fatigue</td><td class="n">≤ 5 pushes per trading day</td><td>Fold extra alerts into a digest.</td></tr>
+      <tr><td>Alert fatigue</td><td class="n">≤ 5 breaking-news alerts per trading day</td><td>Fold extra alerts into a digest.</td></tr>
       <tr><td>Report length</td><td class="n">Morning read ≤ 8 min</td><td>Tighten the template.</td></tr>
       <tr><td>Cost</td><td class="n">Within the monthly LLM + data budget</td><td>Use cheaper models for non-critical steps; alert at 80%.</td></tr>
       <tr><td>Licensing</td><td class="n">0 full-article copies · snippets ≤ 25 words</td><td>Remove the content; audit the collectors.</td></tr>
@@ -1455,15 +1792,15 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- Appendix -->
-<section class="sec" id="s15">
+<section class="sec" id="s16">
   <div class="sec-h"><span class="label">Appendix</span><h2>Risks, assumptions, open questions, sources</h2></div>
   <h3 style="margin-top:0">Risks &amp; mitigations</h3>
   <div class="tbl"><table>
     <thead><tr><th>Risk</th><th>Why it matters</th><th>Mitigation</th></tr></thead>
     <tbody>
-      <tr><td>Data licensing</td><td>Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms.</td><td>Personal-use broker and licensed APIs in V0–V2; RSS and official feeds only; get an exchange or vendor licence before any SaaS launch.</td></tr>
+      <tr><td>Data licensing</td><td>Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms.</td><td>Broker APIs under personal-use terms in V0–V2; RSS and official feeds only; NSE-only reports via NSE's consent, a licensed vendor or manual download (§8.4); an exchange or vendor licence before any SaaS launch.</td></tr>
       <tr><td>Regulation</td><td>Charging users for market analysis may bring in SEBI research-analyst or investment-adviser rules.</td><td>Stay factual and attributed; no advice in Citebell's own voice; get legal advice before V3 billing.</td></tr>
-      <tr><td>LLM errors</td><td>A model can invent a number or a source.</td><td>Numbers come from data, never generated text; independent verifier; fail-closed gate; regression set of known-tricky claims.</td></tr>
+      <tr><td>LLM errors</td><td>A model can invent a number or a source.</td><td>Numbers are filled in from verified data via placeholders, never written by the model (§8.12); independent verifier; fail-closed gate; golden test set of known traps.</td></tr>
       <tr><td>Source outages and delays</td><td>Exchange files and feeds can arrive late.</td><td>Second feed; withheld states with retry times; last verified values shown with their dates.</td></tr>
       <tr><td>Paywalls</td><td>Some claims can't be read in full.</td><td>Cite only what's verifiable in the free portion, or use an alternative source.</td></tr>
       <tr><td>Over-reliance</td><td>A trusted tool can be followed blindly.</td><td>Clear badges, attributed views, journaling prompts, “information, not advice” copy.</td></tr>
@@ -1471,8 +1808,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     </tbody>
   </table></div>
   <div class="grid2">
-    <div class="item"><span class="label">Assumptions to validate</span><ul class="clean" style="font-size:14.5px"><li>Current pre-market research takes 60–90 min (measure in V0).</li><li>The named outlets offer usable RSS or official feeds.</li><li>Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.</li><li>A broker API gives index data for personal use at acceptable cost.</li></ul></div>
-    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Kite, Dhan or Upstox?</li><li>What monthly budget for data and LLM calls?</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
+    <div class="item"><span class="label">Assumptions to validate</span><ul class="clean" style="font-size:14.5px"><li>Current pre-market research takes 60–90 min (measure in V0).</li><li>The named outlets offer usable RSS or official feeds.</li><li>Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.</li><li>A broker API gives index and option-chain data for personal use (Upstox's data APIs are free; Kite Connect is ₹500/month).</li></ul></div>
+    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Upstox, Kite or Dhan?</li><li>Route for NSE-only data: ask NSE for consent, license a vendor, or download by hand?</li><li>Worker host: Railway, Render or Fly.io?</li><li>What monthly budget for data and LLM calls?</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
   </div>
   <h3>Sources</h3>
   <ol class="clean" style="font-size:14px;list-style:none;padding:0">
@@ -1489,6 +1826,25 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <li><span class="mono" style="color:var(--brass)">[R11]</span> AI-native tools: <a href="https://trytradar.com/">Tradar</a> · <a href="https://marketseasy.in/">MarketsEasy</a></li>
     <li><span class="mono" style="color:var(--brass)">[R12]</span> Design system: <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill">ui-ux-pro-max-skill</a> (MIT) · data-viz palette slots for compare charts</li>
     <li><span class="mono" style="color:var(--brass)">[R13]</span> Domain checks: RDAP at rdap.verisign.com (.com), pubapi.registry.google (.app), rdap.nixiregistry.in (.in), rdap.identitydigital.services (.ai, .io), 14 Sep 2026</li>
+    <li><span class="mono" style="color:var(--brass)">[R14]</span> Kite Connect pricing: <a href="https://zerodha.com/z-connect/updates/free-personal-apis-from-kite-connect">Zerodha Z-Connect</a> · <a href="https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/historical-data-and-live-market-data-payment-plan">Zerodha support</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R15]</span> <a href="https://www.nseindia.com/static/nse-terms-of-use">NSE Terms of Use</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R16]</span> <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows">GitHub Actions: schedule event</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R17]</span> <a href="https://platform.claude.com/docs/en/about-claude/pricing">Claude API pricing</a> (web search, models)</li>
+    <li><span class="mono" style="color:var(--brass)">[R18]</span> <a href="https://fred.stlouisfed.org/docs/api/fred/">FRED API</a> · <a href="https://apispine.com/fred/pricing">rate limit summary</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R19]</span> <a href="https://eodhd.com/pricing">EODHD pricing</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R20]</span> <a href="https://twelvedata.com/pricing">Twelve Data pricing</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R21]</span> <a href="https://www.coingecko.com/en/api/pricing">CoinGecko API pricing</a> · <a href="https://docs.coingecko.com/docs/common-errors-rate-limit">rate limits</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R22]</span> <a href="https://www.fivefilters.org/2021/reuters-rss-feeds/">Reuters RSS feeds ended (FiveFilters)</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R23]</span> <a href="https://newsapi.org/pricing">NewsAPI pricing and plan limits</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R24]</span> <a href="https://myoperator.com/blog/whatsapp-business-api-pricing-india-2026">WhatsApp Business API pricing in India, 2026</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R25]</span> <a href="https://platform.claude.com/docs/en/build-with-claude/embeddings">Claude docs: embeddings</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R26]</span> <a href="https://vercel.com/docs/plans/hobby">Vercel Hobby plan</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R27]</span> <a href="https://upstox.com/trading-api/">Upstox trading and data APIs</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R28]</span> <a href="https://supabase.com/pricing">Supabase pricing</a> · <a href="https://supabase.com/docs/guides/platform/regions">Supabase regions</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R29]</span> <a href="https://github.com/zerodha/kite-mcp-server">Zerodha Kite MCP server</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R30]</span> <a href="https://resend.com/docs/knowledge-base/account-quotas-and-limits">Resend quotas and limits</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R31]</span> <a href="https://archive.org/details/spn-2-public-api-page-docs">Wayback Machine Save Page Now API</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R32]</span> <a href="https://dhan.co/support/platforms/dhanhq-api/how-does-the-dhanhq-data-api-subscription-work/">DhanHQ Data API subscription</a></li>
   </ol>
 </section>
 
@@ -1496,7 +1852,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </div>
 
 <footer style="max-width:1320px;margin:0 auto;padding:6px 28px 40px;color:var(--ink-3);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between">
-  <span>Citebell PRD v1.0 · 14 Sep 2026</span>
+  <span>Citebell PRD v1.1 · 14 Sep 2026</span>
   <span>Wireframe data is illustrative. Market information, not investment advice.</span>
 </footer>
 

@@ -19,6 +19,16 @@ The user trades Indian F&O on their own account and starts work at the 9:00 AM I
 - **Design system** persisted to `design-system/citebell/MASTER.md`, with design-lead refinements at the top.
 - **Skill:** ui-ux-pro-max added as a git submodule at `vendor/ui-ux-pro-max-skill` and enabled via `.claude/settings.json`.
 
+## v1.1: technical architecture decisions (same day)
+The user raised 12 architecture questions (frontend/backend split, LangChain/Python, APIs vs MCP, free vs paid data, auth, downloads, alerts, building on stored data, caching/RAG, eval suites, latency/scale, model choice). They're answered in PRD §8 and backed by fresh pricing and terms checks. Corrections to v1.0 made along the way:
+- "Claude Agent SDK" replaced by a Python worker calling the Claude API directly.
+- Reuters has no public RSS; it's reached through allow-listed web search instead.
+- "Archived snapshot" replaced by a Wayback Machine capture plus a content fingerprint, so full-page copies aren't stored.
+- NSE's Terms of Use prohibit automated data collection, so NSE-only datasets are an open decision.
+- Scheduling moved off GitHub Actions, which can delay or drop scheduled jobs.
+- New "News-reported" badge for V0 values that have no primary feed.
+- Breaking-news alerts capped at 5 per day, with report-ready alerts excluded from the cap.
+
 ## Inputs reviewed
 - Sample morning outlook reports (3 pages: Global Opening Check / India Setup & Flows / Data Outlook).
 - Older text pre-market briefs (May–Jul 2026).
