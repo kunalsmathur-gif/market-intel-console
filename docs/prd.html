@@ -369,7 +369,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="head-row">
       <div class="lockup"><svg aria-label="Citebell logo"><use href="#mark"/></svg><span class="wordmark">citebell<sup>[1]</sup></span></div>
       <div class="meta">
-        <span class="chip brass">PRD v1.2 · draft for review</span>
+        <span class="chip brass">PRD v1.3 · draft for review</span>
         <span class="chip">14 Sep 2026</span>
         <span class="chip">Personal use first · SaaS-ready</span>
       </div>
@@ -418,14 +418,15 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <li><a href="#s6"><span>06</span>Features to copy</a></li>
       <li><a href="#s7"><span>07</span>High-level solution</a></li>
       <li><a href="#s8"><span>08</span>Architecture decisions</a></li>
-      <li><a href="#s9"><span>09</span>Phasing V0 → Nirvana</a></li>
-      <li><a href="#s10"><span>10</span>Making it holistic</a></li>
-      <li><a href="#s11"><span>11</span>User flows</a></li>
-      <li><a href="#s12"><span>12</span>Market-ready UX</a></li>
-      <li><a href="#s13"><span>13</span>Hi-fi wireframes</a></li>
-      <li><a href="#s14"><span>14</span>Success metrics</a></li>
-      <li><a href="#s15"><span>15</span>Guardrail metrics</a></li>
-      <li><a href="#s16"><span>A</span>Risks, assumptions, sources</a></li>
+      <li><a href="#s9"><span>09</span>Budget and pricing</a></li>
+      <li><a href="#s10"><span>10</span>Phasing V0 → Nirvana</a></li>
+      <li><a href="#s11"><span>11</span>Making it holistic</a></li>
+      <li><a href="#s12"><span>12</span>User flows</a></li>
+      <li><a href="#s13"><span>13</span>Market-ready UX</a></li>
+      <li><a href="#s14"><span>14</span>Hi-fi wireframes</a></li>
+      <li><a href="#s15"><span>15</span>Success metrics</a></li>
+      <li><a href="#s16"><span>16</span>Guardrail metrics</a></li>
+      <li><a href="#s17"><span>A</span>Risks, assumptions, sources</a></li>
     </ol>
   </nav>
 
@@ -806,7 +807,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <thead><tr><th>Data needed</th><th>V0 source</th><th>Cost</th><th>Limits and licence notes</th></tr></thead>
     <tbody>
       <tr><td>Nifty, Bank Nifty, Sensex, sector indices, India VIX, option chain (OI, PCR; max pain computed), breadth (computed from index stocks)</td><td>A broker API: Upstox (data APIs free) [R27] or Kite Connect (₹500/month including live and historical data; the free Kite Personal plan has no market data) [R14]. Dhan's data API is ₹499/month [R32].</td><td class="n">₹0–500/mo</td><td>Personal-use terms and a broker account needed. Broker logins expire daily, so the worker needs a daily login step. Showing this data to other users needs an exchange or vendor licence.</td></tr>
-      <tr><td>USD/INR, gold, crude as traded in India</td><td>Same broker API: NSE USD/INR futures, MCX gold and crude futures</td><td class="n">included</td><td>Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). RBI's daily reference rate is the official cross-check.</td></tr>
+      <tr><td>USD/INR, gold, crude as traded in India</td><td>Same broker API: NSE USD/INR futures, MCX gold and crude futures</td><td class="n">included</td><td>Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). FBIL's daily reference rate (published around 13:30 IST, still often called the RBI rate) is the official cross-check [R38].</td></tr>
       <tr><td>FII/DII provisional cash, participant-wise OI, F&amp;O ban list, bhavcopy</td><td>Published only by NSE</td><td class="n">Free to view</td><td><strong>NSE's Terms of Use prohibit automated data collection without written consent</strong> [R15]. <span class="tag warn">Decision needed</span> Ask NSE for consent for low-volume personal use, use a licensed data vendor, or download these by hand. The PRD doesn't assume scraping.</td></tr>
       <tr><td>FPI flows (cross-check)</td><td>NSDL's daily FPI data</td><td class="n">Free</td><td>Published a day later; check the site's terms.</td></tr>
       <tr><td>US index closes, US 10-year yield, US economic data</td><td>FRED API (free key, ~120 requests/minute) [R18]; US Treasury yield data</td><td class="n">Free</td><td>Daily closing values, not live futures.</td></tr>
@@ -1042,17 +1043,147 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   <ul class="clean">
     <li><strong>Volume assumed:</strong> ~85k input + ~19k output tokens per report × 4 reports × 21 trading days. Search: ~25 searches per report, priced at OpenRouter's Parallel (US$1–5 per 1,000) to Exa (US$7 per 1,000) [R34].</li>
     <li><strong>Not included:</strong> savings from prompt caching where a provider supports it; market data (₹0–500 a month). Hosting runs on your existing Vercel, Supabase and Railway plans.</li>
+    <li><strong>Cheaper still:</strong> a direct Gemini API key skips OpenRouter's fee and includes free Google Search grounding. The full budget for that plan is in §9.</li>
     <li><strong>Data policy:</strong> news inputs are public. From V2 your trade journal is personal, so those calls go only to providers that don't store or train on prompts, using OpenRouter's privacy settings.</li>
   </ul>
 </section>
 
-<!-- 9 -->
+<!-- 9 budget -->
 <section class="sec" id="s9">
-  <div class="sec-h"><span class="label">§9</span><h2>Phasing: V0 → Nirvana</h2></div>
+  <style>
+    .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .kpi{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:4px;align-content:start;background:var(--bg)}
+    .kpi .big{font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.15}
+    .kpi p{color:var(--ink-2);font-size:14px}
+    .kpi.brass{background:var(--brass-fill);border-color:transparent}
+    .kpi.brass .label{color:var(--brass)}
+  </style>
+  <div class="sec-h"><span class="label">§9</span><h2>Budget and pricing</h2></div>
+  <p class="lede">What Citebell costs to build and run on the recommended V0 plan: free data sources, your own Gemini API key on the paid tier, and your existing Vercel, Supabase and Railway plans. Prices were checked on 14 Sep 2026; rupee figures use ₹95.7 per US$ (FBIL reference rate, 12 Sep 2026) [R38]. Every figure is an estimate, to be replaced by measured numbers during V0.</p>
+
+  <div class="kpis">
+    <div class="kpi brass"><span class="label">One-time cash</span><span class="big">US$20–40</span><p>₹1,900–3,800, mostly AI usage while building and testing. A domain is optional and extra.</p></div>
+    <div class="kpi"><span class="label">One-time effort</span><span class="big">26–36 developer days</span><p>5–7 weeks of building, 8–10 weeks end to end including 20 recorded trading days. Plus ~15–20 hours of your labelling.</p></div>
+    <div class="kpi brass"><span class="label">Monthly running cost</span><span class="big">US$2–25</span><p>₹200–2,400 for AI models, extra hosting usage and an optional domain. Market data costs ₹0.</p></div>
+    <div class="kpi"><span class="label">Monthly upkeep</span><span class="big">6–10 hours</span><p>Plus 1–3 minutes each trading day for the Upstox login, and the NSE file if you choose that route.</p></div>
+  </div>
+
+  <h3>9.1 · Monthly running cost</h3>
+  <h4>AI models: direct Gemini API key, paid tier [R39]</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Setup</th><th>US$ per million tokens, input / output</th><th>Per month*</th></tr></thead>
+    <tbody>
+      <tr><td>Gemini 2.5 Flash-Lite for every step</td><td class="n">0.10 / 0.40</td><td class="n">~US$1.4 (₹130)</td></tr>
+      <tr><td>Gemini 2.5 Flash-Lite, with Gemini 2.5 Flash for verification only</td><td class="n">mixed</td><td class="n">~US$3.5 (₹330)</td></tr>
+      <tr><td>Gemini 3.5 Flash-Lite for every step</td><td class="n">0.30 / 2.50</td><td class="n">~US$6 (₹580)</td></tr>
+      <tr><td>Gemini 2.5 Flash for every step</td><td class="n">0.30 / 2.50</td><td class="n">~US$6 (₹580)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="lede" style="font-size:13.5px">*~7.1M input + ~1.6M output tokens a month (the §8.12 assumption). Budget US$2–8 to allow for retries and longer reasoning; taxes may apply. The option is picked by the bake-off (§8.12), not by price alone.</p>
+  <p class="lede" style="font-size:15px"><strong style="color:var(--ink)">Search can be free.</strong> Gemini's Google Search grounding includes 1,500 grounded requests a day at no charge on the 2.5 models' paid tier, and 5,000 search requests a month on 3.5 Flash-Lite (then US$14 per 1,000) [R39]. At ~100 searches a trading day (~2,100 a month), either stays within the free allowance. Google's search can't be limited to chosen sites, so results from sites outside the allow-list are filtered out in code before anything is used.</p>
+
+  <h4>Everything else</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Item</th><th>Per month</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Market data: Upstox, FRED, CoinGecko Demo, publisher RSS, GDELT, NSDL, FBIL</td><td class="n">₹0</td><td>Free under personal-use terms (§8.4)</td></tr>
+      <tr><td>Vercel (web app)</td><td class="n">₹0 extra</td><td>Your existing plan</td></tr>
+      <tr><td>Railway (worker)</td><td class="n">~US$0–7</td><td>Plans include a usage credit, but other apps on the account (such as WanderPlanner) draw on it too [R40]</td></tr>
+      <tr><td>Supabase (database, sign-in, files)</td><td class="n">~US$0–10</td><td>A second project may add a compute charge; confirm on your plan</td></tr>
+      <tr><td>Telegram, email, Wayback links, uptime monitor</td><td class="n">₹0</td><td>Telegram Bot API is free; Resend's free email tier covers 3,000 a month, 100 a day [R30]</td></tr>
+      <tr><td>Domain (optional)</td><td class="n">~₹100–200</td><td>E.g. a .com and a .in, averaged over the year (estimate)</td></tr>
+      <tr><td><strong>Total</strong></td><td class="n"><strong>~US$2–25 (₹200–2,400)</strong></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><span class="label">Why not Gemini's free tier?</span><p>It would bring AI to ₹0, but Google uses free-tier inputs and outputs to improve its products, people may read them, and Google's terms say not to send personal information [R41]. Fine for building and testing with public news; not for daily production, and never for your trade journal. The paid tier costs ₹130–580 a month.</p></div>
+
+  <h3>9.2 · One-time build cost (V0)</h3>
+  <div class="grid2">
+    <div class="tbl"><table>
+      <thead><tr><th>Cash item</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td>AI usage while developing and testing</td><td class="n">~US$5–15</td></tr>
+        <tr><td>Bake-off: 3 Gemini options, graded by a model from another vendor through OpenRouter</td><td class="n">~US$15–25</td></tr>
+        <tr><td>Supabase, Railway, Vercel, GitHub</td><td class="n">Already paid</td></tr>
+        <tr><td><strong>Total</strong></td><td class="n"><strong>~US$20–40 (₹1,900–3,800)</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Build work (one developer using AI coding tools)</th><th>Days</th></tr></thead>
+      <tbody>
+        <tr><td>Setup: repo, database, worker, web app, sign-in</td><td class="n">3–4</td></tr>
+        <tr><td>Data connectors and tests: Upstox with daily login, FRED, CoinGecko, NSDL, ~15 RSS feeds, GDELT, Gemini search</td><td class="n">5–7</td></tr>
+        <tr><td>Verification pipeline: claim extraction, story grouping, source tiers, quote and number checks, publish gate</td><td class="n">7–10</td></tr>
+        <tr><td>Four report templates, PDF and citation pack, simple archive page</td><td class="n">4–5</td></tr>
+        <tr><td>Telegram and email alerts, scheduler, monitoring, NSE file upload</td><td class="n">2–3</td></tr>
+        <tr><td>Eval harness and bake-off</td><td class="n">3–4</td></tr>
+        <tr><td>Hardening: replay tests, failure drills</td><td class="n">2–3</td></tr>
+        <tr><td><strong>Total</strong></td><td class="n"><strong>26–36 (5–7 weeks)</strong></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p class="lede" style="font-size:15px"><strong style="color:var(--ink)">Your time:</strong> ~15–20 hours labelling test sets, plus a quick daily look at reports during the 20 recorded trading days. <strong style="color:var(--ink)">Calendar:</strong> about 8–10 weeks end to end, since the recording runs alongside the second half of the build. If you hire a developer, multiply the developer days by their rate.</p>
+
+  <h3>9.3 · Monthly upkeep</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>How often</th><th>Task</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td>Every trading day</td><td>Log in to Upstox before 07:30. Its access token expires at 03:30 IST daily with no refresh token [R42]. Upstox also issues a longer-lived read-only token, but its docs don't say how long it lasts, so test it before relying on it.</td><td class="n">~1 min</td></tr>
+      <tr><td>Every trading evening</td><td>Send NSE's FII/DII file to the Telegram bot (only on the manual route, §9.4)</td><td class="n">~2 min</td></tr>
+      <tr><td>Weekly</td><td>Review flagged and withheld items</td><td class="n">~30 min</td></tr>
+      <tr><td>Monthly</td><td>Fix broken feeds or parsers, add new test cases, update dependencies</td><td class="n">~4–6 h</td></tr>
+      <tr><td>When a notable model launches</td><td>Re-run the bake-off (§8.12)</td><td class="n">~1 h + ~US$5</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>9.4 · What the free plan misses</h3>
+  <p class="lede" style="font-size:15px">Free sources still cover a lot. Through Upstox: live Nifty, Bank Nifty and India VIX, the option chain, live MCX crude and gold and NSE USD/INR futures, and price history (daily since 2000, intraday since 2022) [R43]. Also crypto prices, Indian news and official economic data. The accuracy rules don't change; what the free plan gives up is freshness and depth.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Missing without paid sources</th><th>What it means for you</th><th>Free workaround</th><th>Paid fix later</th></tr></thead>
+    <tbody>
+      <tr><td>Live global prices before 08:15: GIFT Nifty, S&amp;P and Nasdaq futures, Nikkei, Hang Seng, Kospi</td><td>Values come from pre-market news articles, so they can be older, rounded or missing</td><td>“News-reported” badge, shown only when two outlets agree</td><td>A market data feed; confirm GIFT Nifty coverage, which few cheap feeds have</td></tr>
+      <tr><td>Live international benchmarks: Brent, WTI, COMEX gold, DXY, intraday US 10-year</td><td>Indian contracts are live; global benchmarks come from news or daily official data</td><td>Clearly labelled as the MCX or NSE contract</td><td>Same data feed</td></tr>
+      <tr><td>NSE-only reports: FII/DII, participant-wise OI, F&amp;O ban list</td><td>NSE's terms prohibit collecting them automatically (§8.4)</td><td>Send NSE's file to the Telegram bot each evening (~2 min, parsed automatically), or use FII/DII figures reported in the news</td><td>Licensed vendor or an NSE data subscription</td></tr>
+      <tr><td>Consensus forecasts for economic data</td><td>No “actual vs expected” surprise score</td><td>Official dates and prior values; expectations quoted in news previews</td><td>Paid economic calendar API</td></tr>
+      <tr><td>Paywalled analysis: Mint premium, Business Standard, FT, WSJ, Bloomberg</td><td>Headlines and opening lines only</td><td>Cross-check with free outlets; link to the original</td><td>Your own reading subscriptions (not for automated use)</td></tr>
+      <tr><td>Wire speed: Reuters, Bloomberg</td><td>Breaking news can arrive minutes later than on a terminal</td><td>Gemini's search grounding picks up wire stories within the free quota</td><td>Terminal or news API (expensive)</td></tr>
+      <tr><td>Brokerage research and rating changes</td><td>Only when free news reports them</td><td>Shown as attributed news</td><td>Broker research subscriptions</td></tr>
+      <tr><td>Options history: IV percentile, past OI</td><td>Nothing to compare against at first</td><td>Citebell records its own history from day one; IV is calculated from option prices</td><td>Historical options data vendor</td></tr>
+      <tr><td>Crypto extras: ETF flows, liquidations, on-chain data</td><td>Prices, dominance and funding rates only</td><td>ETF flows taken from news</td><td>Paid crypto analytics</td></tr>
+      <tr><td>Guarantees: uptime, support, the right to resell data</td><td>Free APIs can change or throttle without notice; the data can't be sold to subscribers</td><td>Tests that catch format changes; backup sources</td><td>Paid licences before any SaaS launch</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>9.5 · Plans compared, and when to pay for more</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Plan</th><th>Monthly</th><th>When it fits</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Free data + direct Gemini key</strong> <span class="tag brass">Recommended for V0</span></td><td class="n">~US$2–25</td><td>Personal V0: proving the reports can be trusted</td></tr>
+      <tr><td>Free data + OpenRouter mix (Gemini 2.5 Flash, with a stronger verification model)</td><td class="n">~US$20–33 AI · + hosting</td><td>If the bake-off shows the Flash-Lite options miss the verification bars</td></tr>
+      <tr><td>Free data + Claude Opus 5 for every step</td><td class="n">~US$82–95 AI · + hosting</td><td>Not planned; kept as the quality reference in the bake-off</td></tr>
+      <tr><td>Paid-data add-ons</td><td class="n">per trigger below</td><td>Only when a trigger fires</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Pay for</th><th>Trigger</th><th>Rough cost</th></tr></thead>
+    <tbody>
+      <tr><td>Market data feed for global prices</td><td>“News-reported” global values are missing or stale on more than 3 trading days in a month</td><td class="n">~€20–30/month [R19]; confirm coverage</td></tr>
+      <tr><td>Stronger verification model</td><td>The Gemini option misses a verification bar in the bake-off (§8.12)</td><td class="n">~US$10–30/month more</td></tr>
+      <tr><td>Kite Connect</td><td>Upstox data proves unreliable, or you prefer Zerodha</td><td class="n">₹500/month [R14]</td></tr>
+      <tr><td>Economic calendar with consensus</td><td>You want “actual vs expected” surprise scores (V1)</td><td class="n">Get a quote</td></tr>
+      <tr><td>Licensed NSE data</td><td>The manual NSE upload becomes a burden, or before any SaaS launch</td><td class="n">Get a quote</td></tr>
+      <tr><td>Redistribution licences</td><td>Before the V3 SaaS beta</td><td class="n">Get a quote</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 10 -->
+<section class="sec" id="s10">
+  <div class="sec-h"><span class="label">§10</span><h2>Phasing: V0 → Nirvana</h2></div>
   <p class="lede">Each phase has to pass its exit gate before the next one starts. Trust is earned first, then scope grows.</p>
   <div class="phases">
     <div class="phase">
-      <div><h4>V0 · Proof of trust</h4><span class="when">~3 weeks</span></div>
+      <div><h4>V0 · Proof of trust</h4><span class="when">~5–7 weeks build · 8–10 weeks end to end (§9)</span></div>
       <ul><li>Four scheduled reports as HTML/PDF, sent to Telegram and email</li><li>About 15 curated sources; verification gate v1 (tiers, link check, match against one feed)</li><li>A citation on every claim; a “flag as wrong” button on each claim</li><li>Simple archive page; Markets page built on chart widgets; every fact and claim stored from day one (§8.8)</li></ul>
       <div class="gate-box"><span class="label">Exit gate</span>20 trading days in a row: ≥95% on time, zero unverified or wrong claims found in spot checks, and baseline research time measured.</div>
     </div>
@@ -1080,8 +1211,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 9 -->
-<section class="sec" id="s10">
-  <div class="sec-h"><span class="label">§10</span><h2>What else makes it a holistic platform</h2></div>
+<section class="sec" id="s11">
+  <div class="sec-h"><span class="label">§11</span><h2>What else makes it a holistic platform</h2></div>
   <div class="grid3">
     <div class="item"><span class="label">Calendars</span><p>Economic (India + global) with actual, consensus and prior; results and corporate actions; expiry calendar; NSE, US and Asia holidays.</p></div>
     <div class="item"><span class="label">Rules tracker</span><p>SEBI F&amp;O changes (lot sizes, margins, expiry rules), taken straight from exchange and SEBI circulars.</p></div>
@@ -1096,8 +1227,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 10 -->
-<section class="sec" id="s11">
-  <div class="sec-h"><span class="label">§11</span><h2>User flows</h2></div>
+<section class="sec" id="s12">
+  <div class="sec-h"><span class="label">§12</span><h2>User flows</h2></div>
   <div class="grid2">
     <div class="flowcard"><header><span class="label">08:45</span><b>A · Pre-market</b></header>
       <div class="flow"><span class="s key">Push: Morning ready</span><span class="to">→</span><span class="s">Today</span><span class="to">→</span><span class="s">3 takeaways (≈2 min)</span><span class="to">→</span><span class="s">Tap [1] → fact-check drawer</span><span class="to">→</span><span class="s">GIFT &amp; Asia charts</span><span class="to">→</span><span class="s">Calendar + ban list</span><span class="to">→</span><span class="s">Mark items relevant</span><span class="to">→</span><span class="s key">Trade plan by 09:00</span></div></div>
@@ -1119,8 +1250,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 11 -->
-<section class="sec" id="s12">
-  <div class="sec-h"><span class="label">§12</span><h2>Market-ready UX</h2></div>
+<section class="sec" id="s13">
+  <div class="sec-h"><span class="label">§13</span><h2>Market-ready UX</h2></div>
   <p class="lede">UX rules drawn from ui-ux-pro-max (financial dashboard, data-dense, density 8/10, subtle motion) and adapted to a product whose main feature is trust.</p>
   <div class="grid2">
     <div class="item"><span class="label">Trust patterns</span><h4>Proof on every surface</h4><p>Citation superscripts on every claim. Three verification badges (Primary data · Verified · Attributed view). An as-of chip on every number. Source-tier chips. Visible withheld states. A changelog on corrected reports.</p></div>
@@ -1137,8 +1268,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 12 -->
-<section class="sec" id="s13">
-  <div class="sec-h"><span class="label">§13</span><h2>High-fidelity wireframes</h2></div>
+<section class="sec" id="s14">
+  <div class="sec-h"><span class="label">§14</span><h2>High-fidelity wireframes</h2></div>
   <p class="lede">Clickable mockups of the product in its default dark theme. Every number, headline and ticker below is illustrative sample data, not real market information. Hover the charts to see the tooltip layer.</p>
   <div class="wf-bar">
     <div class="wf-tabs" role="tablist" aria-label="Wireframe screens">
@@ -1768,8 +1899,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 13 -->
-<section class="sec" id="s14">
-  <div class="sec-h"><span class="label">§14</span><h2>Success metrics</h2></div>
+<section class="sec" id="s15">
+  <div class="sec-h"><span class="label">§15</span><h2>Success metrics</h2></div>
   <div class="callout brass"><span class="label">North star</span><p><strong style="color:var(--ink)">Time to trade plan:</strong> minutes from the 08:45 drop until the trader marks today's plan as set, using only Citebell. Target <strong style="color:var(--ink)">≤ 15 minutes</strong>.</p></div>
   <div class="tbl"><table>
     <thead><tr><th>Metric</th><th>Definition</th><th>Target</th><th>How it's measured</th></tr></thead>
@@ -1800,8 +1931,8 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- 14 -->
-<section class="sec" id="s15">
-  <div class="sec-h"><span class="label">§15</span><h2>Guardrail metrics</h2></div>
+<section class="sec" id="s16">
+  <div class="sec-h"><span class="label">§16</span><h2>Guardrail metrics</h2></div>
   <p class="lede">Guardrails protect trust while the success metrics push for speed and coverage. The first three are hard stops.</p>
   <div class="tbl"><table>
     <thead><tr><th>Guardrail</th><th>Threshold</th><th>If breached</th></tr></thead>
@@ -1817,7 +1948,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <tr><td>Late or missed reports</td><td class="n">&gt; 15 min late ≤ 1 / month · missed = 0</td><td>Incident review; add schedule buffer.</td></tr>
       <tr><td>Alert fatigue</td><td class="n">≤ 5 breaking-news alerts per trading day</td><td>Fold extra alerts into a digest.</td></tr>
       <tr><td>Report length</td><td class="n">Morning read ≤ 8 min</td><td>Tighten the template.</td></tr>
-      <tr><td>Cost</td><td class="n">Within the monthly LLM + data budget</td><td>Use cheaper models for non-critical steps; alert at 80%.</td></tr>
+      <tr><td>Cost</td><td class="n">Within the §9 budget (V0: ≤ US$25 a month)</td><td>Use cheaper models for non-critical steps; alert at 80%.</td></tr>
       <tr><td>Licensing</td><td class="n">0 full-article copies · snippets ≤ 25 words</td><td>Remove the content; audit the collectors.</td></tr>
       <tr><td>Security</td><td class="n">0 exposed secrets</td><td>Rotate keys; scan the repo in CI.</td></tr>
     </tbody>
@@ -1825,7 +1956,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </section>
 
 <!-- Appendix -->
-<section class="sec" id="s16">
+<section class="sec" id="s17">
   <div class="sec-h"><span class="label">Appendix</span><h2>Risks, assumptions, open questions, sources</h2></div>
   <h3 style="margin-top:0">Risks &amp; mitigations</h3>
   <div class="tbl"><table>
@@ -1843,7 +1974,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   </table></div>
   <div class="grid2">
     <div class="item"><span class="label">Assumptions to validate</span><ul class="clean" style="font-size:14.5px"><li>Current pre-market research takes 60–90 min (measure in V0).</li><li>The named outlets offer usable RSS or official feeds.</li><li>Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.</li><li>A broker API gives index and option-chain data for personal use (Upstox's data APIs are free; Kite Connect is ₹500/month).</li></ul></div>
-    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Upstox, Kite or Dhan?</li><li>Route for NSE-only data: ask NSE for consent, license a vendor, or download by hand?</li><li>Which models make the bake-off shortlist, and what monthly AI budget (§8.12)?</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
+    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Upstox, Kite or Dhan?</li><li>Route for NSE-only data: ask NSE for consent, license a vendor, or download by hand?</li><li>Confirm the V0 budget (§9: ~US$20–40 one-time, ~US$2–25 a month) and the bake-off shortlist (§8.12).</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
   </div>
   <h3>Sources</h3>
   <ol class="clean" style="font-size:14px;list-style:none;padding:0">
@@ -1884,6 +2015,12 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <li><span class="mono" style="color:var(--brass)">[R35]</span> <a href="https://openrouter.ai/docs/use-cases/usage-accounting">OpenRouter usage accounting</a></li>
     <li><span class="mono" style="color:var(--brass)">[R36]</span> OpenRouter fees: <a href="https://omidsaffari.com/blog/openrouter-pricing">5.5% credit fee explained</a> · <a href="https://www.truefoundry.com/blog/openrouter-pricing">TrueFoundry pricing guide</a></li>
     <li><span class="mono" style="color:var(--brass)">[R37]</span> <a href="https://ai.google.dev/gemini-api/docs/deprecations">Gemini API model deprecations</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R38]</span> <a href="https://www.fbil.org.in/">FBIL reference rates</a> · <a href="https://www.business-standard.com/article/pti-stories/fbil-to-set-reference-rate-for-usd-inr-other-currencies-118071001306_1.html">FBIL took over from RBI in July 2018</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R39]</span> <a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API pricing</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R40]</span> <a href="https://docs.railway.com/pricing/plans">Railway pricing plans</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R41]</span> <a href="https://ai.google.dev/gemini-api/terms">Gemini API terms (free-tier data use)</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R42]</span> <a href="https://upstox.com/developer/api-documentation/get-token/">Upstox Get Token API (token expiry)</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R43]</span> <a href="https://upstox.com/developer/api-documentation/announcements/enhanced-historical-candle-data-apis-v3/">Upstox historical candle data V3</a></li>
   </ol>
 </section>
 
@@ -1891,7 +2028,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </div>
 
 <footer style="max-width:1320px;margin:0 auto;padding:6px 28px 40px;color:var(--ink-3);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between">
-  <span>Citebell PRD v1.2 · 14 Sep 2026</span>
+  <span>Citebell PRD v1.3 · 14 Sep 2026</span>
   <span>Wireframe data is illustrative. Market information, not investment advice.</span>
 </footer>
 

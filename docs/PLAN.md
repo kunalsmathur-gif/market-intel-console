@@ -37,6 +37,15 @@ The Claude Opus 5 plan (~US$85–100 a month) was too expensive for the user. Th
 - The worker is hosted on Railway, and the existing plans are reused.
 - Fixed a mobile overflow bug in the HTML masthead.
 
+## v1.3: budget and pricing section (same day)
+The user asked what it costs to build and run using free data sources and a direct Gemini API key (2.5 or 3.5 Flash-Lite), and what's lost without paid sources. PRD §9 now has:
+- one-time cash (~US$20–40) and effort (26–36 developer days; 8–10 weeks end to end)
+- monthly running cost (~US$2–25) and upkeep (6–10 h/month plus a daily Upstox login)
+- the gaps in the free plan
+- a plan comparison and triggers for when to pay for more
+
+Also: V0 duration in phasing corrected from ~3 weeks; USD/INR reference rate attributed to FBIL (not RBI); cost guardrail tied to the §9 budget. Later sections renumbered (phasing is now §10).
+
 ## Inputs reviewed
 - Sample morning outlook reports (3 pages: Global Opening Check / India Setup & Flows / Data Outlook).
 - Older text pre-market briefs (May–Jul 2026).

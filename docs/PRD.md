@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| Version | v1.2, draft for review (§8.12: model chosen by an OpenRouter bake-off) |
+| Version | v1.3, draft for review (adds §9 Budget and pricing) |
 | Date | 14 Sep 2026 |
 | Product | Citebell (working name was "Market Intel Console") |
 | Audience | Personal use first; SaaS-ready by design |
@@ -23,13 +23,14 @@
 6. [Features to copy from competitors](#6-features-to-copy-from-competitors)
 7. [High-level solution](#7-high-level-solution)
 8. [Technical architecture decisions](#8-technical-architecture-decisions)
-9. [Phasing: V0 → Nirvana](#9-phasing-v0--nirvana)
-10. [What else makes it holistic](#10-what-else-makes-it-a-holistic-platform)
-11. [User flows](#11-user-flows)
-12. [Market-ready UX](#12-market-ready-ux)
-13. [High-fidelity wireframes](#13-high-fidelity-wireframes)
-14. [Success metrics](#14-success-metrics)
-15. [Guardrail metrics](#15-guardrail-metrics)
+9. [Budget and pricing](#9-budget-and-pricing)
+10. [Phasing: V0 → Nirvana](#10-phasing-v0--nirvana)
+11. [What else makes it holistic](#11-what-else-makes-it-a-holistic-platform)
+12. [User flows](#12-user-flows)
+13. [Market-ready UX](#13-market-ready-ux)
+14. [High-fidelity wireframes](#14-high-fidelity-wireframes)
+15. [Success metrics](#15-success-metrics)
+16. [Guardrail metrics](#16-guardrail-metrics)
 - [Appendix: risks, assumptions, open questions, sources](#appendix)
 
 ---
@@ -334,7 +335,7 @@ Why Python for the worker:
 | Data needed | V0 source | Cost | Limits and licence notes |
 |---|---|---|---|
 | Nifty, Bank Nifty, Sensex, sector indices, India VIX, option chain (OI, PCR; max pain computed), breadth (computed from index stocks) | A broker API: Upstox (data APIs free) [R27] or Kite Connect (₹500/month including live and historical data; the free Kite Personal plan has no market data) [R14]. Dhan's data API is ₹499/month [R32]. | ₹0–500/mo | Personal-use terms and a broker account needed. Broker logins expire daily, so the worker needs a daily login step. Showing this data to other users needs an exchange or vendor licence. |
-| USD/INR, gold, crude as traded in India | Same broker API: NSE USD/INR futures, MCX gold and crude futures | included | Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). RBI's daily reference rate is the official cross-check. |
+| USD/INR, gold, crude as traded in India | Same broker API: NSE USD/INR futures, MCX gold and crude futures | included | Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). FBIL's daily reference rate (published around 13:30 IST, still often called the RBI rate) is the official cross-check [R38]. |
 | FII/DII provisional cash, participant-wise OI, F&O ban list, bhavcopy | Published only by NSE | Free to view | **NSE's Terms of Use prohibit automated data collection without written consent** [R15]. **Decision needed:** ask NSE for consent for low-volume personal use, use a licensed data vendor, or download these by hand. The PRD doesn't assume scraping. |
 | FPI flows (cross-check) | NSDL's daily FPI data | Free | Published a day later; check the site's terms. |
 | US index closes, US 10-year yield, US economic data | FRED API (free key, ~120 requests/minute) [R18]; US Treasury yield data | Free | Daily closing values, not live futures. |
@@ -546,19 +547,127 @@ One-time bake-off cost: roughly US$50–80. Budget and mid models run every test
 
 - **Volume assumed:** ~85k input + ~19k output tokens per report × 4 reports × 21 trading days. Search: ~25 searches per report, priced at OpenRouter's Parallel (US$1–5 per 1,000) to Exa (US$7 per 1,000) [R34].
 - **Not included:** savings from prompt caching where a provider supports it; market data (₹0–500 a month). Hosting runs on your existing Vercel, Supabase and Railway plans.
+- **Cheaper still:** a direct Gemini API key skips OpenRouter's fee and includes free Google Search grounding. The full budget for that plan is in §9.
 - **Data policy:** news inputs are public. From V2 your trade journal is personal, so those calls go only to providers that don't store or train on prompts, using OpenRouter's privacy settings.
 
-## 9. Phasing: V0 → Nirvana
+## 9. Budget and pricing
+
+What Citebell costs to build and run on the recommended V0 plan: free data sources, your own Gemini API key on the paid tier, and your existing Vercel, Supabase and Railway plans. Prices were checked on 14 Sep 2026; rupee figures use ₹95.7 per US$ (FBIL reference rate, 12 Sep 2026) [R38]. Every figure is an estimate, to be replaced by measured numbers during V0.
+
+| | Estimate |
+|---|---|
+| **One-time cash** | **US$20–40** (₹1,900–3,800), mostly AI usage while building and testing. A domain is optional and extra. |
+| **One-time effort** | **26–36 developer days**: 5–7 weeks of building, 8–10 weeks end to end including 20 recorded trading days. Plus ~15–20 hours of your labelling. |
+| **Monthly running cost** | **US$2–25** (₹200–2,400) for AI models, extra hosting usage and an optional domain. Market data costs ₹0. |
+| **Monthly upkeep** | **6–10 hours**, plus 1–3 minutes each trading day for the Upstox login, and the NSE file if you choose that route. |
+
+### 9.1 Monthly running cost
+
+**AI models: direct Gemini API key, paid tier [R39]**
+
+| Setup | US$ per million tokens, input / output | Per month* |
+|---|---|---|
+| Gemini 2.5 Flash-Lite for every step | 0.10 / 0.40 | ~US$1.4 (₹130) |
+| Gemini 2.5 Flash-Lite, with Gemini 2.5 Flash for verification only | mixed | ~US$3.5 (₹330) |
+| Gemini 3.5 Flash-Lite for every step | 0.30 / 2.50 | ~US$6 (₹580) |
+| Gemini 2.5 Flash for every step | 0.30 / 2.50 | ~US$6 (₹580) |
+
+\*~7.1M input + ~1.6M output tokens a month (the §8.12 assumption). Budget US$2–8 to allow for retries and longer reasoning; taxes may apply. The option is picked by the bake-off (§8.12), not by price alone.
+
+**Search can be free.** Gemini's Google Search grounding includes 1,500 grounded requests a day at no charge on the 2.5 models' paid tier, and 5,000 search requests a month on 3.5 Flash-Lite (then US$14 per 1,000) [R39]. At ~100 searches a trading day (~2,100 a month), either stays within the free allowance. Google's search can't be limited to chosen sites, so results from sites outside the allow-list are filtered out in code before anything is used.
+
+**Everything else**
+
+| Item | Per month | Notes |
+|---|---|---|
+| Market data: Upstox, FRED, CoinGecko Demo, publisher RSS, GDELT, NSDL, FBIL | ₹0 | Free under personal-use terms (§8.4) |
+| Vercel (web app) | ₹0 extra | Your existing plan |
+| Railway (worker) | ~US$0–7 | Plans include a usage credit, but other apps on the account (such as WanderPlanner) draw on it too [R40] |
+| Supabase (database, sign-in, files) | ~US$0–10 | A second project may add a compute charge; confirm on your plan |
+| Telegram, email, Wayback links, uptime monitor | ₹0 | Telegram Bot API is free; Resend's free email tier covers 3,000 a month, 100 a day [R30] |
+| Domain (optional) | ~₹100–200 | E.g. a .com and a .in, averaged over the year (estimate) |
+| **Total** | **~US$2–25 (₹200–2,400)** | |
+
+> **Why not Gemini's free tier?** It would bring AI to ₹0, but Google uses free-tier inputs and outputs to improve its products, people may read them, and Google's terms say not to send personal information [R41]. Fine for building and testing with public news; not for daily production, and never for your trade journal. The paid tier costs ₹130–580 a month.
+
+### 9.2 One-time build cost (V0)
+
+| Cash item | Cost |
+|---|---|
+| AI usage while developing and testing | ~US$5–15 |
+| Bake-off: 3 Gemini options, graded by a model from another vendor through OpenRouter | ~US$15–25 |
+| Supabase, Railway, Vercel, GitHub | Already paid |
+| **Total** | **~US$20–40 (₹1,900–3,800)** |
+
+| Build work (one developer using AI coding tools) | Days |
+|---|---|
+| Setup: repo, database, worker, web app, sign-in | 3–4 |
+| Data connectors and tests: Upstox with daily login, FRED, CoinGecko, NSDL, ~15 RSS feeds, GDELT, Gemini search | 5–7 |
+| Verification pipeline: claim extraction, story grouping, source tiers, quote and number checks, publish gate | 7–10 |
+| Four report templates, PDF and citation pack, simple archive page | 4–5 |
+| Telegram and email alerts, scheduler, monitoring, NSE file upload | 2–3 |
+| Eval harness and bake-off | 3–4 |
+| Hardening: replay tests, failure drills | 2–3 |
+| **Total** | **26–36 (5–7 weeks)** |
+
+**Your time:** ~15–20 hours labelling test sets, plus a quick daily look at reports during the 20 recorded trading days. **Calendar:** about 8–10 weeks end to end, since the recording runs alongside the second half of the build. If you hire a developer, multiply the developer days by their rate.
+
+### 9.3 Monthly upkeep
+
+| How often | Task | Time |
+|---|---|---|
+| Every trading day | Log in to Upstox before 07:30. Its access token expires at 03:30 IST daily with no refresh token [R42]. Upstox also issues a longer-lived read-only token, but its docs don't say how long it lasts, so test it before relying on it. | ~1 min |
+| Every trading evening | Send NSE's FII/DII file to the Telegram bot (only on the manual route, §9.4) | ~2 min |
+| Weekly | Review flagged and withheld items | ~30 min |
+| Monthly | Fix broken feeds or parsers, add new test cases, update dependencies | ~4–6 h |
+| When a notable model launches | Re-run the bake-off (§8.12) | ~1 h + ~US$5 |
+
+### 9.4 What the free plan misses
+
+Free sources still cover a lot. Through Upstox: live Nifty, Bank Nifty and India VIX, the option chain, live MCX crude and gold and NSE USD/INR futures, and price history (daily since 2000, intraday since 2022) [R43]. Also crypto prices, Indian news and official economic data. The accuracy rules don't change; what the free plan gives up is freshness and depth.
+
+| Missing without paid sources | What it means for you | Free workaround | Paid fix later |
+|---|---|---|---|
+| Live global prices before 08:15: GIFT Nifty, S&P and Nasdaq futures, Nikkei, Hang Seng, Kospi | Values come from pre-market news articles, so they can be older, rounded or missing | "News-reported" badge, shown only when two outlets agree | A market data feed; confirm GIFT Nifty coverage, which few cheap feeds have |
+| Live international benchmarks: Brent, WTI, COMEX gold, DXY, intraday US 10-year | Indian contracts are live; global benchmarks come from news or daily official data | Clearly labelled as the MCX or NSE contract | Same data feed |
+| NSE-only reports: FII/DII, participant-wise OI, F&O ban list | NSE's terms prohibit collecting them automatically (§8.4) | Send NSE's file to the Telegram bot each evening (~2 min, parsed automatically), or use FII/DII figures reported in the news | Licensed vendor or an NSE data subscription |
+| Consensus forecasts for economic data | No "actual vs expected" surprise score | Official dates and prior values; expectations quoted in news previews | Paid economic calendar API |
+| Paywalled analysis: Mint premium, Business Standard, FT, WSJ, Bloomberg | Headlines and opening lines only | Cross-check with free outlets; link to the original | Your own reading subscriptions (not for automated use) |
+| Wire speed: Reuters, Bloomberg | Breaking news can arrive minutes later than on a terminal | Gemini's search grounding picks up wire stories within the free quota | Terminal or news API (expensive) |
+| Brokerage research and rating changes | Only when free news reports them | Shown as attributed news | Broker research subscriptions |
+| Options history: IV percentile, past OI | Nothing to compare against at first | Citebell records its own history from day one; IV is calculated from option prices | Historical options data vendor |
+| Crypto extras: ETF flows, liquidations, on-chain data | Prices, dominance and funding rates only | ETF flows taken from news | Paid crypto analytics |
+| Guarantees: uptime, support, the right to resell data | Free APIs can change or throttle without notice; the data can't be sold to subscribers | Tests that catch format changes; backup sources | Paid licences before any SaaS launch |
+
+### 9.5 Plans compared, and when to pay for more
+
+| Plan | Monthly | When it fits |
+|---|---|---|
+| **Free data + direct Gemini key (recommended for V0)** | ~US$2–25 | Personal V0: proving the reports can be trusted |
+| Free data + OpenRouter mix (Gemini 2.5 Flash, with a stronger verification model) | ~US$20–33 AI · + hosting | If the bake-off shows the Flash-Lite options miss the verification bars |
+| Free data + Claude Opus 5 for every step | ~US$82–95 AI · + hosting | Not planned; kept as the quality reference in the bake-off |
+| Paid-data add-ons | per trigger below | Only when a trigger fires |
+
+| Pay for | Trigger | Rough cost |
+|---|---|---|
+| Market data feed for global prices | "News-reported" global values are missing or stale on more than 3 trading days in a month | ~€20–30/month [R19]; confirm coverage |
+| Stronger verification model | The Gemini option misses a verification bar in the bake-off (§8.12) | ~US$10–30/month more |
+| Kite Connect | Upstox data proves unreliable, or you prefer Zerodha | ₹500/month [R14] |
+| Economic calendar with consensus | You want "actual vs expected" surprise scores (V1) | Get a quote |
+| Licensed NSE data | The manual NSE upload becomes a burden, or before any SaaS launch | Get a quote |
+| Redistribution licences | Before the V3 SaaS beta | Get a quote |
+
+## 10. Phasing: V0 → Nirvana
 
 | Phase | Scope | Exit gate |
 |---|---|---|
-| **V0 · Proof of trust** (~3 wks) | Four scheduled reports as HTML/PDF to Telegram and email; ~15 curated sources; verification gate v1 (tiers, link check, match against one feed); citation on every claim; "flag as wrong" on each claim; simple archive; Markets page on chart widgets; every fact and claim stored from day one (§8.8) | 20 trading days in a row: ≥95% on time, zero unverified or wrong claims in spot checks, baseline research time measured |
+| **V0 · Proof of trust** (~5–7 wks build; 8–10 wks end to end, §9) | Four scheduled reports as HTML/PDF to Telegram and email; ~15 curated sources; verification gate v1 (tiers, link check, match against one feed); citation on every claim; "flag as wrong" on each claim; simple archive; Markets page on chart widgets; every fact and claim stored from day one (§8.8) | 20 trading days in a row: ≥95% on time, zero unverified or wrong claims in spot checks, baseline research time measured |
 | **V1 · Console** (~6 wks) | Full web app (Today, Reports, Markets, Flows, Crypto & Tech, Calendar); "what changed" view; story clustering; verification badges; fact-check drawer; corrections log; search and archive; derivatives panel; economic, results and expiry calendars; verified breaking alerts; second-feed reconciliation | Research time ≤ 15 min; usefulness ≥ 4.2/5 |
 | **V2 · Analyst** | Ask Citebell (verified corpus only, cited); story timelines; impact tags with historical analogues; trade journal (manual or tradebook import, read-only); watchlist ranking; 2-min audio brief; weekly review | ≥ 70% of trades have a linked rationale |
 | **V3 · Co-pilot + SaaS beta** | Descriptive pattern library; scenario planner (crude +5% → sector sensitivity); IV and OI shifts over news times; read-only broker positions → news on held stocks; accounts, onboarding, plans and billing; licensed data for redistribution; legal review of SEBI research-analyst rules | Primary source on ≥ 90% of days; 20 beta users meet the trust guardrails |
 | **Nirvana** | A personal trading-intelligence system: continuous verified event stream; source reliability scores learned from each outlet's accuracy and corrections; analysis of which news types came before the best and worst trades; risk-regime detection; Hindi business press; voice interaction; fully auditable; a human in the loop, no auto-trading | The trader opens one app at 08:45 and trusts every line in it |
 
-## 10. What else makes it a holistic platform
+## 11. What else makes it a holistic platform
 
 - **Calendars:** economic (India + global) with actual, consensus and prior; results and corporate actions; expiry calendar; NSE, US and Asia holidays.
 - **Rules tracker:** SEBI F&O changes (lot sizes, margins, expiry rules), taken straight from exchange and SEBI circulars.
@@ -570,7 +679,7 @@ One-time bake-off cost: roughly US$50–80. Budget and mid models run every test
 - **Records:** PDF export, searchable archive, public corrections log.
 - **Operations:** system health page (agent runs, source uptime, spend); 2FA; secrets vault.
 
-## 11. User flows
+## 12. User flows
 
 ```mermaid
 flowchart TD
@@ -601,7 +710,7 @@ flowchart TD
 - **G · Late or withheld:** banner with reason and retry time → verified sections still readable → last verified data kept with dates → push when complete.
 - **H · New subscriber (SaaS, later):** landing → sample report without signup → sign up → 3-step setup (skippable) → first morning report → trial → plan.
 
-## 12. Market-ready UX
+## 13. Market-ready UX
 
 UX rules drawn from **ui-ux-pro-max** (financial dashboard, data-dense, density 8/10, subtle motion) and adapted to a product whose main feature is trust.
 
@@ -618,9 +727,9 @@ UX rules drawn from **ui-ux-pro-max** (financial dashboard, data-dense, density 
 | Onboarding & pricing (SaaS) | Sample report without signup; 3 skippable setup steps (instruments, report times and channels, watchlist); three plans with the middle one highlighted and 20–30% off annual; FAQ answers "Is this investment advice?" (No.) |
 | Themes & screens | Dark by default with a full light theme; breakpoints 375 / 768 / 1024 / 1440; no horizontal scroll; 5-item bottom tab bar on mobile |
 
-## 13. High-fidelity wireframes
+## 14. High-fidelity wireframes
 
-The clickable, themed mockups are in **[`prd.html`](prd.html) → §13**, with tabs W1–W11, a light/dark preview toggle and hover tooltips on charts. Layout specs:
+The clickable, themed mockups are in **[`prd.html`](prd.html) → §14**, with tabs W1–W11, a light/dark preview toggle and hover tooltips on charts. Layout specs:
 
 | # | Screen | Layout | Key elements |
 |---|---|---|---|
@@ -638,7 +747,7 @@ The clickable, themed mockups are in **[`prd.html`](prd.html) → §13**, with t
 
 Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/mo annual) is a hypothesis to test with beta users, not a decision.
 
-## 14. Success metrics
+## 15. Success metrics
 
 **North star: time to trade plan.** Minutes from the 08:45 drop until the trader marks today's plan as set, using only Citebell. Target **≤ 15 minutes**.
 
@@ -658,7 +767,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 
 **SaaS stage (hypotheses to calibrate in beta):** activation (3 morning reports read in the first 7 days) ≥ 60% · week-4 retention ≥ 50% · trial → paid ≥ 15% · monthly churn ≤ 4%.
 
-## 15. Guardrail metrics
+## 16. Guardrail metrics
 
 | Guardrail | Threshold | If breached |
 |---|---|---|
@@ -673,7 +782,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 | Late or missed reports | > 15 min late ≤ 1 / month · missed = 0 | Incident review; add schedule buffer |
 | Alert fatigue | ≤ 5 breaking-news alerts per trading day | Fold extra alerts into a digest |
 | Report length | Morning read ≤ 8 min | Tighten the template |
-| Cost | Within the monthly LLM + data budget | Cheaper models for non-critical steps; alert at 80% |
+| Cost | Within the §9 budget (V0: ≤ US$25 a month) | Cheaper models for non-critical steps; alert at 80% |
 | Licensing | 0 full-article copies · snippets ≤ 25 words | Remove the content; audit the collectors |
 | Security | 0 exposed secrets | Rotate keys; scan the repo in CI |
 
@@ -703,7 +812,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 ### Open questions
 1. Which broker API: Upstox, Kite or Dhan?
 2. Route for NSE-only data (FII/DII, participant OI, ban list): ask NSE for consent, license a vendor, or download by hand? (§8.4)
-3. Which models make the bake-off shortlist, and what monthly AI budget (options ~US$3–95, §8.12)?
+3. Confirm the V0 budget (§9: ~US$20–40 one-time, ~US$2–25 a month) and the bake-off shortlist (§8.12).
 4. Hindi business press in V1 or later?
 5. The repo is public: should prompts and the source registry live in a private repo?
 
@@ -745,3 +854,9 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 - **[R35]** [OpenRouter usage accounting](https://openrouter.ai/docs/use-cases/usage-accounting)
 - **[R36]** OpenRouter fees: [5.5% credit fee explained](https://omidsaffari.com/blog/openrouter-pricing) · [TrueFoundry pricing guide](https://www.truefoundry.com/blog/openrouter-pricing)
 - **[R37]** [Gemini API model deprecations](https://ai.google.dev/gemini-api/docs/deprecations)
+- **[R38]** [FBIL reference rates](https://www.fbil.org.in/) · [FBIL took over from RBI in July 2018](https://www.business-standard.com/article/pti-stories/fbil-to-set-reference-rate-for-usd-inr-other-currencies-118071001306_1.html)
+- **[R39]** [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing)
+- **[R40]** [Railway pricing plans](https://docs.railway.com/pricing/plans)
+- **[R41]** [Gemini API terms (free-tier data use)](https://ai.google.dev/gemini-api/terms)
+- **[R42]** [Upstox Get Token API (token expiry)](https://upstox.com/developer/api-documentation/get-token/)
+- **[R43]** [Upstox historical candle data V3](https://upstox.com/developer/api-documentation/announcements/enhanced-historical-candle-data-apis-v3/)

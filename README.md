@@ -34,7 +34,7 @@ The console also shows charts for Indian and global indices (Nifty 50, Bank Nift
 
 ## Status
 
-PRD v1.2 is drafted, including technical architecture decisions (PRD §8); AI models are chosen per step by an OpenRouter bake-off (§8.12). The V0 build ("proof of trust") has not started.
+PRD v1.3 is drafted: technical architecture decisions (§8), with AI models chosen per step by a bake-off (§8.12), and budget and pricing (§9: ~US$20–40 to build, ~US$2–25 a month on the free-data plan). The V0 build ("proof of trust") has not started.
 
 ## Disclaimer
 
