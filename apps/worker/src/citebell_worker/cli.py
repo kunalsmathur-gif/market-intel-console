@@ -18,7 +18,8 @@ from citebell_schemas import ReportType, RunKey
 from .config import Settings, get_settings
 from .pipeline.gate import GatePolicy
 from .pipeline.runner import RunContext, run_pipeline
-from .private_config import PrivateConfig, PrivateConfigError, load_private_config
+from .private_config import PrivateConfig, PrivateConfigError
+from .private_config_remote import load_configured_private_config
 from .schedule import IST, SCHEDULE, is_trading_day, now_ist
 
 log = logging.getLogger("citebell_worker")
@@ -33,9 +34,10 @@ def default_policy(now: datetime) -> GatePolicy:
 
 
 def _load_config(settings: Settings) -> PrivateConfig:
-    config = load_private_config(settings.resolved_private_config_dir)
-    if settings.using_example_config:
-        log.warning("PRIVATE_CONFIG_DIR is not set: using the public example config")
+    config, source = load_configured_private_config(settings)
+    log.info("private config: %s (%d sources)", source, len(config.sources))
+    if source.startswith("public example"):
+        log.warning("no private config set: using the public example config")
     if not any(day.year == now_ist().year for day in config.holidays):
         log.warning("no NSE holidays listed for %s: every weekday counts as a trading day",
                     now_ist().year)
@@ -44,7 +46,8 @@ def _load_config(settings: Settings) -> PrivateConfig:
 
 def cmd_check(settings: Settings) -> int:
     config = _load_config(settings)
-    print(f"private config: {config.root} ({len(config.sources)} sources)")
+    print(f"private config: {config.root} ({len(config.sources)} sources, "
+          f"{len(list((config.root / 'prompts').glob('*.md')))} prompts)")
     for slot in SCHEDULE.values():
         start = slot.collect_start.strftime("%H:%M") if slot.collect_start else "on upload"
         print(f"  {slot.title:<22} collect {start:<9} deadline {slot.deadline:%H:%M} IST")
@@ -105,11 +108,15 @@ def cmd_scheduler(settings: Settings) -> int:
             outcome = run_pipeline(ctx)
             queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
         log.info("run %s %s: %s", run.id, run.key, outcome.status)
-        if settings.healthcheck_ping_url:
-            try:
-                httpx.get(settings.healthcheck_ping_url, timeout=10)
-            except httpx.HTTPError as exc:
-                log.warning("health check ping failed: %s", exc)
+
+    def heartbeat(ping_url: str) -> None:
+        # Proves the process and its database connection are alive; the monitor alerts on silence.
+        try:
+            with psycopg.connect(dsn, autocommit=True, connect_timeout=10) as conn:
+                conn.execute("select 1")
+            httpx.get(ping_url, timeout=10)
+        except (psycopg.Error, httpx.HTTPError) as exc:
+            log.warning("heartbeat skipped: %s", exc)
 
     scheduler = BlockingScheduler(timezone=IST)
     for slot in SCHEDULE.values():
@@ -122,6 +129,12 @@ def cmd_scheduler(settings: Settings) -> int:
                           misfire_grace_time=MISFIRE_GRACE_SECONDS)
     scheduler.add_job(process_queue, "interval", seconds=QUEUE_POLL_SECONDS, id="process-queue",
                       coalesce=True, max_instances=1)
+    if settings.healthcheck_ping_url:
+        scheduler.add_job(heartbeat, "interval", seconds=settings.heartbeat_seconds, id="heartbeat",
+                          args=[settings.healthcheck_ping_url], coalesce=True, max_instances=1,
+                          next_run_time=datetime.now(IST))
+    else:
+        log.warning("HEALTHCHECK_PING_URL is not set: nothing will notice if the worker stops")
     log.info("scheduler started with %d jobs", len(scheduler.get_jobs()))
     try:
         scheduler.start()
@@ -141,6 +154,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    # The queue is polled every few seconds; keep library chatter out of the Railway logs.
+    for noisy in ("apscheduler", "httpx"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     settings = get_settings()
     try:
         if args.command == "check":
