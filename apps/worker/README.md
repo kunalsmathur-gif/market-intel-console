@@ -15,6 +15,11 @@ citebell-worker scheduler                                # what Railway runs
 
 Checks: `pytest`, `ruff check src tests ../../packages/schemas/src`, `mypy src tests ../../packages/schemas/src`.
 
+Database tests (migrations, RLS, append-only guards, run queue): `pytest ../../infra/supabase/tests`.
+- They use `TEST_DATABASE_URL` if it's set.
+- Otherwise they start an embedded PostgreSQL with pgserver, which is installed with the dev extras on Windows and macOS.
+- Each test gets a fresh database cloned from a migrated template.
+
 ## Layout
 
 | Path | What it does |
