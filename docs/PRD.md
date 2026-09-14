@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| Version | v1.1, draft for review (adds §8 Technical architecture decisions) |
+| Version | v1.2, draft for review (§8.12: model chosen by an OpenRouter bake-off) |
 | Date | 14 Sep 2026 |
 | Product | Citebell (working name was "Market Intel Console") |
 | Audience | Personal use first; SaaS-ready by design |
@@ -184,7 +184,7 @@ Built from the ui-ux-pro-max design-system output for a financial dashboard (dat
 flowchart LR
   SCH[Scheduler<br/>IST cron] --> COL
   SRC[(Exchange data · market APIs<br/>RSS · regulators)] --> COL
-  subgraph AGENTS[Worker pipeline · Python + Anthropic SDK]
+  subgraph AGENTS[Worker pipeline · Python + OpenRouter]
     COL[Collectors<br/>India · Global · Geopolitics<br/>Tech · Crypto · Flows] --> EXT[Claim extractor]
     EXT --> VER[Independent verifier]
     VER --> WRI[Writer<br/>fills template]
@@ -242,7 +242,7 @@ Report fields follow the structure of the sample reports reviewed for this PRD.
 - **India data:** a broker API (Upstox, Kite or Dhan) for indices, VIX, option chain, and India-traded USD/INR, gold and crude. NSE-published reports (FII/DII, participant OI, ban list, bhavcopy) only via NSE's consent, a licensed vendor or manual download. NSDL FPI data; SEBI, RBI and PIB circulars; exchange announcements. Details in §8.4.
 - **Global data:** FRED, US Treasury, Fed, ECB, BoJ, PBoC and US BLS (free, official). Live global indices and commodity futures: news-reported in V0, then one paid feed (e.g. EODHD) in V1. Crypto: CoinGecko Demo API plus a public exchange price.
 - **News feeds:** RSS and official feeds from Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, CNBC, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block. Reuters, AP, Bloomberg, FT and WSJ through web search limited to those sites (Reuters has no public RSS).
-- **Stack:** Next.js + Tailwind web app on Vercel · Python worker with the Anthropic SDK on an always-on container · Supabase (Postgres, Auth, Storage, Realtime) · Claude Opus 5 for every AI step at launch · Telegram bot + email. Store headlines, links and quotes of 25 words or fewer; never full articles. Reasoning in §8.
+- **Stack:** Next.js + Tailwind web app on Vercel · Python worker on Railway · Supabase (Postgres, Auth, Storage, Realtime) · AI models through OpenRouter, chosen per step by a bake-off (§8.12) · Telegram bot + email. Store headlines, links and quotes of 25 words or fewer; never full articles. Reasoning in §8.
 
 ## 8. Technical architecture decisions
 
@@ -251,7 +251,7 @@ The twelve decisions the build depends on. Each one gives the recommendation, th
 | # | Question | Decision |
 |---|---|---|
 | 8.1 | Separate frontend and backend? | Yes. Three parts in one repo: a Next.js web app that only reads and displays, a Python worker that does all fetching and AI work, and Supabase for data and accounts. |
-| 8.2 | LangChain / Python? | No LangChain. Python for the worker with the official Anthropic SDK; TypeScript for the web app. |
+| 8.2 | LangChain / Python? | No LangChain. Python for the worker, calling AI models through OpenRouter; TypeScript for the web app. |
 | 8.3 | APIs or MCP? | Direct APIs wherever a number or fact enters the system. MCP for exploring data while building, and later for Ask Citebell and outside access. |
 | 8.4 | Free or paid data? | V0 can run for ₹0–500 a month with the same correctness, because accuracy comes from primary sources and cross-checks. Two gaps: live global prices, and NSE-only reports that need NSE's permission or a licence. |
 | 8.5 | Sign-in / sign-out | Supabase Auth from V0: magic link or Google, authenticator-app 2FA, owner-only allowlist. Roles, plans and billing arrive in V3. |
@@ -261,7 +261,7 @@ The twelve decisions the build depends on. Each one gives the recommendation, th
 | 8.9 | Caching / RAG | Caching from V0 (data, prompts, pages). No RAG in V0–V1; database search instead. RAG over verified claims comes with Ask Citebell in V2. |
 | 8.10 | Eval suites | Seven suites (UX, code, data sanity, data quality, AI pipeline, system stability, cost), run in CI and in a nightly replay of past days. |
 | 8.11 | Low latency and scale | Precompute, then serve: nobody waits on an AI call. Mumbai hosting, finished pages, and each report computed once no matter how many users read it. |
-| 8.12 | Which model? | Claude Opus 5 for every AI step at launch, and the model never produces numbers. Cheaper models and lower effort are tested on low-risk steps; you decide on any switch from the measured results. |
+| 8.12 | Which model? | Chosen by a bake-off on OpenRouter across budget, mid and strong models (Gemini 2.5 Flash included), scored on accuracy, judgement, speed and cost. The model never produces numbers. Expected monthly cost drops from ~US$85–100 to ~US$10–35. |
 
 ### Deployment at a glance
 
@@ -274,7 +274,7 @@ flowchart LR
     PIPE --> OUT[Notifier · outbox]
   end
   PIPE --> DB
-  EXT[Broker API · FRED · RBI · CoinGecko<br/>Publisher RSS · GDELT<br/>Anthropic API + allow-listed web search] --> PIPE
+  EXT[Broker API · FRED · RBI · CoinGecko<br/>Publisher RSS · GDELT<br/>OpenRouter models + allow-listed search API] --> PIPE
   OUT --> TG[Telegram · email · web push]
 ```
 
@@ -284,12 +284,12 @@ flowchart LR
 
 | Part | Runs on | Does | Never does |
 |---|---|---|---|
-| Web app (Next.js + Tailwind) | Vercel | Renders pages from the database; manages sessions; saves your flags, notes and settings | Call Claude or data providers; hold their keys |
-| Worker (Python) | A small always-on container (e.g. Railway, Render or Fly.io) | Schedules and runs report jobs: fetch, verify, write, render PDFs, send alerts | Serve web pages |
+| Web app (Next.js + Tailwind) | Vercel | Renders pages from the database; manages sessions; saves your flags, notes and settings | Call AI models or data providers; hold their keys |
+| Worker (Python) | Railway (your existing account), always on | Schedules and runs report jobs: fetch, verify, write, render PDFs, send alerts | Serve web pages |
 | Supabase | Managed service, Mumbai region | Postgres database, sign-in, file storage, live updates | Business logic beyond per-user access rules |
 
 - **Different speeds.** A report run takes minutes; a page must load in milliseconds. Web hosting functions time out on long jobs.
-- **Safer keys.** Claude, broker and data keys live only in the worker, so a web-app bug can't expose them.
+- **Safer keys.** OpenRouter, broker and data keys live only in the worker, so a web-app bug can't expose them.
 - **Separate scaling.** More users add web load; more reports add worker load.
 - **One contract.** The database schema, plus data shapes defined once in Python and generated as TypeScript types for the web app.
 - **Not GitHub Actions for scheduling.** GitHub's docs say scheduled workflows can be delayed under heavy load and some queued jobs dropped [R16], which is too risky for an 08:45 deadline. A monitor alerts you if a run doesn't check in on time.
@@ -298,11 +298,11 @@ Repo layout: `apps/web` · `apps/worker` · `packages/schemas` · `evals/` · `i
 
 ### 8.2 Do we need LangChain or Python?
 
-**Decision: no LangChain or LangGraph. Python for the worker, using the official Anthropic SDK; TypeScript for the web app.**
+**Decision: no LangChain or LangGraph. Python for the worker, calling AI models through OpenRouter with a standard OpenAI-compatible client; TypeScript for the web app.**
 
 Why no LangChain:
 - The pipeline is a fixed sequence (collect → extract → verify → write → check → publish), not an open-ended agent. Plain code is easier to test, re-run and debug.
-- What we need is built into the Claude API: tool use, structured JSON output, citations, prompt caching, and web search limited to chosen sites.
+- Each step is one call: prompt in, structured JSON out. OpenRouter's OpenAI-compatible API does that for every candidate model, so switching vendors needs no framework.
 - Framework layers hide the exact prompt and request, and that's what you need to see when tracing a wrong claim.
 - Fewer dependencies to break or upgrade.
 
@@ -312,7 +312,7 @@ Why Python for the worker:
 - Good tooling for evals and replaying past days.
 - Each step is a plain function with typed inputs and outputs, logged per run, so any report can be rebuilt from its inputs.
 
-> **Correction to v1.0:** v1.0 named the "Claude Agent SDK". That SDK packages Claude Code's file-and-terminal agent, which suits open-ended tasks. This pipeline fits direct Claude API calls driven by our own code better. Reconsider only if Ask Citebell (V2) needs open-ended multi-step research.
+> **Correction to v1.0:** v1.0 named the "Claude Agent SDK". That SDK packages Claude Code's file-and-terminal agent, which suits open-ended tasks. This pipeline fits direct model calls driven by our own code better. Reconsider only if Ask Citebell (V2) needs open-ended multi-step research.
 
 ### 8.3 APIs or MCPs?
 
@@ -322,9 +322,9 @@ Why Python for the worker:
 |---|---|---|---|
 | Prices, flows, OI, macro data | Direct API calls in code | Predictable, typed, testable, cacheable | V0 |
 | News collection | Publisher RSS feeds | Cheap, predictable, fully logged | V0 |
-| Checking a story across outlets | Claude's built-in web search, limited to a list of trusted T1/T2 sites | No extra service to run; searches can't wander to untrusted sites; about US$10 per 1,000 searches [R17] | V0 |
+| Checking a story across outlets | A search API called from code, limited to trusted T1/T2 sites (e.g. Exa or Parallel through OpenRouter) | Works with any model; results are stored for the citation pack. OpenRouter lists Exa at US$0.007 per request and Parallel at US$1–5 per 1,000 [R34]. Google's own search can't be limited to chosen sites through OpenRouter. | V0 |
 | Exploring data while building | MCP in Claude Code, e.g. Zerodha's hosted Kite MCP, which leaves out trading actions [R29] | Fast exploration; kept out of the production pipeline | Now |
-| Ask Citebell | Claude tools that query Citebell's own verified database | Answers can only draw on verified claims | V2 |
+| Ask Citebell | AI tool calls that query Citebell's own verified database | Answers can only draw on verified claims | V2 |
 | Access from other AI assistants | Publish a Citebell MCP server | Subscribers can query verified data from their own assistant; a possible paid feature | V3+ |
 
 ### 8.4 Are the data sources free or paid? Can V0 be free and just as accurate?
@@ -341,7 +341,7 @@ Why Python for the worker:
 | Live S&P and Nasdaq futures, Nikkei, Hang Seng, Kospi, Brent, WTI, GIFT Nifty before 08:15 | No dependable free API found. **V0:** use values quoted by two independent pre-market news reports, with a "News-reported" badge. **V1:** add one paid feed, e.g. EODHD at €19.99–29.99/month [R19], after confirming it covers these indices. | ₹0 → ~€20–30/mo | Twelve Data's free tier covers US stocks, forex and crypto only [R20]. |
 | Bitcoin, Ethereum, dominance | CoinGecko Demo API (free key, 10,000 calls/month) [R21], plus a public exchange price as the second source | Free | A report uses about 4–10 calls, far below the limit. |
 | Indian and global business, tech and crypto news | Publisher RSS feeds: Moneycontrol, Livemint, Business Standard, BusinessLine, CNBC, Nikkei Asia, TechCrunch, The Verge, CoinDesk | Free | Store headlines, links and quotes of 25 words or fewer only. |
-| Reuters, AP, Bloomberg | Claude web search limited to those sites | ~US$10 / 1,000 searches | Reuters stopped its public RSS feeds in 2020 [R22]. |
+| Reuters, AP, Bloomberg | Search API limited to those sites | ~US$1–7 / 1,000 searches | Reuters stopped its public RSS feeds in 2020 [R22]. |
 | Finding geopolitical events | GDELT | Free | For spotting events only; never cited as a source. |
 | Economic and central-bank calendars | Official schedules (RBI, Fed, ECB, BoJ, MoSPI, BLS), entered and checked once a year, plus FRED release dates | Free | Economists' consensus forecasts usually cost money; decide in V1. |
 | Don't use | NewsAPI.org free plan (development only, articles 24 hours late) [R23]; scraping Yahoo Finance | — | Their terms don't allow this use. |
@@ -427,11 +427,11 @@ What it unlocks:
 | Layer | What it does | Phase |
 |---|---|---|
 | Data cache | Stores raw API responses by source, query and time window. Refresh times: live quotes 60 s; end-of-day data until the next session; RSS only when the feed changes. Protects free-tier limits and makes runs replayable. | V0 |
-| Prompt caching (Claude) | Fixed instructions, the source list, templates and tier rules go first in each request; cached input costs about a tenth of the normal rate. | V0 |
+| Prompt caching | Fixed instructions, the source list, templates and tier rules go first in each request, so providers that support prompt caching charge less for the repeated part. Savings vary by provider. | V0 |
 | Page cache | A published report never changes, so its page is built once and rebuilt only on correction. | V0–V1 |
 | Live updates | "Report ready" is pushed to open tabs instead of the page checking repeatedly. | V1 |
 | Search without RAG | Archive search uses Postgres full-text search. Grouping similar stories uses title similarity plus a quick model check. | V0–V1 |
-| RAG for Ask Citebell | Searches verified claims (keyword + meaning-based), not raw articles; answers cite claim IDs. Anthropic has no embedding model of its own and points to Voyage AI [R25]. | V2 |
+| RAG for Ask Citebell | Searches verified claims (keyword + meaning-based), not raw articles; answers cite claim IDs. The embedding model is picked by a small retrieval test in V2 (Anthropic doesn't offer one [R25]). | V2 |
 
 **Why no RAG early:** reports are built from today's fresh data, which needs no retrieval. RAG also adds a new way to go wrong (pulling in stale or unverified text) that isn't worth the risk until there's a verified archive to search.
 
@@ -451,7 +451,7 @@ What it unlocks:
 
 ### 8.11 How do we build for low latency and scale from the start?
 
-**Decision: precompute, then serve.** Fetching, verifying and writing happen on the worker before each deadline; the app only reads finished results. Page speed never depends on Claude or data providers, and **cost grows with the number of reports, not the number of users.**
+**Decision: precompute, then serve.** Fetching, verifying and writing happen on the worker before each deadline; the app only reads finished results. Page speed never depends on AI models or data providers, and **cost grows with the number of reports, not the number of users.**
 
 | Morning Insights step | IST |
 |---|---|
@@ -479,43 +479,74 @@ What it unlocks:
 
 | Stage | Users | What changes |
 |---|---|---|
-| V0–V2 | 1 | Vercel Hobby, Supabase Free, one small worker. Vercel Hobby is for non-commercial use only [R26]. Supabase Free pauses after a week of inactivity [R28]; the worker's daily writes keep it active. |
-| V3 beta | ≤ 100 | Vercel and Supabase paid plans; a second worker for alerts; licensed data for redistribution. |
+| V0–V2 | 1 | Your existing Vercel, Supabase and Railway accounts: web on Vercel, database on Supabase, worker on Railway. Little or no extra cost: Railway bills by usage, and check whether a new Supabase project adds compute charges on your plan. |
+| V3 beta | ≤ 100 | Larger plan sizes as needed; a second Railway worker for alerts; licensed data for redistribution. |
 | SaaS | 1k–50k | The same reports serve every user from cache. Per-user work (watchlists, price alerts) runs as simple rules without AI. Separate alert workers; a read-only database copy; live prices delivered through a licensed vendor. |
 
-### 8.12 Model evals: which model works best?
+### 8.12 Which model? Chosen by a bake-off on OpenRouter
 
-**Decision for launch: Claude Opus 5 (`claude-opus-5`) for every AI step.** At four reports a day, verification quality matters more than cost. Cheaper options are tested, not assumed.
+**Method decided; model picked after the bake-off.**
 
-**The model never produces numbers.** The writer drafts text with data placeholders such as `{{fact:nifty50.close}}`, the renderer fills them from verified facts, and the final check rejects any number in the text that didn't come from a placeholder or a quoted source.
+**The pipeline isn't tied to one model or vendor.** Each AI step reads its model name from settings, and every call goes through OpenRouter. Changing models is a settings change, so the choice rests on measured accuracy, judgement, speed and cost on your own data.
 
-| Step | Launch setting | Also test | Must hold to switch |
-|---|---|---|---|
-| Filtering, tagging, story grouping | Opus 5 · low effort | Haiku 4.5; Sonnet 5 | Tag accuracy ≥ 95% against your labels |
-| Claim extraction (structured output) | Opus 5 · medium effort | Sonnet 5 | Recall ≥ 95%, precision ≥ 98% |
-| Verification (exact quotes via Citations) | Opus 5 · high effort | No switch before V1 data exists | Zero wrongly accepted claims on the critical set |
-| Writing | Opus 5 · medium effort | Sonnet 5 | 100% faithful to verified claims; template followed |
-| Final checks (advice language, style) | Opus 5 · low effort, plus rule-based checks | Haiku 4.5 | Catches 100% of planted defects |
-| Ask Citebell (V2) | Opus 5 | — | Answers only from verified claims |
+**The design keeps the riskiest work out of the model, which is why cheap models are realistic here.** Numbers are filled in from verified data, quotes are matched against the source text in code, and publish rules are code, not prompts. The model still has to read, sort, judge and write well, and the bake-off tests exactly that.
 
-How the comparison runs:
-1. Record 20 trading days of inputs.
-2. Run each option (model and effort level) on the golden test set and score it with the AI pipeline suite. Checks graded by a model are compared against your own labels on a sample first.
-3. Compare quality, slowest-run time and cost per report. Try lower effort on Opus 5 before a cheaper model; it's often the better trade, and one model keeps prompt caching simpler.
-4. You approve any switch. Verification stays on the strongest model unless an option shows zero wrong accepts on the critical set.
-5. Re-run on every model or prompt change. The Batch API (half price, results within 24 hours) suits eval runs and backfills, never live reports.
+#### Shortlist with live prices (OpenRouter, checked 14 Sep 2026) [R33]
 
-Claude features used: structured output for extraction; Citations for exact quotes (the two can't be combined in one request, so they're separate steps); web search limited to trusted sites; prompt caching; automatic fallback on refusals, with every response's stop reason checked.
+| Model | Tier | US$ per million tokens, input / output | If every step used it* | Why it's on the list |
+|---|---|---|---|---|
+| DeepSeek V4 Flash `deepseek/deepseek-v4-flash` | Budget | 0.089 / 0.177 | ~US$1 | Lowest price on the list |
+| Gemini 2.5 Flash-Lite `google/gemini-2.5-flash-lite` | Budget | 0.10 / 0.40 | ~US$1.4 | Google's low-cost tier |
+| Qwen3.8 Flash `qwen/qwen3.8-flash` | Budget | 0.15 / 0.47 | ~US$2 | Added to OpenRouter Aug 2026 |
+| GLM 5.3 Flash `z-ai/glm-5.3-flash` | Budget | 0.15 / 0.50 | ~US$2 | Added to OpenRouter Aug 2026 |
+| GPT-5.6 Luna `openai/gpt-5.6-luna` | Budget | 0.20 / 1.20 | ~US$3 | OpenAI's low-cost tier |
+| GPT-5 mini `openai/gpt-5-mini` | Budget | 0.25 / 2.00 | ~US$5 | Well-known baseline |
+| **Gemini 2.5 Flash** `google/gemini-2.5-flash` | Mid | 0.30 / 2.50 | ~US$6 | Your suggestion. Stable; released June 2025; Google has announced no shutdown date [R37] |
+| Gemini 3.8 Flash `google/gemini-3.8-flash` | Mid | 0.75 / 3.75 | ~US$11 | Newest Gemini Flash on OpenRouter (added Sep 2026) |
+| Claude Haiku 4.5 `anthropic/claude-haiku-4.5` | Mid | 1.00 / 5.00 | ~US$15 | Anthropic's low-cost tier |
+| Claude Sonnet 5 `anthropic/claude-sonnet-5` | Strong | 2.00 / 10.00 | ~US$30 | Candidate for the verification step only |
+| GPT-5.6 Sol `openai/gpt-5.6-sol` | Strong | 2.00 / 10.00 | ~US$30 | Candidate for the verification step only |
+| Claude Opus 5 `anthropic/claude-opus-5` | Reference | 5.00 / 25.00 | ~US$76 | Quality ceiling to measure the others against; not the default |
 
-| Monthly cost (estimate · measure in V0) | Assumption | 21 trading days |
+\*Model tokens only, at the volume assumed below (~7.1M input + ~1.6M output tokens a month). Models that reason at length use more output tokens; the bake-off measures the real cost.
+
+#### What the bake-off measures
+
+| Dimension | Measure | Bar to pass |
 |---|---|---|
-| Claude Opus 5 | ~85k input + ~19k output tokens per report (thinking counts as output) × 4 a day, at US$5 / US$25 per million | ~US$75; ~US$60–65 with prompt caching |
-| Web search | ~25 searches per report × 4 a day, at US$10 per 1,000 | ~US$21 |
-| Market data | Upstox free or Kite ₹500 | ₹0–500 |
-| Hosting | Free web and database tiers; one small worker | ~US$5–10 |
-| **Total V0** | | **~US$85–100 + ₹0–500** |
+| Accuracy · extraction | Recall and precision of claims pulled from articles, against your labels | ≥ 95% / ≥ 98% |
+| Accuracy · verification | Claims wrongly accepted; true claims wrongly withheld | 0 on critical traps, ≤ 1% overall · ≤ 10% withheld |
+| Judgement | Agreement with your impact tags (Cohen's kappa); overlap of its top 3 takeaways with yours; publish-or-withhold calls on borderline cases | κ ≥ 0.7 · ≥ 2 of 3 · ≥ 90% agree |
+| Faithfulness | Every sentence in a written report backed by a verified claim | 100% |
+| Format | Valid JSON on the first try | ≥ 99% |
+| Latency | p50 and p95 time per call; a full report run against the 08:15–08:38 window | Report run p95 ≤ 15 min |
+| Cost | Actual cost per report from OpenRouter's usage data, including retries [R35] | Lowest that passes every bar |
+| Stability | Errors and timeouts; whether verdicts change across 3 repeat runs | ≤ 1% errors · verdicts stable |
 
-If evals show no quality loss, moving extraction and writing to Sonnet 5 (US$2 / US$10 per million tokens) would save roughly US$20 a month.
+#### How it runs
+
+1. **Test sets from real days.** Record 20 trading days, then label about 300 extracted claims, 300 claim-and-source pairs (50 of them critical traps), 150 stories with your impact tags and top-3 picks, and 40 planted defects for the final check.
+2. **Same conditions for every model.** Same prompts, lowest randomness setting where supported, JSON-schema output with OpenRouter's `require_parameters` so requests only reach providers that support it, and every test run 3 times.
+3. **Record everything.** Each OpenRouter response includes tokens and cost; the harness also records time from request to answer.
+4. **Score without favouritism.** Score by rule wherever possible (exact matches, schema checks, quote matches). For judgement and writing quality, use two judge models from different vendors; neither grades its own vendor's output, and both are checked against your labels on 50 samples before their scores count.
+5. **Pick per step.** For each step, the cheapest model that clears every bar wins; ties go to lower p95 latency, then fewer errors. Mixing is expected, e.g. a budget model for sorting and extraction and a stronger one only for verification.
+6. **Backups.** Each step gets a second model from a different vendor, used automatically during an outage.
+7. **Repeat.** Re-run monthly and when a notable model launches. More than a dozen models from these vendors appeared on OpenRouter in the last 60 days.
+
+One-time bake-off cost: roughly US$50–80. Budget and mid models run every test set; strong models run only the verification set, using OpenRouter's lower batch prices where offered.
+
+#### Monthly cost by pipeline choice (estimate · measure in V0)
+
+| Option | AI models | Search | Total incl. OpenRouter's 5.5% credit fee [R36] |
+|---|---|---|---|
+| Budget model for every step (e.g. DeepSeek V4 Flash, Qwen3.8 Flash) | ~US$1–2 | ~US$2–15 | **~US$3–18** |
+| Gemini 2.5 Flash for every step | ~US$6 | ~US$2–15 | **~US$9–22** |
+| Gemini 2.5 Flash, with Claude Sonnet 5 or GPT-5.6 Sol for verification only | ~US$17 | ~US$2–15 | **~US$20–33** |
+| Claude Opus 5 for every step (v1.1 plan) | ~US$76 | ~US$2–15 | ~US$82–95 |
+
+- **Volume assumed:** ~85k input + ~19k output tokens per report × 4 reports × 21 trading days. Search: ~25 searches per report, priced at OpenRouter's Parallel (US$1–5 per 1,000) to Exa (US$7 per 1,000) [R34].
+- **Not included:** savings from prompt caching where a provider supports it; market data (₹0–500 a month). Hosting runs on your existing Vercel, Supabase and Railway plans.
+- **Data policy:** news inputs are public. From V2 your trade journal is personal, so those calls go only to providers that don't store or train on prompts, using OpenRouter's privacy settings.
 
 ## 9. Phasing: V0 → Nirvana
 
@@ -657,6 +688,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 | Data licensing | Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms | Broker APIs under personal-use terms in V0–V2; RSS and official feeds only; NSE-only reports via NSE's consent, a licensed vendor or manual download (§8.4); an exchange or vendor licence before any SaaS launch |
 | Regulation | Charging users for market analysis may bring in SEBI research-analyst or investment-adviser rules | Stay factual and attributed; no advice in Citebell's voice; legal advice before V3 billing |
 | LLM errors | A model can invent a number or a source | Numbers are filled in from verified data via placeholders, never written by the model (§8.12); independent verifier; fail-closed gate; golden test set of known traps |
+| Model churn and outages | Models retire or change behaviour; providers go down | Pinned model versions; a backup model from another vendor for each step; monthly bake-off re-run (§8.12) |
 | Source outages and delays | Exchange files and feeds can arrive late | Second feed; withheld states with retry times; last verified values shown with dates |
 | Paywalls | Some claims can't be read in full | Cite only what's verifiable in the free portion, or use an alternative source |
 | Over-reliance | A trusted tool can be followed blindly | Clear badges, attributed views, journaling prompts, "information, not advice" copy |
@@ -671,10 +703,9 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 ### Open questions
 1. Which broker API: Upstox, Kite or Dhan?
 2. Route for NSE-only data (FII/DII, participant OI, ban list): ask NSE for consent, license a vendor, or download by hand? (§8.4)
-3. Worker host: Railway, Render or Fly.io?
-4. Monthly budget for data and AI calls (estimate ~US$85–100 + ₹0–500, §8.12)?
-5. Hindi business press in V1 or later?
-6. The repo is public: should prompts and the source registry live in a private repo?
+3. Which models make the bake-off shortlist, and what monthly AI budget (options ~US$3–95, §8.12)?
+4. Hindi business press in V1 or later?
+5. The repo is public: should prompts and the source registry live in a private repo?
 
 ### Sources
 - **[R1]** Moneycontrol Pro: [traderhq.com review](https://traderhq.com/moneycontrol-pro-review-expert-insights-smart-investors/) · [topstockmarketbroker.com 2026 review](https://www.topstockmarketbroker.com/2026/08/moneycontrol-pro-review-2026-app.html)
@@ -693,7 +724,7 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 - **[R14]** Kite Connect pricing: [Zerodha Z-Connect](https://zerodha.com/z-connect/updates/free-personal-apis-from-kite-connect) · [Zerodha support](https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/historical-data-and-live-market-data-payment-plan)
 - **[R15]** [NSE Terms of Use](https://www.nseindia.com/static/nse-terms-of-use)
 - **[R16]** [GitHub Actions: schedule event](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows)
-- **[R17]** [Claude API pricing](https://platform.claude.com/docs/en/about-claude/pricing) (web search, models)
+- **[R17]** [Claude API pricing](https://platform.claude.com/docs/en/about-claude/pricing) (Claude model prices for comparison)
 - **[R18]** [FRED API](https://fred.stlouisfed.org/docs/api/fred/) · [rate limit summary](https://apispine.com/fred/pricing)
 - **[R19]** [EODHD pricing](https://eodhd.com/pricing)
 - **[R20]** [Twelve Data pricing](https://twelvedata.com/pricing)
@@ -709,3 +740,8 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 - **[R30]** [Resend quotas and limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits)
 - **[R31]** [Wayback Machine Save Page Now API](https://archive.org/details/spn-2-public-api-page-docs)
 - **[R32]** [DhanHQ Data API subscription](https://dhan.co/support/platforms/dhanhq-api/how-does-the-dhanhq-data-api-subscription-work/)
+- **[R33]** [OpenRouter models API (live prices)](https://openrouter.ai/api/v1/models)
+- **[R34]** [OpenRouter web search and pricing](https://openrouter.ai/docs/features/web-search)
+- **[R35]** [OpenRouter usage accounting](https://openrouter.ai/docs/use-cases/usage-accounting)
+- **[R36]** OpenRouter fees: [5.5% credit fee explained](https://omidsaffari.com/blog/openrouter-pricing) · [TrueFoundry pricing guide](https://www.truefoundry.com/blog/openrouter-pricing)
+- **[R37]** [Gemini API model deprecations](https://ai.google.dev/gemini-api/docs/deprecations)

@@ -29,6 +29,14 @@ The user raised 12 architecture questions (frontend/backend split, LangChain/Pyt
 - New "News-reported" badge for V0 values that have no primary feed.
 - Breaking-news alerts capped at 5 per day, with report-ready alerts excluded from the cap.
 
+## v1.2: model choice by bake-off (same day)
+The Claude Opus 5 plan (~US$85–100 a month) was too expensive for the user. The user has an OpenRouter account for multi-model evals and existing Supabase, Railway and Vercel subscriptions. Changes:
+- PRD §8.12 now picks models per step through an OpenRouter bake-off. The shortlist has 12 models with live prices, including Gemini 2.5 Flash. The bake-off scores accuracy, judgement, faithfulness, format, latency, cost and stability, with pass bars and a decision rule.
+- Monthly cost options now run from ~US$3–18 (budget model) to ~US$20–33 (Gemini 2.5 Flash plus a strong verifier), against ~US$82–95 for all Opus 5.
+- Search is provider-neutral: a search API called from code with a domain allow-list, because Google's search can't be domain-filtered through OpenRouter.
+- The worker is hosted on Railway, and the existing plans are reused.
+- Fixed a mobile overflow bug in the HTML masthead.
+
 ## Inputs reviewed
 - Sample morning outlook reports (3 pages: Global Opening Check / India Setup & Flows / Data Outlook).
 - Older text pre-market briefs (May–Jul 2026).

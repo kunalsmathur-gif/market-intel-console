@@ -49,7 +49,7 @@ code,.mono{font-family:var(--mono);font-size:.88em}
 
 /* ---------- Masthead ---------- */
 .masthead{background:var(--paper);border-bottom:1px solid var(--line)}
-.masthead-in{max-width:1320px;margin:0 auto;padding:28px 28px 26px;display:grid;gap:22px}
+.masthead-in{max-width:1320px;margin:0 auto;padding:28px 28px 26px;display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
 .lockup{display:flex;align-items:center;gap:12px}
 .lockup svg{width:38px;height:38px;flex:none}
 .wordmark{font-weight:700;font-size:26px;letter-spacing:-.03em;line-height:1}
@@ -63,7 +63,7 @@ code,.mono{font-family:var(--mono);font-size:.88em}
 .headline p{color:var(--ink-2);font-size:18px;max-width:70ch}
 
 /* Trading-day rail (signature figure) */
-.dayrail{border:1px solid var(--line);border-radius:12px;padding:16px 18px 12px;background:var(--bg)}
+.dayrail{margin:0;border:1px solid var(--line);border-radius:12px;padding:16px 18px 12px;background:var(--bg)}
 .dayrail-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .label{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
 .rail-scroll{overflow-x:auto}
@@ -369,7 +369,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="head-row">
       <div class="lockup"><svg aria-label="Citebell logo"><use href="#mark"/></svg><span class="wordmark">citebell<sup>[1]</sup></span></div>
       <div class="meta">
-        <span class="chip brass">PRD v1.1 · draft for review</span>
+        <span class="chip brass">PRD v1.2 · draft for review</span>
         <span class="chip">14 Sep 2026</span>
         <span class="chip">Personal use first · SaaS-ready</span>
       </div>
@@ -607,7 +607,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       </div>
       <div class="arrow"></div>
       <div class="pipeline">
-        <span class="label">Worker pipeline · Python + Anthropic SDK (§8)</span>
+        <span class="label">Worker pipeline · Python + OpenRouter (§8)</span>
         <div class="row">
           <div class="node"><b>Collectors</b><small>India · Global macro · Geopolitics · Tech · Crypto · Flows &amp; derivatives</small></div>
           <div class="arrow"></div>
@@ -674,7 +674,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="item"><span class="label">India data</span><p>A broker API (Upstox, Kite or Dhan) for indices, VIX, option chain, and India-traded USD/INR, gold and crude. NSE-published reports (FII/DII, participant OI, ban list, bhavcopy) only via NSE's consent, a licensed vendor or manual download. NSDL FPI data; SEBI, RBI and PIB circulars; exchange announcements. Details in §8.4.</p></div>
     <div class="item"><span class="label">Global data</span><p>FRED, US Treasury, Fed, ECB, BoJ, PBoC and US BLS (free, official). Live global indices and commodity futures: news-reported in V0, then one paid feed (e.g. EODHD) in V1. Crypto: CoinGecko Demo API plus a public exchange price.</p></div>
     <div class="item"><span class="label">News feeds</span><p>RSS and official feeds: Moneycontrol, Livemint, Business Standard, Economic Times, BusinessLine, CNBC-TV18, Morningstar, CNBC, Nikkei Asia, SCMP, TechCrunch, The Verge, CoinDesk, The Block. Reuters, AP, Bloomberg, FT and WSJ through web search limited to those sites (Reuters has no public RSS).</p></div>
-    <div class="item"><span class="label">Stack</span><p>Next.js + Tailwind web app on Vercel · Python worker with the Anthropic SDK on an always-on container · Supabase (Postgres, Auth, Storage, Realtime) · Claude Opus 5 for every AI step at launch · Telegram bot + email. Store headlines, links and quotes of 25 words or fewer; never full articles. Reasoning in §8.</p></div>
+    <div class="item"><span class="label">Stack</span><p>Next.js + Tailwind web app on Vercel · Python worker on Railway · Supabase (Postgres, Auth, Storage, Realtime) · AI models through OpenRouter, chosen per step by a bake-off (§8.12) · Telegram bot + email. Store headlines, links and quotes of 25 words or fewer; never full articles. Reasoning in §8.</p></div>
   </div>
 </section>
 
@@ -700,7 +700,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <thead><tr><th>#</th><th>Question</th><th>Decision</th></tr></thead>
     <tbody>
       <tr><td class="n"><a href="#d1">8.1</a></td><td>Separate frontend and backend?</td><td>Yes. Three parts in one repo: a Next.js web app that only reads and displays, a Python worker that does all fetching and AI work, and Supabase for data and accounts.</td></tr>
-      <tr><td class="n"><a href="#d2">8.2</a></td><td>LangChain / Python?</td><td>No LangChain. Python for the worker with the official Anthropic SDK; TypeScript for the web app.</td></tr>
+      <tr><td class="n"><a href="#d2">8.2</a></td><td>LangChain / Python?</td><td>No LangChain. Python for the worker, calling AI models through OpenRouter; TypeScript for the web app.</td></tr>
       <tr><td class="n"><a href="#d3">8.3</a></td><td>APIs or MCP?</td><td>Direct APIs wherever a number or fact enters the system. MCP for exploring data while building, and later for Ask Citebell and outside access.</td></tr>
       <tr><td class="n"><a href="#d4">8.4</a></td><td>Free or paid data?</td><td>V0 can run for ₹0–500 a month with the same correctness, because accuracy comes from primary sources and cross-checks. Two gaps: live global prices, and NSE-only reports that need NSE's permission or a licence.</td></tr>
       <tr><td class="n"><a href="#d5">8.5</a></td><td>Sign-in / sign-out</td><td>Supabase Auth from V0: magic link or Google, authenticator-app 2FA, owner-only allowlist. Roles, plans and billing arrive in V3.</td></tr>
@@ -710,7 +710,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <tr><td class="n"><a href="#d9">8.9</a></td><td>Caching / RAG</td><td>Caching from V0 (data, prompts, pages). No RAG in V0–V1; database search instead. RAG over verified claims comes with Ask Citebell in V2.</td></tr>
       <tr><td class="n"><a href="#d10">8.10</a></td><td>Eval suites</td><td>Seven suites (UX, code, data sanity, data quality, AI pipeline, system stability, cost), run in CI and in a nightly replay of past days.</td></tr>
       <tr><td class="n"><a href="#d11">8.11</a></td><td>Low latency and scale</td><td>Precompute, then serve: nobody waits on an AI call. Mumbai hosting, finished pages, and each report computed once no matter how many users read it.</td></tr>
-      <tr><td class="n"><a href="#d12">8.12</a></td><td>Which model?</td><td>Claude Opus 5 for every AI step at launch, and the model never produces numbers. Cheaper models and lower effort are tested on low-risk steps; you decide on any switch from the measured results.</td></tr>
+      <tr><td class="n"><a href="#d12">8.12</a></td><td>Which model?</td><td>Chosen by a bake-off on OpenRouter across budget, mid and strong models (Gemini 2.5 Flash included), scored on accuracy, judgement, speed and cost. The model never produces numbers. Expected monthly cost drops from ~US$85–100 to ~US$10–35.</td></tr>
     </tbody>
   </table></div>
 
@@ -740,7 +740,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <div class="col"><span class="label">Outside services</span>
         <div class="node"><b>Market data</b><small>Broker API, FRED, RBI, CoinGecko</small></div>
         <div class="node"><b>News</b><small>Publisher RSS, GDELT</small></div>
-        <div class="node"><b>Anthropic API</b><small>Claude + allow-listed web search</small></div>
+        <div class="node"><b>OpenRouter · search API</b><small>AI models chosen per step; search limited to trusted sites</small></div>
       </div>
     </div>
   </div>
@@ -751,14 +751,14 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   <div class="tbl"><table>
     <thead><tr><th>Part</th><th>Runs on</th><th>Does</th><th>Never does</th></tr></thead>
     <tbody>
-      <tr><td>Web app (Next.js + Tailwind)</td><td>Vercel</td><td>Renders pages from the database; manages sessions; saves your flags, notes and settings</td><td>Call Claude or data providers; hold their keys</td></tr>
-      <tr><td>Worker (Python)</td><td>A small always-on container (e.g. Railway, Render or Fly.io)</td><td>Schedules and runs report jobs: fetch, verify, write, render PDFs, send alerts</td><td>Serve web pages</td></tr>
+      <tr><td>Web app (Next.js + Tailwind)</td><td>Vercel</td><td>Renders pages from the database; manages sessions; saves your flags, notes and settings</td><td>Call AI models or data providers; hold their keys</td></tr>
+      <tr><td>Worker (Python)</td><td>Railway (your existing account), always on</td><td>Schedules and runs report jobs: fetch, verify, write, render PDFs, send alerts</td><td>Serve web pages</td></tr>
       <tr><td>Supabase</td><td>Managed service, Mumbai region</td><td>Postgres database, sign-in, file storage, live updates</td><td>Business logic beyond per-user access rules</td></tr>
     </tbody>
   </table></div>
   <ul class="clean">
     <li><strong>Different speeds.</strong> A report run takes minutes; a page must load in milliseconds. Web hosting functions time out on long jobs.</li>
-    <li><strong>Safer keys.</strong> Claude, broker and data keys live only in the worker, so a web-app bug can't expose them.</li>
+    <li><strong>Safer keys.</strong> OpenRouter, broker and data keys live only in the worker, so a web-app bug can't expose them.</li>
     <li><strong>Separate scaling.</strong> More users add web load; more reports add worker load.</li>
     <li><strong>One contract.</strong> The database schema, plus data shapes defined once in Python and generated as TypeScript types for the web app.</li>
     <li><strong>Not GitHub Actions for scheduling.</strong> GitHub's docs say scheduled workflows can be delayed under heavy load and some queued jobs dropped [R16], which is too risky for an 08:45 deadline. A monitor alerts you if a run doesn't check in on time.</li>
@@ -767,11 +767,11 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 
   <!-- 8.2 -->
   <div class="dec-h" id="d2"><h3>8.2 · Do we need LangChain or Python?</h3><span class="tag brass">Decided</span></div>
-  <div class="decision"><p><b>No LangChain or LangGraph. Python for the worker, using the official Anthropic SDK; TypeScript for the web app.</b></p></div>
+  <div class="decision"><p><b>No LangChain or LangGraph. Python for the worker, calling AI models through OpenRouter with a standard OpenAI-compatible client; TypeScript for the web app.</b></p></div>
   <div class="grid2">
     <div class="item"><span class="label">Why no LangChain</span><ul class="clean" style="font-size:14.5px">
       <li>The pipeline is a fixed sequence (collect → extract → verify → write → check → publish), not an open-ended agent. Plain code is easier to test, re-run and debug.</li>
-      <li>What we need is built into the Claude API: tool use, structured JSON output, citations, prompt caching, and web search limited to chosen sites.</li>
+      <li>Each step is one call: prompt in, structured JSON out. OpenRouter's OpenAI-compatible API does that for every candidate model, so switching vendors needs no framework.</li>
       <li>Framework layers hide the exact prompt and request, and that's what you need to see when tracing a wrong claim.</li>
       <li>Fewer dependencies to break or upgrade.</li>
     </ul></div>
@@ -782,7 +782,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <li>Each step is a plain function with typed inputs and outputs, logged per run, so any report can be rebuilt from its inputs.</li>
     </ul></div>
   </div>
-  <div class="callout"><span class="label">Correction to v1.0</span><p>v1.0 named the “Claude Agent SDK”. That SDK packages Claude Code's file-and-terminal agent, which suits open-ended tasks. This pipeline fits direct Claude API calls driven by our own code better. Reconsider only if Ask Citebell (V2) needs open-ended multi-step research.</p></div>
+  <div class="callout"><span class="label">Correction to v1.0</span><p>v1.0 named the “Claude Agent SDK”. That SDK packages Claude Code's file-and-terminal agent, which suits open-ended tasks. This pipeline fits direct model calls driven by our own code better. Reconsider only if Ask Citebell (V2) needs open-ended multi-step research.</p></div>
 
   <!-- 8.3 -->
   <div class="dec-h" id="d3"><h3>8.3 · APIs or MCPs?</h3><span class="tag brass">Decided</span></div>
@@ -792,9 +792,9 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <tbody>
       <tr><td>Prices, flows, OI, macro data</td><td>Direct API calls in code</td><td>Predictable, typed, testable, cacheable</td><td class="n">V0</td></tr>
       <tr><td>News collection</td><td>Publisher RSS feeds</td><td>Cheap, predictable, fully logged</td><td class="n">V0</td></tr>
-      <tr><td>Checking a story across outlets</td><td>Claude's built-in web search, limited to a list of trusted T1/T2 sites</td><td>No extra service to run; searches can't wander to untrusted sites; about US$10 per 1,000 searches [R17]</td><td class="n">V0</td></tr>
+      <tr><td>Checking a story across outlets</td><td>A search API called from code, limited to trusted T1/T2 sites (e.g. Exa or Parallel through OpenRouter)</td><td>Works with any model; results are stored for the citation pack. OpenRouter lists Exa at US$0.007 per request and Parallel at US$1–5 per 1,000 [R34]. Google's own search can't be limited to chosen sites through OpenRouter.</td><td class="n">V0</td></tr>
       <tr><td>Exploring data while building</td><td>MCP in Claude Code, e.g. Zerodha's hosted Kite MCP, which leaves out trading actions [R29]</td><td>Fast exploration; kept out of the production pipeline</td><td class="n">Now</td></tr>
-      <tr><td>Ask Citebell</td><td>Claude tools that query Citebell's own verified database</td><td>Answers can only draw on verified claims</td><td class="n">V2</td></tr>
+      <tr><td>Ask Citebell</td><td>AI tool calls that query Citebell's own verified database</td><td>Answers can only draw on verified claims</td><td class="n">V2</td></tr>
       <tr><td>Access from other AI assistants</td><td>Publish a Citebell MCP server</td><td>Subscribers can query verified data from their own assistant; a possible paid feature</td><td class="n">V3+</td></tr>
     </tbody>
   </table></div>
@@ -813,7 +813,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <tr><td>Live S&amp;P and Nasdaq futures, Nikkei, Hang Seng, Kospi, Brent, WTI, GIFT Nifty before 08:15</td><td>No dependable free API found. <strong>V0:</strong> use values quoted by two independent pre-market news reports, with a “News-reported” badge. <strong>V1:</strong> add one paid feed, e.g. EODHD at €19.99–29.99/month [R19], after confirming it covers these indices.</td><td class="n">₹0 → ~€20–30/mo</td><td>Twelve Data's free tier covers US stocks, forex and crypto only [R20].</td></tr>
       <tr><td>Bitcoin, Ethereum, dominance</td><td>CoinGecko Demo API (free key, 10,000 calls/month) [R21], plus a public exchange price as the second source</td><td class="n">Free</td><td>A report uses about 4–10 calls, far below the limit.</td></tr>
       <tr><td>Indian and global business, tech and crypto news</td><td>Publisher RSS feeds: Moneycontrol, Livemint, Business Standard, BusinessLine, CNBC, Nikkei Asia, TechCrunch, The Verge, CoinDesk</td><td class="n">Free</td><td>Store headlines, links and quotes of 25 words or fewer only.</td></tr>
-      <tr><td>Reuters, AP, Bloomberg</td><td>Claude web search limited to those sites</td><td class="n">~US$10 / 1,000 searches</td><td>Reuters stopped its public RSS feeds in 2020 [R22].</td></tr>
+      <tr><td>Reuters, AP, Bloomberg</td><td>Search API limited to those sites</td><td class="n">~US$1–7 / 1,000 searches</td><td>Reuters stopped its public RSS feeds in 2020 [R22].</td></tr>
       <tr><td>Finding geopolitical events</td><td>GDELT</td><td class="n">Free</td><td>For spotting events only; never cited as a source.</td></tr>
       <tr><td>Economic and central-bank calendars</td><td>Official schedules (RBI, Fed, ECB, BoJ, MoSPI, BLS), entered and checked once a year, plus FRED release dates</td><td class="n">Free</td><td>Economists' consensus forecasts usually cost money; decide in V1.</td></tr>
       <tr><td>Don't use</td><td>NewsAPI.org free plan (development only, articles 24 hours late) [R23]; scraping Yahoo Finance</td><td>—</td><td>Their terms don't allow this use.</td></tr>
@@ -910,11 +910,11 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <thead><tr><th>Layer</th><th>What it does</th><th>Phase</th></tr></thead>
     <tbody>
       <tr><td>Data cache</td><td>Stores raw API responses by source, query and time window. Refresh times: live quotes 60 s; end-of-day data until the next session; RSS only when the feed changes. Protects free-tier limits and makes runs replayable.</td><td class="n">V0</td></tr>
-      <tr><td>Prompt caching (Claude)</td><td>Fixed instructions, the source list, templates and tier rules go first in each request; cached input costs about a tenth of the normal rate.</td><td class="n">V0</td></tr>
+      <tr><td>Prompt caching</td><td>Fixed instructions, the source list, templates and tier rules go first in each request, so providers that support prompt caching charge less for the repeated part. Savings vary by provider.</td><td class="n">V0</td></tr>
       <tr><td>Page cache</td><td>A published report never changes, so its page is built once and rebuilt only on correction.</td><td class="n">V0–V1</td></tr>
       <tr><td>Live updates</td><td>“Report ready” is pushed to open tabs instead of the page checking repeatedly.</td><td class="n">V1</td></tr>
       <tr><td>Search without RAG</td><td>Archive search uses Postgres full-text search. Grouping similar stories uses title similarity plus a quick model check.</td><td class="n">V0–V1</td></tr>
-      <tr><td>RAG for Ask Citebell</td><td>Searches verified claims (keyword + meaning-based), not raw articles; answers cite claim IDs. Anthropic has no embedding model of its own and points to Voyage AI [R25].</td><td class="n">V2</td></tr>
+      <tr><td>RAG for Ask Citebell</td><td>Searches verified claims (keyword + meaning-based), not raw articles; answers cite claim IDs. The embedding model is picked by a small retrieval test in V2 (Anthropic doesn't offer one [R25]).</td><td class="n">V2</td></tr>
     </tbody>
   </table></div>
   <p class="lede" style="font-size:15px"><strong style="color:var(--ink)">Why no RAG early:</strong> reports are built from today's fresh data, which needs no retrieval. RAG also adds a new way to go wrong (pulling in stale or unverified text) that isn't worth the risk until there's a verified archive to search.</p>
@@ -937,7 +937,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 
   <!-- 8.11 -->
   <div class="dec-h" id="d11"><h3>8.11 · How do we build for low latency and scale from the start?</h3><span class="tag brass">Decided</span></div>
-  <div class="decision"><p><b>Precompute, then serve.</b> Fetching, verifying and writing happen on the worker before each deadline; the app only reads finished results. Page speed never depends on Claude or data providers, and <b>cost grows with the number of reports, not the number of users.</b></p></div>
+  <div class="decision"><p><b>Precompute, then serve.</b> Fetching, verifying and writing happen on the worker before each deadline; the app only reads finished results. Page speed never depends on AI models or data providers, and <b>cost grows with the number of reports, not the number of users.</b></p></div>
   <div class="grid2">
     <div class="tbl"><table>
       <thead><tr><th>Morning Insights step</th><th>IST</th></tr></thead>
@@ -972,45 +972,78 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   <div class="tbl"><table>
     <thead><tr><th>Stage</th><th>Users</th><th>What changes</th></tr></thead>
     <tbody>
-      <tr><td>V0–V2</td><td class="n">1</td><td>Vercel Hobby, Supabase Free, one small worker. Vercel Hobby is for non-commercial use only [R26]. Supabase Free pauses after a week of inactivity [R28]; the worker's daily writes keep it active.</td></tr>
-      <tr><td>V3 beta</td><td class="n">≤ 100</td><td>Vercel and Supabase paid plans; a second worker for alerts; licensed data for redistribution.</td></tr>
+      <tr><td>V0–V2</td><td class="n">1</td><td>Your existing Vercel, Supabase and Railway accounts: web on Vercel, database on Supabase, worker on Railway. Little or no extra cost: Railway bills by usage, and check whether a new Supabase project adds compute charges on your plan.</td></tr>
+      <tr><td>V3 beta</td><td class="n">≤ 100</td><td>Larger plan sizes as needed; a second Railway worker for alerts; licensed data for redistribution.</td></tr>
       <tr><td>SaaS</td><td class="n">1k–50k</td><td>The same reports serve every user from cache. Per-user work (watchlists, price alerts) runs as simple rules without AI. Separate alert workers; a read-only database copy; live prices delivered through a licensed vendor.</td></tr>
     </tbody>
   </table></div>
 
   <!-- 8.12 -->
-  <div class="dec-h" id="d12"><h3>8.12 · Model evals: which model works best?</h3><span class="tag brass">Decided for launch</span></div>
-  <div class="decision"><p><b>Claude Opus 5 (<code>claude-opus-5</code>) for every AI step at launch.</b> At four reports a day, verification quality matters more than cost. Cheaper options are tested, not assumed.</p><p style="margin-top:6px"><b>The model never produces numbers.</b> The writer drafts text with data placeholders such as <code>{{fact:nifty50.close}}</code>, the renderer fills them from verified facts, and the final check rejects any number in the text that didn't come from a placeholder or a quoted source.</p></div>
+  <div class="dec-h" id="d12"><h3>8.12 · Which model? Chosen by a bake-off on OpenRouter</h3><span class="tag brass">Method decided</span><span class="tag warn">Model picked after the bake-off</span></div>
+  <div class="decision"><p><b>The pipeline isn't tied to one model or vendor.</b> Each AI step reads its model name from settings, and every call goes through OpenRouter. Changing models is a settings change, so the choice rests on measured accuracy, judgement, speed and cost on your own data.</p><p style="margin-top:6px"><b>The design keeps the riskiest work out of the model, which is why cheap models are realistic here.</b> Numbers are filled in from verified data, quotes are matched against the source text in code, and publish rules are code, not prompts. The model still has to read, sort, judge and write well, and the bake-off tests exactly that.</p></div>
+
+  <h4 style="margin-top:6px">Shortlist with live prices (OpenRouter, checked 14 Sep 2026) [R33]</h4>
   <div class="tbl"><table>
-    <thead><tr><th>Step</th><th>Launch setting</th><th>Also test</th><th>Must hold to switch</th></tr></thead>
+    <thead><tr><th>Model</th><th>Tier</th><th>US$ per million tokens, input / output</th><th>If every step used it*</th><th>Why it's on the list</th></tr></thead>
     <tbody>
-      <tr><td>Filtering, tagging, story grouping</td><td>Opus 5 · low effort</td><td>Haiku 4.5; Sonnet 5</td><td>Tag accuracy ≥ 95% against your labels</td></tr>
-      <tr><td>Claim extraction (structured output)</td><td>Opus 5 · medium effort</td><td>Sonnet 5</td><td>Recall ≥ 95%, precision ≥ 98%</td></tr>
-      <tr><td>Verification (exact quotes via Citations)</td><td>Opus 5 · high effort</td><td>No switch before V1 data exists</td><td>Zero wrongly accepted claims on the critical set</td></tr>
-      <tr><td>Writing</td><td>Opus 5 · medium effort</td><td>Sonnet 5</td><td>100% faithful to verified claims; template followed</td></tr>
-      <tr><td>Final checks (advice language, style)</td><td>Opus 5 · low effort, plus rule-based checks</td><td>Haiku 4.5</td><td>Catches 100% of planted defects</td></tr>
-      <tr><td>Ask Citebell (V2)</td><td>Opus 5</td><td>—</td><td>Answers only from verified claims</td></tr>
+      <tr><td>DeepSeek V4 Flash <code>deepseek/deepseek-v4-flash</code></td><td>Budget</td><td class="n">0.089 / 0.177</td><td class="n">~US$1</td><td>Lowest price on the list</td></tr>
+      <tr><td>Gemini 2.5 Flash-Lite <code>google/gemini-2.5-flash-lite</code></td><td>Budget</td><td class="n">0.10 / 0.40</td><td class="n">~US$1.4</td><td>Google's low-cost tier</td></tr>
+      <tr><td>Qwen3.8 Flash <code>qwen/qwen3.8-flash</code></td><td>Budget</td><td class="n">0.15 / 0.47</td><td class="n">~US$2</td><td>Added to OpenRouter Aug 2026</td></tr>
+      <tr><td>GLM 5.3 Flash <code>z-ai/glm-5.3-flash</code></td><td>Budget</td><td class="n">0.15 / 0.50</td><td class="n">~US$2</td><td>Added to OpenRouter Aug 2026</td></tr>
+      <tr><td>GPT-5.6 Luna <code>openai/gpt-5.6-luna</code></td><td>Budget</td><td class="n">0.20 / 1.20</td><td class="n">~US$3</td><td>OpenAI's low-cost tier</td></tr>
+      <tr><td>GPT-5 mini <code>openai/gpt-5-mini</code></td><td>Budget</td><td class="n">0.25 / 2.00</td><td class="n">~US$5</td><td>Well-known baseline</td></tr>
+      <tr><td><strong>Gemini 2.5 Flash</strong> <code>google/gemini-2.5-flash</code></td><td>Mid</td><td class="n">0.30 / 2.50</td><td class="n">~US$6</td><td>Your suggestion. Stable; released June 2025; Google has announced no shutdown date [R37]</td></tr>
+      <tr><td>Gemini 3.8 Flash <code>google/gemini-3.8-flash</code></td><td>Mid</td><td class="n">0.75 / 3.75</td><td class="n">~US$11</td><td>Newest Gemini Flash on OpenRouter (added Sep 2026)</td></tr>
+      <tr><td>Claude Haiku 4.5 <code>anthropic/claude-haiku-4.5</code></td><td>Mid</td><td class="n">1.00 / 5.00</td><td class="n">~US$15</td><td>Anthropic's low-cost tier</td></tr>
+      <tr><td>Claude Sonnet 5 <code>anthropic/claude-sonnet-5</code></td><td>Strong</td><td class="n">2.00 / 10.00</td><td class="n">~US$30</td><td>Candidate for the verification step only</td></tr>
+      <tr><td>GPT-5.6 Sol <code>openai/gpt-5.6-sol</code></td><td>Strong</td><td class="n">2.00 / 10.00</td><td class="n">~US$30</td><td>Candidate for the verification step only</td></tr>
+      <tr><td>Claude Opus 5 <code>anthropic/claude-opus-5</code></td><td>Reference</td><td class="n">5.00 / 25.00</td><td class="n">~US$76</td><td>Quality ceiling to measure the others against; not the default</td></tr>
     </tbody>
   </table></div>
+  <p class="lede" style="font-size:13.5px">*Model tokens only, at the volume assumed below (~7.1M input + ~1.6M output tokens a month). Models that reason at length use more output tokens; the bake-off measures the real cost.</p>
+
+  <h4>What the bake-off measures</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Dimension</th><th>Measure</th><th>Bar to pass</th></tr></thead>
+    <tbody>
+      <tr><td>Accuracy · extraction</td><td>Recall and precision of claims pulled from articles, against your labels</td><td class="n">≥ 95% / ≥ 98%</td></tr>
+      <tr><td>Accuracy · verification</td><td>Claims wrongly accepted; true claims wrongly withheld</td><td class="n">0 on critical traps, ≤ 1% overall · ≤ 10% withheld</td></tr>
+      <tr><td>Judgement</td><td>Agreement with your impact tags (Cohen's kappa); overlap of its top 3 takeaways with yours; publish-or-withhold calls on borderline cases</td><td class="n">κ ≥ 0.7 · ≥ 2 of 3 · ≥ 90% agree</td></tr>
+      <tr><td>Faithfulness</td><td>Every sentence in a written report backed by a verified claim</td><td class="n">100%</td></tr>
+      <tr><td>Format</td><td>Valid JSON on the first try</td><td class="n">≥ 99%</td></tr>
+      <tr><td>Latency</td><td>p50 and p95 time per call; a full report run against the 08:15–08:38 window</td><td class="n">Report run p95 ≤ 15 min</td></tr>
+      <tr><td>Cost</td><td>Actual cost per report from OpenRouter's usage data, including retries [R35]</td><td class="n">Lowest that passes every bar</td></tr>
+      <tr><td>Stability</td><td>Errors and timeouts; whether verdicts change across 3 repeat runs</td><td class="n">≤ 1% errors · verdicts stable</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>How it runs</h4>
   <ol class="clean">
-    <li>Record 20 trading days of inputs.</li>
-    <li>Run each option (model and effort level) on the golden test set and score it with the AI pipeline suite. Checks graded by a model are compared against your own labels on a sample first.</li>
-    <li>Compare quality, slowest-run time and cost per report. Try lower effort on Opus 5 before a cheaper model; it's often the better trade, and one model keeps prompt caching simpler.</li>
-    <li>You approve any switch. Verification stays on the strongest model unless an option shows zero wrong accepts on the critical set.</li>
-    <li>Re-run on every model or prompt change. The Batch API (half price, results within 24 hours) suits eval runs and backfills, never live reports.</li>
+    <li><strong>Test sets from real days.</strong> Record 20 trading days, then label about 300 extracted claims, 300 claim-and-source pairs (50 of them critical traps), 150 stories with your impact tags and top-3 picks, and 40 planted defects for the final check.</li>
+    <li><strong>Same conditions for every model.</strong> Same prompts, lowest randomness setting where supported, JSON-schema output with OpenRouter's <code>require_parameters</code> so requests only reach providers that support it, and every test run 3 times.</li>
+    <li><strong>Record everything.</strong> Each OpenRouter response includes tokens and cost; the harness also records time from request to answer.</li>
+    <li><strong>Score without favouritism.</strong> Score by rule wherever possible (exact matches, schema checks, quote matches). For judgement and writing quality, use two judge models from different vendors; neither grades its own vendor's output, and both are checked against your labels on 50 samples before their scores count.</li>
+    <li><strong>Pick per step.</strong> For each step, the cheapest model that clears every bar wins; ties go to lower p95 latency, then fewer errors. Mixing is expected, e.g. a budget model for sorting and extraction and a stronger one only for verification.</li>
+    <li><strong>Backups.</strong> Each step gets a second model from a different vendor, used automatically during an outage.</li>
+    <li><strong>Repeat.</strong> Re-run monthly and when a notable model launches. More than a dozen models from these vendors appeared on OpenRouter in the last 60 days.</li>
   </ol>
-  <p class="lede" style="font-size:15px">Claude features used: structured output for extraction; Citations for exact quotes (the two can't be combined in one request, so they're separate steps); web search limited to trusted sites; prompt caching; automatic fallback on refusals, with every response's stop reason checked.</p>
+  <p class="lede" style="font-size:15px">One-time bake-off cost: roughly US$50–80. Budget and mid models run every test set; strong models run only the verification set, using OpenRouter's lower batch prices where offered.</p>
+
+  <h4>Monthly cost by pipeline choice (estimate · measure in V0)</h4>
   <div class="tbl"><table>
-    <thead><tr><th>Monthly cost (estimate · measure in V0)</th><th>Assumption</th><th>21 trading days</th></tr></thead>
+    <thead><tr><th>Option</th><th>AI models</th><th>Search</th><th>Total incl. OpenRouter's 5.5% credit fee [R36]</th></tr></thead>
     <tbody>
-      <tr><td>Claude Opus 5</td><td>~85k input + ~19k output tokens per report (thinking counts as output) × 4 a day, at US$5 / US$25 per million</td><td class="n">~US$75; ~US$60–65 with prompt caching</td></tr>
-      <tr><td>Web search</td><td>~25 searches per report × 4 a day, at US$10 per 1,000</td><td class="n">~US$21</td></tr>
-      <tr><td>Market data</td><td>Upstox free or Kite ₹500</td><td class="n">₹0–500</td></tr>
-      <tr><td>Hosting</td><td>Free web and database tiers; one small worker</td><td class="n">~US$5–10</td></tr>
-      <tr><td><strong>Total V0</strong></td><td></td><td class="n"><strong>~US$85–100 + ₹0–500</strong></td></tr>
+      <tr><td>Budget model for every step (e.g. DeepSeek V4 Flash, Qwen3.8 Flash)</td><td class="n">~US$1–2</td><td class="n">~US$2–15</td><td class="n"><strong>~US$3–18</strong></td></tr>
+      <tr><td>Gemini 2.5 Flash for every step</td><td class="n">~US$6</td><td class="n">~US$2–15</td><td class="n"><strong>~US$9–22</strong></td></tr>
+      <tr><td>Gemini 2.5 Flash, with Claude Sonnet 5 or GPT-5.6 Sol for verification only</td><td class="n">~US$17</td><td class="n">~US$2–15</td><td class="n"><strong>~US$20–33</strong></td></tr>
+      <tr><td>Claude Opus 5 for every step (v1.1 plan)</td><td class="n">~US$76</td><td class="n">~US$2–15</td><td class="n">~US$82–95</td></tr>
     </tbody>
   </table></div>
-  <p class="lede" style="font-size:15px">If evals show no quality loss, moving extraction and writing to Sonnet 5 (US$2 / US$10 per million tokens) would save roughly US$20 a month.</p>
+  <ul class="clean">
+    <li><strong>Volume assumed:</strong> ~85k input + ~19k output tokens per report × 4 reports × 21 trading days. Search: ~25 searches per report, priced at OpenRouter's Parallel (US$1–5 per 1,000) to Exa (US$7 per 1,000) [R34].</li>
+    <li><strong>Not included:</strong> savings from prompt caching where a provider supports it; market data (₹0–500 a month). Hosting runs on your existing Vercel, Supabase and Railway plans.</li>
+    <li><strong>Data policy:</strong> news inputs are public. From V2 your trade journal is personal, so those calls go only to providers that don't store or train on prompts, using OpenRouter's privacy settings.</li>
+  </ul>
 </section>
 
 <!-- 9 -->
@@ -1801,6 +1834,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
       <tr><td>Data licensing</td><td>Redistributing exchange data, especially real-time, needs a licence; many news sites forbid scraping in their terms.</td><td>Broker APIs under personal-use terms in V0–V2; RSS and official feeds only; NSE-only reports via NSE's consent, a licensed vendor or manual download (§8.4); an exchange or vendor licence before any SaaS launch.</td></tr>
       <tr><td>Regulation</td><td>Charging users for market analysis may bring in SEBI research-analyst or investment-adviser rules.</td><td>Stay factual and attributed; no advice in Citebell's own voice; get legal advice before V3 billing.</td></tr>
       <tr><td>LLM errors</td><td>A model can invent a number or a source.</td><td>Numbers are filled in from verified data via placeholders, never written by the model (§8.12); independent verifier; fail-closed gate; golden test set of known traps.</td></tr>
+      <tr><td>Model churn and outages</td><td>Models retire or change behaviour; providers go down.</td><td>Pinned model versions; a backup model from another vendor for each step; monthly bake-off re-run (§8.12).</td></tr>
       <tr><td>Source outages and delays</td><td>Exchange files and feeds can arrive late.</td><td>Second feed; withheld states with retry times; last verified values shown with their dates.</td></tr>
       <tr><td>Paywalls</td><td>Some claims can't be read in full.</td><td>Cite only what's verifiable in the free portion, or use an alternative source.</td></tr>
       <tr><td>Over-reliance</td><td>A trusted tool can be followed blindly.</td><td>Clear badges, attributed views, journaling prompts, “information, not advice” copy.</td></tr>
@@ -1809,7 +1843,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   </table></div>
   <div class="grid2">
     <div class="item"><span class="label">Assumptions to validate</span><ul class="clean" style="font-size:14.5px"><li>Current pre-market research takes 60–90 min (measure in V0).</li><li>The named outlets offer usable RSS or official feeds.</li><li>Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.</li><li>A broker API gives index and option-chain data for personal use (Upstox's data APIs are free; Kite Connect is ₹500/month).</li></ul></div>
-    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Upstox, Kite or Dhan?</li><li>Route for NSE-only data: ask NSE for consent, license a vendor, or download by hand?</li><li>Worker host: Railway, Render or Fly.io?</li><li>What monthly budget for data and LLM calls?</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
+    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Upstox, Kite or Dhan?</li><li>Route for NSE-only data: ask NSE for consent, license a vendor, or download by hand?</li><li>Which models make the bake-off shortlist, and what monthly AI budget (§8.12)?</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
   </div>
   <h3>Sources</h3>
   <ol class="clean" style="font-size:14px;list-style:none;padding:0">
@@ -1829,7 +1863,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <li><span class="mono" style="color:var(--brass)">[R14]</span> Kite Connect pricing: <a href="https://zerodha.com/z-connect/updates/free-personal-apis-from-kite-connect">Zerodha Z-Connect</a> · <a href="https://support.zerodha.com/category/trading-and-markets/general-kite/kite-api/articles/historical-data-and-live-market-data-payment-plan">Zerodha support</a></li>
     <li><span class="mono" style="color:var(--brass)">[R15]</span> <a href="https://www.nseindia.com/static/nse-terms-of-use">NSE Terms of Use</a></li>
     <li><span class="mono" style="color:var(--brass)">[R16]</span> <a href="https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows">GitHub Actions: schedule event</a></li>
-    <li><span class="mono" style="color:var(--brass)">[R17]</span> <a href="https://platform.claude.com/docs/en/about-claude/pricing">Claude API pricing</a> (web search, models)</li>
+    <li><span class="mono" style="color:var(--brass)">[R17]</span> <a href="https://platform.claude.com/docs/en/about-claude/pricing">Claude API pricing</a> (Claude model prices for comparison)</li>
     <li><span class="mono" style="color:var(--brass)">[R18]</span> <a href="https://fred.stlouisfed.org/docs/api/fred/">FRED API</a> · <a href="https://apispine.com/fred/pricing">rate limit summary</a></li>
     <li><span class="mono" style="color:var(--brass)">[R19]</span> <a href="https://eodhd.com/pricing">EODHD pricing</a></li>
     <li><span class="mono" style="color:var(--brass)">[R20]</span> <a href="https://twelvedata.com/pricing">Twelve Data pricing</a></li>
@@ -1845,6 +1879,11 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <li><span class="mono" style="color:var(--brass)">[R30]</span> <a href="https://resend.com/docs/knowledge-base/account-quotas-and-limits">Resend quotas and limits</a></li>
     <li><span class="mono" style="color:var(--brass)">[R31]</span> <a href="https://archive.org/details/spn-2-public-api-page-docs">Wayback Machine Save Page Now API</a></li>
     <li><span class="mono" style="color:var(--brass)">[R32]</span> <a href="https://dhan.co/support/platforms/dhanhq-api/how-does-the-dhanhq-data-api-subscription-work/">DhanHQ Data API subscription</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R33]</span> <a href="https://openrouter.ai/api/v1/models">OpenRouter models API (live prices)</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R34]</span> <a href="https://openrouter.ai/docs/features/web-search">OpenRouter web search and pricing</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R35]</span> <a href="https://openrouter.ai/docs/use-cases/usage-accounting">OpenRouter usage accounting</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R36]</span> OpenRouter fees: <a href="https://omidsaffari.com/blog/openrouter-pricing">5.5% credit fee explained</a> · <a href="https://www.truefoundry.com/blog/openrouter-pricing">TrueFoundry pricing guide</a></li>
+    <li><span class="mono" style="color:var(--brass)">[R37]</span> <a href="https://ai.google.dev/gemini-api/docs/deprecations">Gemini API model deprecations</a></li>
   </ol>
 </section>
 
@@ -1852,7 +1891,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </div>
 
 <footer style="max-width:1320px;margin:0 auto;padding:6px 28px 40px;color:var(--ink-3);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between">
-  <span>Citebell PRD v1.1 · 14 Sep 2026</span>
+  <span>Citebell PRD v1.2 · 14 Sep 2026</span>
   <span>Wireframe data is illustrative. Market information, not investment advice.</span>
 </footer>
 
