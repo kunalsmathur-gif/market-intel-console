@@ -1,0 +1,4 @@
+# Local development and CI: install the shared schemas and the worker in editable mode.
+# Run from apps/worker:  python -m pip install -r requirements-dev.txt
+-e ../../packages/schemas
+-e .[dev]

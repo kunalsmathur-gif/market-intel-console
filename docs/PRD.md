@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| Version | v1.3, draft for review (adds §9 Budget and pricing) |
+| Version | v1.4, approved for the V0 build (records the V0 decisions in the Appendix) |
 | Date | 14 Sep 2026 |
 | Product | Citebell (working name was "Market Intel Console") |
 | Audience | Personal use first; SaaS-ready by design |
@@ -336,7 +336,7 @@ Why Python for the worker:
 |---|---|---|---|
 | Nifty, Bank Nifty, Sensex, sector indices, India VIX, option chain (OI, PCR; max pain computed), breadth (computed from index stocks) | A broker API: Upstox (data APIs free) [R27] or Kite Connect (₹500/month including live and historical data; the free Kite Personal plan has no market data) [R14]. Dhan's data API is ₹499/month [R32]. | ₹0–500/mo | Personal-use terms and a broker account needed. Broker logins expire daily, so the worker needs a daily login step. Showing this data to other users needs an exchange or vendor licence. |
 | USD/INR, gold, crude as traded in India | Same broker API: NSE USD/INR futures, MCX gold and crude futures | included | Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). FBIL's daily reference rate (published around 13:30 IST, still often called the RBI rate) is the official cross-check [R38]. |
-| FII/DII provisional cash, participant-wise OI, F&O ban list, bhavcopy | Published only by NSE | Free to view | **NSE's Terms of Use prohibit automated data collection without written consent** [R15]. **Decision needed:** ask NSE for consent for low-volume personal use, use a licensed data vendor, or download these by hand. The PRD doesn't assume scraping. |
+| FII/DII provisional cash, participant-wise OI, F&O ban list, bhavcopy | Published only by NSE | Free to view | **NSE's Terms of Use prohibit automated data collection without written consent** [R15]. **Decided for V0:** download these by hand and send the file to the Telegram bot, which parses it (§9.3). NSE consent or a licensed vendor can replace this later. The PRD doesn't assume scraping. |
 | FPI flows (cross-check) | NSDL's daily FPI data | Free | Published a day later; check the site's terms. |
 | US index closes, US 10-year yield, US economic data | FRED API (free key, ~120 requests/minute) [R18]; US Treasury yield data | Free | Daily closing values, not live futures. |
 | Live S&P and Nasdaq futures, Nikkei, Hang Seng, Kospi, Brent, WTI, GIFT Nifty before 08:15 | No dependable free API found. **V0:** use values quoted by two independent pre-market news reports, with a "News-reported" badge. **V1:** add one paid feed, e.g. EODHD at €19.99–29.99/month [R19], after confirming it covers these indices. | ₹0 → ~€20–30/mo | Twelve Data's free tier covers US stocks, forex and crypto only [R20]. |
@@ -809,12 +809,14 @@ Illustrative pricing in W11 (Free ₹0 · Pro ₹599/mo annual · Desk ₹1,499/
 - Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.
 - A broker API gives index and option-chain data for personal use (Upstox's data APIs are free; Kite Connect is ₹500/month).
 
+### Decisions for V0 (14 Sep 2026)
+1. **Broker API: Upstox.** Its data APIs are free; the access token expires at 03:30 IST, so there's a daily login (§9.3). Kite Connect stays the fallback (§9.5).
+2. **NSE-only data (FII/DII, participant OI, ban list): manual download.** The owner sends NSE's file to the Telegram bot each evening and the worker parses it (§8.4, §9.3).
+3. **Prompts, the source registry and eval goldens: a separate private repo.** The public repo keeps the code and a fake example config; the worker loads the private repo from `PRIVATE_CONFIG_DIR`.
+
 ### Open questions
-1. Which broker API: Upstox, Kite or Dhan?
-2. Route for NSE-only data (FII/DII, participant OI, ban list): ask NSE for consent, license a vendor, or download by hand? (§8.4)
-3. Confirm the V0 budget (§9: ~US$20–40 one-time, ~US$2–25 a month) and the bake-off shortlist (§8.12).
-4. Hindi business press in V1 or later?
-5. The repo is public: should prompts and the source registry live in a private repo?
+1. Confirm the V0 budget (§9: ~US$20–40 one-time, ~US$2–25 a month) and the bake-off shortlist (§8.12).
+2. Hindi business press in V1 or later?
 
 ### Sources
 - **[R1]** Moneycontrol Pro: [traderhq.com review](https://traderhq.com/moneycontrol-pro-review-expert-insights-smart-investors/) · [topstockmarketbroker.com 2026 review](https://www.topstockmarketbroker.com/2026/08/moneycontrol-pro-review-2026-app.html)

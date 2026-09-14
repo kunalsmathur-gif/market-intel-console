@@ -2,7 +2,7 @@
 
 **Verified before the bell.**
 
-A fact-checked market console for an Indian F&O trader. Scheduled Claude agents collect financial, geopolitical, tech and crypto news from trusted sources. Every claim is fact-checked and cited before it appears. Built for one trader first, and shaped so it can become a subscription product later.
+A fact-checked market console for an Indian F&O trader. A scheduled worker collects financial, geopolitical, tech and crypto news from trusted sources. Every claim is fact-checked and cited before it appears. Built for one trader first, and shaped so it can become a subscription product later.
 
 *(Working name was "Market Intel Console"; the repo keeps that slug for now.)*
 
@@ -21,6 +21,25 @@ The console also shows charts for Indian and global indices (Nifty 50, Bank Nift
 
 **Nothing is published without verification.** Every claim carries a source link, publisher, timestamp and source tier. Anything that fails verification is left out.
 
+## Repository layout
+
+| Path | What it is | Runs on |
+|---|---|---|
+| [`apps/web`](apps/web) | Next.js 16 + Tailwind web app. Reads and displays only; owner sign-in with a Supabase magic link | Vercel |
+| [`apps/worker`](apps/worker) | Python worker: schedule, collect, verify, publish. Holds every model and data key | Railway |
+| [`packages/schemas`](packages/schemas) | Data shapes defined once as Pydantic models, exported to JSON Schema and TypeScript | both |
+| [`infra/supabase`](infra/supabase/migrations) | Database schema: append-only facts and claims, run queue, alerts outbox, owner-only RLS | Supabase (Mumbai) |
+| [`evals`](evals) | Eval harness and model bake-off (test data lives in the private config repo) | CI |
+
+Prompts, the source registry and eval goldens live in a **separate private repo**, loaded by the worker from `PRIVATE_CONFIG_DIR`.
+
+## Getting started
+
+- **Worker:** see [apps/worker/README.md](apps/worker/README.md). `citebell-worker dry-run --report morning` works without any keys.
+- **Web app:** see [apps/web/README.md](apps/web/README.md).
+- **Database:** with the Supabase CLI, run these once from the repo root: `npx supabase init --workdir infra`, `npx supabase link --project-ref <ref> --workdir infra`, then `npx supabase db push --workdir infra`. Then add the owner's email to `public.allowed_users`.
+- **CI:** [.github/workflows/ci.yml](.github/workflows/ci.yml) runs worker lint, types and tests, a web lint, typecheck and build, and a check that the generated TypeScript matches the Python models.
+
 ## Docs
 
 - [Product Requirements Document](docs/PRD.md) (Markdown)
@@ -34,7 +53,18 @@ The console also shows charts for Indian and global indices (Nifty 50, Bank Nift
 
 ## Status
 
-PRD v1.3 is drafted: technical architecture decisions (§8), with AI models chosen per step by a bake-off (§8.12), and budget and pricing (§9: ~US$20–40 to build, ~US$2–25 a month on the free-data plan). The V0 build ("proof of trust") has not started.
+PRD v1.3 is complete. **V0 build ("proof of trust") has started with the scaffold:**
+- the worker skeleton with the publish gate, model router and run queue
+- the database schema
+- the web app shell with sign-in
+- CI
+
+V0 decisions (PRD appendix):
+- Upstox for India market data.
+- NSE-only files downloaded by hand and sent to the Telegram bot.
+- Prompts and the source registry in a private repo.
+
+Next: data collectors, starting with Upstox and its daily login.
 
 ## Disclaimer
 

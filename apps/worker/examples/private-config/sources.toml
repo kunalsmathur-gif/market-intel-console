@@ -1,0 +1,33 @@
+# Example registry for tests. The real list lives in the private config repo.
+# Tiers: T1 primary · T2 established press and wires · T3 context only · TX never publishable.
+
+[[source]]
+id = "example-exchange"
+name = "Example Exchange"
+domain = "exchange.example"
+tier = "T1"
+kind = "api"
+
+[[source]]
+id = "example-wire"
+name = "Example Wire"
+domain = "wire.example"
+tier = "T2"
+kind = "rss"
+url = "https://wire.example/markets.rss"
+
+[[source]]
+id = "example-daily"
+name = "Example Business Daily"
+domain = "daily.example"
+tier = "T2"
+kind = "rss"
+url = "https://daily.example/rss"
+
+[[source]]
+id = "example-blog"
+name = "Example Market Blog"
+domain = "blog.example"
+tier = "T3"
+kind = "rss"
+active = false

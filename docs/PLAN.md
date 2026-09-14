@@ -46,6 +46,19 @@ The user asked what it costs to build and run using free data sources and a dire
 
 Also: V0 duration in phasing corrected from ~3 weeks; USD/INR reference rate attributed to FBIL (not RBI); cost guardrail tied to the §9 budget. Later sections renumbered (phasing is now §10).
 
+## v1.4: approved for build, and V0 decisions (same day)
+The user confirmed the PRD is complete and made three V0 decisions (now in the PRD appendix):
+- **Upstox** for India market data, with a daily login.
+- **NSE-only files downloaded by hand** and sent to the Telegram bot.
+- **A separate private repo** for prompts, the source registry and eval goldens.
+
+The user chose to scaffold the repo first, on branch `v0/scaffold`:
+- `apps/worker` (Python): IST schedule, fail-closed publish gate with unit tests for the PRD's trap cases, Gemini/OpenRouter model router with a backup per step, Postgres run queue, private-config loader, CLI, Dockerfile for Railway.
+- `packages/schemas`: Pydantic models exported to JSON Schema and TypeScript.
+- `infra/supabase/migrations`: V0 schema with append-only facts and claims, run queue, alerts outbox, NSE uploads, owner-only RLS and private storage buckets. Checked against PostgreSQL 16 with stubbed Supabase schemas.
+- `apps/web` (Next.js 16): session proxy, magic-link sign-in, sign out (this device / everywhere), a Today page shell on the Citebell design tokens.
+- `.github/workflows/ci.yml`: worker lint, types and tests; web lint, typecheck and build; a check that the TypeScript types match the Python models.
+
 ## Inputs reviewed
 - Sample morning outlook reports (3 pages: Global Opening Check / India Setup & Flows / Data Outlook).
 - Older text pre-market briefs (May–Jul 2026).

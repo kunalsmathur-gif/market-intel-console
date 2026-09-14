@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* Citebell tokens from design-system/citebell/MASTER.md. Dark-first; a light theme via data-theme="light". */
+:root {
+  --bg: #070d19;
+  --panel: #0d1627;
+  --line: #1e2b45;
+  --text: #e6ecf5;
+  --text-2: #a0adc2;
+  --text-3: #75849e;
+  --brass: #eaab45; /* citations and as-of chips only */
+  --signal: #6aa3ff; /* interactive and primary */
+  --on-signal: #070d19;
+  --up: #34c28e;
+  --down: #f4697a;
+  --withheld: #ee8b57;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #edf1f7;
+  --panel: #ffffff;
+  --line: #dae1eb;
+  --text: #0c1526;
+  --text-2: #44526a;
+  --text-3: #657389;
+  --brass: #8f5b08;
+  --signal: #1f4fd1;
+  --on-signal: #ffffff;
+  --up: #0b7a55;
+  --down: #bd2a40;
+  --withheld: #a64b16;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-brass: var(--brass);
+  --color-signal: var(--signal);
+  --color-on-signal: var(--on-signal);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-withheld: var(--withheld);
+  --font-sans: var(--font-fira-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-fira-code), ui-monospace, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
