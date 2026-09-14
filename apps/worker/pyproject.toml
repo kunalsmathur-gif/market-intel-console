@@ -22,6 +22,8 @@ dev = [
     "respx>=0.21",
     "ruff>=0.7",
     "mypy>=1.13",
+    # Embedded Postgres for the database tests on machines without TEST_DATABASE_URL; CI uses a service.
+    "pgserver>=0.1.4; sys_platform != 'linux'",
 ]
 
 [project.scripts]
@@ -52,5 +54,5 @@ strict = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["apscheduler.*"]
+module = ["apscheduler.*", "pgserver.*"]
 ignore_missing_imports = true

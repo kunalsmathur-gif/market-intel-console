@@ -38,7 +38,7 @@ Prompts, the source registry and eval goldens live in a **separate private repo*
 - **Worker:** see [apps/worker/README.md](apps/worker/README.md). `citebell-worker dry-run --report morning` works without any keys.
 - **Web app:** see [apps/web/README.md](apps/web/README.md).
 - **Database:** with the Supabase CLI, run these once from the repo root: `npx supabase init --workdir infra`, `npx supabase link --project-ref <ref> --workdir infra`, then `npx supabase db push --workdir infra`. Then add the owner's email to `public.allowed_users`.
-- **CI:** [.github/workflows/ci.yml](.github/workflows/ci.yml) runs worker lint, types and tests, a web lint, typecheck and build, and a check that the generated TypeScript matches the Python models.
+- **CI:** [.github/workflows/ci.yml](.github/workflows/ci.yml) runs worker lint, types and tests; database tests against Postgres 17 (migrations, RLS, append-only guards, run queue); a web lint, typecheck and build; and a check that the generated TypeScript matches the Python models.
 
 ## Docs
 
