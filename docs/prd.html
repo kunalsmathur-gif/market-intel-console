@@ -369,7 +369,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <div class="head-row">
       <div class="lockup"><svg aria-label="Citebell logo"><use href="#mark"/></svg><span class="wordmark">citebell<sup>[1]</sup></span></div>
       <div class="meta">
-        <span class="chip brass">PRD v1.3 · draft for review</span>
+        <span class="chip brass">PRD v1.4 · approved for V0 build</span>
         <span class="chip">14 Sep 2026</span>
         <span class="chip">Personal use first · SaaS-ready</span>
       </div>
@@ -808,7 +808,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
     <tbody>
       <tr><td>Nifty, Bank Nifty, Sensex, sector indices, India VIX, option chain (OI, PCR; max pain computed), breadth (computed from index stocks)</td><td>A broker API: Upstox (data APIs free) [R27] or Kite Connect (₹500/month including live and historical data; the free Kite Personal plan has no market data) [R14]. Dhan's data API is ₹499/month [R32].</td><td class="n">₹0–500/mo</td><td>Personal-use terms and a broker account needed. Broker logins expire daily, so the worker needs a daily login step. Showing this data to other users needs an exchange or vendor licence.</td></tr>
       <tr><td>USD/INR, gold, crude as traded in India</td><td>Same broker API: NSE USD/INR futures, MCX gold and crude futures</td><td class="n">included</td><td>Live and exchange-sourced, labelled as the Indian contract (not Brent or COMEX). FBIL's daily reference rate (published around 13:30 IST, still often called the RBI rate) is the official cross-check [R38].</td></tr>
-      <tr><td>FII/DII provisional cash, participant-wise OI, F&amp;O ban list, bhavcopy</td><td>Published only by NSE</td><td class="n">Free to view</td><td><strong>NSE's Terms of Use prohibit automated data collection without written consent</strong> [R15]. <span class="tag warn">Decision needed</span> Ask NSE for consent for low-volume personal use, use a licensed data vendor, or download these by hand. The PRD doesn't assume scraping.</td></tr>
+      <tr><td>FII/DII provisional cash, participant-wise OI, F&amp;O ban list, bhavcopy</td><td>Published only by NSE</td><td class="n">Free to view</td><td><strong>NSE's Terms of Use prohibit automated data collection without written consent</strong> [R15]. <span class="tag up">Decided for V0</span> Download these by hand and send the file to the Telegram bot, which parses it (§9.3). NSE consent or a licensed vendor can replace this later. The PRD doesn't assume scraping.</td></tr>
       <tr><td>FPI flows (cross-check)</td><td>NSDL's daily FPI data</td><td class="n">Free</td><td>Published a day later; check the site's terms.</td></tr>
       <tr><td>US index closes, US 10-year yield, US economic data</td><td>FRED API (free key, ~120 requests/minute) [R18]; US Treasury yield data</td><td class="n">Free</td><td>Daily closing values, not live futures.</td></tr>
       <tr><td>Live S&amp;P and Nasdaq futures, Nikkei, Hang Seng, Kospi, Brent, WTI, GIFT Nifty before 08:15</td><td>No dependable free API found. <strong>V0:</strong> use values quoted by two independent pre-market news reports, with a “News-reported” badge. <strong>V1:</strong> add one paid feed, e.g. EODHD at €19.99–29.99/month [R19], after confirming it covers these indices.</td><td class="n">₹0 → ~€20–30/mo</td><td>Twelve Data's free tier covers US stocks, forex and crypto only [R20].</td></tr>
@@ -1974,7 +1974,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
   </table></div>
   <div class="grid2">
     <div class="item"><span class="label">Assumptions to validate</span><ul class="clean" style="font-size:14.5px"><li>Current pre-market research takes 60–90 min (measure in V0).</li><li>The named outlets offer usable RSS or official feeds.</li><li>Provisional FII/DII data arrives in the evening; sample reports were timestamped between 18:59 and 19:40 IST.</li><li>A broker API gives index and option-chain data for personal use (Upstox's data APIs are free; Kite Connect is ₹500/month).</li></ul></div>
-    <div class="item"><span class="label">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Which broker API: Upstox, Kite or Dhan?</li><li>Route for NSE-only data: ask NSE for consent, license a vendor, or download by hand?</li><li>Confirm the V0 budget (§9: ~US$20–40 one-time, ~US$2–25 a month) and the bake-off shortlist (§8.12).</li><li>Delivery channel: Telegram, WhatsApp or email first?</li><li>Hindi business press in V1 or later?</li><li>The repo is public: should prompts and the source registry live in a private repo?</li></ul></div>
+    <div class="item"><span class="label">Decisions for V0 · 14 Sep 2026</span><ul class="clean" style="font-size:14.5px"><li><strong>Broker API: Upstox.</strong> Free data APIs; the token expires at 03:30 IST, so there's a daily login (§9.3). Kite Connect is the fallback.</li><li><strong>NSE-only data: manual download</strong>, sent to the Telegram bot each evening and parsed by the worker (§8.4).</li><li><strong>Prompts, source registry and eval goldens: a separate private repo</strong>, loaded by the worker from <code>PRIVATE_CONFIG_DIR</code>.</li></ul><span class="label" style="display:block;margin-top:12px">Open questions</span><ul class="clean" style="font-size:14.5px"><li>Confirm the V0 budget (§9: ~US$20–40 one-time, ~US$2–25 a month) and the bake-off shortlist (§8.12).</li><li>Hindi business press in V1 or later?</li></ul></div>
   </div>
   <h3>Sources</h3>
   <ol class="clean" style="font-size:14px;list-style:none;padding:0">
@@ -2028,7 +2028,7 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </div>
 
 <footer style="max-width:1320px;margin:0 auto;padding:6px 28px 40px;color:var(--ink-3);font-size:13px;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between">
-  <span>Citebell PRD v1.3 · 14 Sep 2026</span>
+  <span>Citebell PRD v1.4 · 14 Sep 2026</span>
   <span>Wireframe data is illustrative. Market information, not investment advice.</span>
 </footer>
 

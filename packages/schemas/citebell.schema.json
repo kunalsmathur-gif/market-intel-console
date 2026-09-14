@@ -1,0 +1,373 @@
+{
+  "$defs": {
+    "Badge": {
+      "enum": [
+        "primary_data",
+        "news_reported",
+        "verified",
+        "attributed_view",
+        "single_source",
+        "withheld"
+      ],
+      "title": "Badge",
+      "type": "string"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "description": "An atomic statement pulled from a draft, with the evidence gathered for it.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "claim_type": {
+          "$ref": "#/$defs/ClaimType"
+        },
+        "text": {
+          "type": "string"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "anyOf": [
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "as_of": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "attributed_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "claim_type",
+        "text"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "ClaimType": {
+      "enum": [
+        "market_number",
+        "news_event",
+        "forecast",
+        "opinion"
+      ],
+      "title": "ClaimType",
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "One piece of support for a claim: a feed value or an article that states it.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "source_id": {
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/SourceTier"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "syndication_group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fetched_at": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "http_status": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "quote_found": {
+          "default": false,
+          "type": "boolean"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "as_of": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind",
+        "source_id",
+        "tier",
+        "fetched_at"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceKind": {
+      "enum": [
+        "feed",
+        "article"
+      ],
+      "title": "EvidenceKind",
+      "type": "string"
+    },
+    "GateDecision": {
+      "additionalProperties": false,
+      "description": "The publish gate's verdict for one claim. Reasons are written to the audit log.",
+      "properties": {
+        "claim_id": {
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "badge": {
+          "$ref": "#/$defs/Badge"
+        },
+        "independent_sources": {
+          "default": 0,
+          "type": "integer"
+        },
+        "reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "verdict",
+        "badge"
+      ],
+      "title": "GateDecision",
+      "type": "object"
+    },
+    "ReportType": {
+      "enum": [
+        "morning",
+        "midday",
+        "eod",
+        "flows"
+      ],
+      "title": "ReportType",
+      "type": "string"
+    },
+    "RunKey": {
+      "additionalProperties": false,
+      "description": "Identifies a report run, so a retry never publishes twice (PRD \u00a78.11).",
+      "properties": {
+        "report_type": {
+          "$ref": "#/$defs/ReportType"
+        },
+        "trading_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "version": {
+          "default": 1,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "report_type",
+        "trading_date"
+      ],
+      "title": "RunKey",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "One entry in the source registry (the registry itself lives in the private config repo).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9][a-z0-9_-]*$",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "tier": {
+          "$ref": "#/$defs/SourceTier"
+        },
+        "kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "active": {
+          "default": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "domain",
+        "tier",
+        "kind"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SourceKind": {
+      "enum": [
+        "rss",
+        "api",
+        "search",
+        "manual"
+      ],
+      "title": "SourceKind",
+      "type": "string"
+    },
+    "SourceTier": {
+      "enum": [
+        "T1",
+        "T2",
+        "T3",
+        "TX"
+      ],
+      "title": "SourceTier",
+      "type": "string"
+    },
+    "Verdict": {
+      "enum": [
+        "publish",
+        "withhold"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "title": "Citebell"
+}

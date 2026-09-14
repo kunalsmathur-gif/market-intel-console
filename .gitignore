@@ -11,8 +11,13 @@ dist/
 build/
 __pycache__/
 *.pyc
+*.egg-info/
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.tsbuildinfo
 
 # Local data & reference material (never commit third-party reports)
 data/raw/
