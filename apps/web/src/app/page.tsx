@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
+import Link from "next/link";
 
 import { Wordmark } from "@/components/wordmark";
 import { requireViewer } from "@/lib/auth";
@@ -33,6 +34,14 @@ export default async function TodayPage() {
         </div>
         <form action="/auth/signout" method="post" className="flex items-center gap-2 text-sm">
           <span className="hidden text-text-3 sm:inline">{viewer.email}</span>
+          {viewer.isOwner && (
+            <Link
+              href="/settings"
+              className="rounded-md border border-line px-3 py-1.5 transition-colors duration-200 hover:border-signal focus-visible:outline-2 focus-visible:outline-signal"
+            >
+              Settings
+            </Link>
+          )}
           <button name="scope" value="local" className="cursor-pointer rounded-md border border-line px-3 py-1.5 transition-colors duration-200 hover:border-signal focus-visible:outline-2 focus-visible:outline-signal">
             Sign out
           </button>
