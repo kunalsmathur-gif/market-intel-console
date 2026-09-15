@@ -10,6 +10,9 @@ from .base import DataSourceError, Observation, get_with_retries
 from .coingecko import btc_dominance, simple_prices
 from .fred import latest_observation as fred_latest_observation
 from .rss import FeedItem, fetch_feed
+from .upstox import OptionChainSnapshot, StrikeQuote
+from .upstox import option_chain as upstox_option_chain
+from .upstox import quotes as upstox_quotes
 
 __all__ = [
     "DataSourceError",
@@ -20,4 +23,8 @@ __all__ = [
     "fred_latest_observation",
     "FeedItem",
     "fetch_feed",
+    "OptionChainSnapshot",
+    "StrikeQuote",
+    "upstox_option_chain",
+    "upstox_quotes",
 ]
