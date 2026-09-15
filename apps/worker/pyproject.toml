@@ -56,3 +56,6 @@ plugins = ["pydantic.mypy"]
 [[tool.mypy.overrides]]
 module = ["apscheduler.*", "pgserver.*"]
 ignore_missing_imports = true
+
+[tool.uv.sources]
+citebell-schemas = { path = "../../packages/schemas", editable = true }
