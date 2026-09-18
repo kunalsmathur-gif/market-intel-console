@@ -10,6 +10,7 @@ import json
 import logging
 import sys
 from datetime import date, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 
 import httpx
 
@@ -22,6 +23,9 @@ from .pipeline.runner import RunContext, Step, gate_step, run_pipeline
 from .private_config import PrivateConfig, PrivateConfigError
 from .private_config_remote import load_configured_private_config
 from .schedule import IST, SCHEDULE, is_trading_day, now_ist
+
+if TYPE_CHECKING:
+    import psycopg
 
 log = logging.getLogger("citebell_worker")
 
@@ -45,20 +49,38 @@ def _load_config(settings: Settings) -> PrivateConfig:
     return config
 
 
-def _build_steps(settings: Settings, config: PrivateConfig, client: httpx.Client) -> list[tuple[str, Step]]:
-    """The free connectors run first (PRD §7 collect); Upstox is wired in separately, where a
-    database connection is available to read the owner's daily token (credentials.py)."""
+def _load_upstox_token(conn: "psycopg.Connection[Any]") -> str | None:
+    """The owner's Upstox token expires daily (PRD §9.3); a missing or expired one just
+    means the run collects no Upstox index numbers, not a run failure."""
+    from . import credentials
+
+    try:
+        return credentials.load_credential(conn, "upstox").access_token
+    except credentials.CredentialsError as exc:
+        log.warning("upstox: %s", exc)
+        return None
+
+
+def _build_steps(
+    settings: Settings,
+    config: PrivateConfig,
+    client: httpx.Client,
+    upstox_access_token: str | None = None,
+) -> list[tuple[str, Step]]:
+    """Collect (PRD §7) then gate. Every connector with credentials available runs in one
+    collect step; a connector with no key/token configured is silently left out."""
     steps: list[tuple[str, Step]] = []
     collect_step = build_market_collect_step(
         client,
         config.sources,
         settings.fred_api_key.get_secret_value() if settings.fred_api_key else None,
         settings.coingecko_api_key.get_secret_value() if settings.coingecko_api_key else None,
+        upstox_access_token,
     )
     if collect_step is not None:
         steps.append(("collect", collect_step))
     else:
-        log.warning("no data-connector API keys set: the run will collect no market numbers")
+        log.warning("no data-connector credentials set: the run will collect no market numbers")
     steps.append(("gate", gate_step))
     return steps
 
@@ -85,8 +107,14 @@ def cmd_dry_run(settings: Settings, report: ReportType, trading_date: date) -> i
     config = _load_config(settings)
     ctx = RunContext(key=RunKey(report_type=report, trading_date=trading_date),
                      policy=default_policy(now_ist()))
+    upstox_access_token = None
+    if settings.database_url is not None:
+        import psycopg
+
+        with psycopg.connect(settings.database_url.get_secret_value(), connect_timeout=10) as conn:
+            upstox_access_token = _load_upstox_token(conn)
     with httpx.Client() as client:
-        outcome = run_pipeline(ctx, _build_steps(settings, config, client))
+        outcome = run_pipeline(ctx, _build_steps(settings, config, client, upstox_access_token))
     print(json.dumps({"run": ctx.key.model_dump(mode="json"), "status": outcome.status,
                       "error": outcome.error, "trace": outcome.trace}, indent=2))
     return 0
@@ -125,8 +153,9 @@ def cmd_scheduler(settings: Settings) -> int:
             if run is None:
                 return
             ctx = RunContext(key=run.key, policy=default_policy(now_ist()))
+            upstox_access_token = _load_upstox_token(conn)
             with httpx.Client() as client:
-                outcome = run_pipeline(ctx, _build_steps(settings, config, client))
+                outcome = run_pipeline(ctx, _build_steps(settings, config, client, upstox_access_token))
             queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
         log.info("run %s %s: %s", run.id, run.key, outcome.status)
 
