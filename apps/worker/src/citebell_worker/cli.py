@@ -14,12 +14,15 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from citebell_schemas import ReportType, RunKey
+from citebell_schemas import ReportType, RunKey, SourceKind
 
 from .config import Settings, get_settings
+from .llm import LLMRouter
+from .pipeline.extract import make_extract_step
 from .pipeline.gate import GatePolicy
 from .pipeline.market_sources import build_market_collect_step
 from .pipeline.runner import RunContext, Step, gate_step, run_pipeline
+from .pipeline.verify import make_news_verify_step
 from .private_config import PrivateConfig, PrivateConfigError
 from .private_config_remote import load_configured_private_config
 from .schedule import IST, SCHEDULE, is_trading_day, now_ist
@@ -71,8 +74,9 @@ def _build_steps(
     client: httpx.Client,
     upstox_access_token: str | None = None,
 ) -> list[tuple[str, Step]]:
-    """Collect (PRD §7) then gate. Every connector with credentials available runs in one
-    collect step; a connector with no key/token configured is silently left out."""
+    """Collect, then extract+verify news claims (PRD §7), then gate. Every connector or LLM
+    provider with credentials available runs; anything unconfigured is silently left out with
+    a warning, so a run still produces whatever it can rather than failing outright."""
     steps: list[tuple[str, Step]] = []
     collect_step = build_market_collect_step(
         client,
@@ -85,6 +89,24 @@ def _build_steps(
         steps.append(("collect", collect_step))
     else:
         log.warning("no data-connector credentials set: the run will collect no market numbers")
+
+    rss_sources = [s for s in config.sources if s.active and s.kind is SourceKind.RSS]
+    llm_configured = settings.gemini_api_key is not None or settings.openrouter_api_key is not None
+    if not rss_sources:
+        log.warning("no active RSS sources configured: the run will extract no news claims")
+    elif not llm_configured:
+        log.warning("no LLM provider API key set: the run will extract no news claims")
+    else:
+        try:
+            extract_prompt = config.prompt("extract")
+            verify_prompt = config.prompt("verify")
+        except PrivateConfigError as exc:
+            log.warning("news extract/verify skipped: %s", exc)
+        else:
+            router = LLMRouter(settings, client)
+            steps.append(("extract", make_extract_step(client, router, extract_prompt, rss_sources)))
+            steps.append(("verify", make_news_verify_step(client, router, verify_prompt)))
+
     steps.append(("gate", gate_step))
     return steps
 
