@@ -33,8 +33,10 @@ class Credential:
         return self.expires_at <= datetime.now(UTC)
 
 
-def load_credential(conn: psycopg.Connection[Any], provider: str) -> Credential:
-    """Fetch and validate today's credential, or raise with a message fit for an alert."""
+def get_credential_status(conn: psycopg.Connection[Any], provider: str) -> Credential | None:
+    """Fetch today's credential row regardless of expiry, or None if nothing's ever been
+    saved. For visibility (cmd_check, the scheduler's freshness job) — callers that need a
+    usable token should use `load_credential` instead, which raises on expiry."""
     row = conn.execute(
         """
         select access_token, expires_at, updated_at
@@ -44,17 +46,22 @@ def load_credential(conn: psycopg.Connection[Any], provider: str) -> Credential:
         (provider,),
     ).fetchone()
     if row is None:
+        return None
+    access_token, expires_at, updated_at = row
+    return Credential(provider=provider, access_token=access_token, expires_at=expires_at,
+                      updated_at=updated_at)
+
+
+def load_credential(conn: psycopg.Connection[Any], provider: str) -> Credential:
+    """Fetch and validate today's credential, or raise with a message fit for an alert."""
+    credential = get_credential_status(conn, provider)
+    if credential is None:
         raise CredentialsError(
             f"no {provider!r} credential saved yet — set it on the Settings page"
         )
-
-    access_token, expires_at, updated_at = row
-    credential = Credential(
-        provider=provider, access_token=access_token, expires_at=expires_at, updated_at=updated_at
-    )
     if credential.expired:
         raise CredentialsError(
-            f"{provider!r} credential expired at {expires_at.isoformat()}"
+            f"{provider!r} credential expired at {credential.expires_at.isoformat()}"
             " — reconnect on the Settings page"
         )
     return credential
