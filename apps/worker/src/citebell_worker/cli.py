@@ -9,7 +9,7 @@ import argparse
 import json
 import logging
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -36,6 +36,10 @@ MISFIRE_GRACE_SECONDS = 600
 def default_policy(now: datetime) -> GatePolicy:
     # One window for every section for now; per-section windows arrive with the report templates.
     return GatePolicy(now=now, stale_before=now - timedelta(hours=24))
+
+
+def _time_minus_minutes(t: time, minutes: int) -> time:
+    return (datetime.combine(date(2000, 1, 1), t) - timedelta(minutes=minutes)).time()
 
 
 def _load_config(settings: Settings) -> PrivateConfig:
@@ -85,6 +89,18 @@ def _build_steps(
     return steps
 
 
+def _upstox_status_message(conn: "psycopg.Connection[Any]") -> str:
+    """A one-line human status for cmd_check and the scheduler's freshness job — never raises."""
+    from . import credentials
+
+    credential = credentials.get_credential_status(conn, "upstox")
+    if credential is None:
+        return "not connected — set it on the Settings page"
+    if credential.expired:
+        return f"expired at {credential.expires_at.isoformat()} — reconnect on the Settings page"
+    return f"valid until {credential.expires_at.isoformat()}"
+
+
 def cmd_check(settings: Settings) -> int:
     config = _load_config(settings)
     print(f"private config: {config.root} ({len(config.sources)} sources, "
@@ -99,7 +115,9 @@ def cmd_check(settings: Settings) -> int:
 
     with psycopg.connect(settings.database_url.get_secret_value(), connect_timeout=10) as conn:
         conn.execute("select 1")
+        upstox_status = _upstox_status_message(conn)
     print("database: reachable")
+    print(f"upstox token: {upstox_status}")
     return 0
 
 
@@ -159,6 +177,18 @@ def cmd_scheduler(settings: Settings) -> int:
             queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
         log.info("run %s %s: %s", run.id, run.key, outcome.status)
 
+    def check_upstox_token() -> None:
+        """Surfaces a missing/expired token in the scheduler's own logs before the first
+        collect run of the day (Morning Insights collects from 07:30 IST; the owner's daily
+        login task is due before then, PRD §9.3) — no separate alert channel exists yet."""
+        today = now_ist().date()
+        if not is_trading_day(today, config.holidays):
+            return
+        with psycopg.connect(dsn, autocommit=True) as conn:
+            status = _upstox_status_message(conn)
+        log.log(logging.INFO if "valid until" in status else logging.WARNING,
+                "upstox token: %s", status)
+
     def heartbeat(ping_url: str) -> None:
         # Proves the process and its database connection are alive; the monitor alerts on silence.
         try:
@@ -179,6 +209,11 @@ def cmd_scheduler(settings: Settings) -> int:
                           misfire_grace_time=MISFIRE_GRACE_SECONDS)
     scheduler.add_job(process_queue, "interval", seconds=QUEUE_POLL_SECONDS, id="process-queue",
                       coalesce=True, max_instances=1)
+    upstox_check_time = _time_minus_minutes(SCHEDULE[ReportType.MORNING].collect_start or time(7, 30), 15)
+    scheduler.add_job(check_upstox_token,
+                      CronTrigger(day_of_week="mon-fri", hour=upstox_check_time.hour,
+                                  minute=upstox_check_time.minute, timezone=IST),
+                      id="check-upstox-token", coalesce=True, misfire_grace_time=MISFIRE_GRACE_SECONDS)
     if settings.healthcheck_ping_url:
         scheduler.add_job(heartbeat, "interval", seconds=settings.heartbeat_seconds, id="heartbeat",
                           args=[settings.healthcheck_ping_url], coalesce=True, max_instances=1,
