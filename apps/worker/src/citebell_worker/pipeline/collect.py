@@ -27,6 +27,7 @@ FIELD_UNITS: Mapping[str, str] = {
     "banknifty.ltp": "index_points",
     "india_vix.ltp": "index_points",
     "sensex.close": "index_points",
+    "sensex.ltp": "index_points",
     "us10y.yield": "percent",
     "bitcoin.price_usd": "usd",
     "ethereum.price_usd": "usd",
