@@ -17,7 +17,8 @@ from citebell_schemas import ReportType, RunKey
 
 from .config import Settings, get_settings
 from .pipeline.gate import GatePolicy
-from .pipeline.runner import RunContext, run_pipeline
+from .pipeline.market_sources import build_market_collect_step
+from .pipeline.runner import RunContext, Step, gate_step, run_pipeline
 from .private_config import PrivateConfig, PrivateConfigError
 from .private_config_remote import load_configured_private_config
 from .schedule import IST, SCHEDULE, is_trading_day, now_ist
@@ -44,6 +45,24 @@ def _load_config(settings: Settings) -> PrivateConfig:
     return config
 
 
+def _build_steps(settings: Settings, config: PrivateConfig, client: httpx.Client) -> list[tuple[str, Step]]:
+    """The free connectors run first (PRD §7 collect); Upstox is wired in separately, where a
+    database connection is available to read the owner's daily token (credentials.py)."""
+    steps: list[tuple[str, Step]] = []
+    collect_step = build_market_collect_step(
+        client,
+        config.sources,
+        settings.fred_api_key.get_secret_value() if settings.fred_api_key else None,
+        settings.coingecko_api_key.get_secret_value() if settings.coingecko_api_key else None,
+    )
+    if collect_step is not None:
+        steps.append(("collect", collect_step))
+    else:
+        log.warning("no data-connector API keys set: the run will collect no market numbers")
+    steps.append(("gate", gate_step))
+    return steps
+
+
 def cmd_check(settings: Settings) -> int:
     config = _load_config(settings)
     print(f"private config: {config.root} ({len(config.sources)} sources, "
@@ -63,10 +82,11 @@ def cmd_check(settings: Settings) -> int:
 
 
 def cmd_dry_run(settings: Settings, report: ReportType, trading_date: date) -> int:
-    _load_config(settings)
+    config = _load_config(settings)
     ctx = RunContext(key=RunKey(report_type=report, trading_date=trading_date),
                      policy=default_policy(now_ist()))
-    outcome = run_pipeline(ctx)
+    with httpx.Client() as client:
+        outcome = run_pipeline(ctx, _build_steps(settings, config, client))
     print(json.dumps({"run": ctx.key.model_dump(mode="json"), "status": outcome.status,
                       "error": outcome.error, "trace": outcome.trace}, indent=2))
     return 0
@@ -105,7 +125,8 @@ def cmd_scheduler(settings: Settings) -> int:
             if run is None:
                 return
             ctx = RunContext(key=run.key, policy=default_policy(now_ist()))
-            outcome = run_pipeline(ctx)
+            with httpx.Client() as client:
+                outcome = run_pipeline(ctx, _build_steps(settings, config, client))
             queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
         log.info("run %s %s: %s", run.id, run.key, outcome.status)
 

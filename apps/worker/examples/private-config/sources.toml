@@ -31,3 +31,27 @@ domain = "blog.example"
 tier = "T3"
 kind = "rss"
 active = false
+
+# Real, free V0 data connectors (apps/worker/src/citebell_worker/data/); the real registry
+# keeps the same ids so a collector's Source lookup works unchanged in production.
+[[source]]
+id = "fred"
+name = "FRED (Federal Reserve Economic Data)"
+domain = "fred.stlouisfed.org"
+tier = "T1"
+kind = "api"
+
+[[source]]
+id = "coingecko"
+name = "CoinGecko"
+domain = "coingecko.com"
+tier = "T2"
+kind = "api"
+
+[[source]]
+id = "upstox"
+name = "Upstox"
+domain = "upstox.com"
+tier = "T2"
+kind = "api"
+

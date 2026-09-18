@@ -34,6 +34,12 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr | None = None
     openrouter_api_key: SecretStr | None = None
 
+    # Free-tier keys for the V0 data connectors (PRD §8.4): FRED (~120 req/min) and
+    # CoinGecko Demo (10,000 calls/month). Upstox's key is the owner's daily access token,
+    # stored in the database via the Settings page (credentials.py), not an env var.
+    fred_api_key: SecretStr | None = None
+    coingecko_api_key: SecretStr | None = None
+
     # Model per pipeline step as "provider:model". Placeholders until the bake-off
     # (PRD §8.12) picks per step; each step can name a backup from another vendor.
     llm_classify: str = "gemini:gemini-2.5-flash-lite"
