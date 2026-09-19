@@ -30,6 +30,32 @@ class Section:
     def publishable(self) -> bool:
         return any(d.verdict is Verdict.PUBLISH for d in self.decisions)
 
+    def published_claims(self) -> dict[str, Claim]:
+        """Claims the gate step passed, keyed by id (decisions are parallel to claims)."""
+        verdicts = {d.claim_id: d.verdict for d in self.decisions}
+        return {c.id: c for c in self.claims if verdicts.get(c.id) is Verdict.PUBLISH}
+
+
+@dataclass(frozen=True)
+class Citation:
+    """One claim cited by a rendered section's text, for the fact-check drawer (PRD §7)."""
+
+    claim_id: str
+    source_id: str
+    url: str | None
+
+
+@dataclass(frozen=True)
+class RenderedSection:
+    """The write step's output for one report section: prose with every number/quote
+    resolved from a published claim, or a reason the section is withheld instead."""
+
+    key: str
+    title: str
+    text: str | None  # None when withheld
+    citations: tuple[Citation, ...] = ()
+    withheld_reason: str | None = None
+
 
 @dataclass
 class RunContext:
@@ -37,6 +63,7 @@ class RunContext:
     policy: GatePolicy
     sections: list[Section] = field(default_factory=list)
     trace: list[dict[str, Any]] = field(default_factory=list)
+    rendered_sections: list[RenderedSection] = field(default_factory=list)
 
 
 Step = Callable[[RunContext], None]
