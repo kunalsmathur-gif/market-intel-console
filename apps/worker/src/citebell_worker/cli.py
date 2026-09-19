@@ -22,7 +22,9 @@ from .pipeline.extract import make_extract_step
 from .pipeline.gate import GatePolicy
 from .pipeline.market_sources import build_market_collect_step
 from .pipeline.runner import RunContext, Step, gate_step, run_pipeline
+from .pipeline.templates import REPORT_TEMPLATES
 from .pipeline.verify import make_news_verify_step
+from .pipeline.write import make_write_step
 from .private_config import PrivateConfig, PrivateConfigError
 from .private_config_remote import load_configured_private_config
 from .schedule import IST, SCHEDULE, is_trading_day, now_ist
@@ -72,9 +74,10 @@ def _build_steps(
     settings: Settings,
     config: PrivateConfig,
     client: httpx.Client,
+    report_type: ReportType,
     upstox_access_token: str | None = None,
 ) -> list[tuple[str, Step]]:
-    """Collect, then extract+verify news claims (PRD §7), then gate. Every connector or LLM
+    """Collect, extract+verify news claims, gate, then write (PRD §7). Every connector or LLM
     provider with credentials available runs; anything unconfigured is silently left out with
     a warning, so a run still produces whatever it can rather than failing outright."""
     steps: list[tuple[str, Step]] = []
@@ -92,6 +95,7 @@ def _build_steps(
 
     rss_sources = [s for s in config.sources if s.active and s.kind is SourceKind.RSS]
     llm_configured = settings.gemini_api_key is not None or settings.openrouter_api_key is not None
+    router: LLMRouter | None = None
     if not rss_sources:
         log.warning("no active RSS sources configured: the run will extract no news claims")
     elif not llm_configured:
@@ -108,6 +112,19 @@ def _build_steps(
             steps.append(("verify", make_news_verify_step(client, router, verify_prompt)))
 
     steps.append(("gate", gate_step))
+
+    if not llm_configured:
+        log.warning("no LLM provider API key set: the run will publish no written sections")
+    else:
+        try:
+            write_prompt = config.prompt("write")
+        except PrivateConfigError as exc:
+            log.warning("write step skipped: %s", exc)
+        else:
+            router = router or LLMRouter(settings, client)
+            write_template = REPORT_TEMPLATES[report_type]
+            steps.append(("write", make_write_step(write_template, router, write_prompt)))
+
     return steps
 
 
@@ -154,7 +171,7 @@ def cmd_dry_run(settings: Settings, report: ReportType, trading_date: date) -> i
         with psycopg.connect(settings.database_url.get_secret_value(), connect_timeout=10) as conn:
             upstox_access_token = _load_upstox_token(conn)
     with httpx.Client() as client:
-        outcome = run_pipeline(ctx, _build_steps(settings, config, client, upstox_access_token))
+        outcome = run_pipeline(ctx, _build_steps(settings, config, client, report, upstox_access_token))
     print(json.dumps({"run": ctx.key.model_dump(mode="json"), "status": outcome.status,
                       "error": outcome.error, "trace": outcome.trace}, indent=2))
     return 0
@@ -195,7 +212,9 @@ def cmd_scheduler(settings: Settings) -> int:
             ctx = RunContext(key=run.key, policy=default_policy(now_ist()))
             upstox_access_token = _load_upstox_token(conn)
             with httpx.Client() as client:
-                outcome = run_pipeline(ctx, _build_steps(settings, config, client, upstox_access_token))
+                outcome = run_pipeline(
+                    ctx, _build_steps(settings, config, client, run.key.report_type, upstox_access_token)
+                )
             queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
         log.info("run %s %s: %s", run.id, run.key, outcome.status)
 
