@@ -14,13 +14,15 @@ from typing import TYPE_CHECKING, Any
 
 import httpx
 
-from citebell_schemas import ReportType, RunKey, SourceKind
+from citebell_schemas import ReportType, RunKey, RunStatus, SourceKind
 
 from .config import Settings, get_settings
 from .llm import LLMRouter
+from .pipeline.check import make_check_step
 from .pipeline.extract import make_extract_step
 from .pipeline.gate import GatePolicy
 from .pipeline.market_sources import build_market_collect_step
+from .pipeline.publish import publish_report
 from .pipeline.runner import RunContext, Step, gate_step, run_pipeline
 from .pipeline.templates import REPORT_TEMPLATES
 from .pipeline.verify import make_news_verify_step
@@ -77,7 +79,8 @@ def _build_steps(
     report_type: ReportType,
     upstox_access_token: str | None = None,
 ) -> list[tuple[str, Step]]:
-    """Collect, extract+verify news claims, gate, then write (PRD §7). Every connector or LLM
+    """Collect, extract+verify news claims, gate, then write and check (PRD §7). Every connector
+    or LLM
     provider with credentials available runs; anything unconfigured is silently left out with
     a warning, so a run still produces whatever it can rather than failing outright."""
     steps: list[tuple[str, Step]] = []
@@ -124,6 +127,7 @@ def _build_steps(
             router = router or LLMRouter(settings, client)
             write_template = REPORT_TEMPLATES[report_type]
             steps.append(("write", make_write_step(write_template, router, write_prompt)))
+            steps.append(("check", make_check_step()))
 
     return steps
 
@@ -215,7 +219,10 @@ def cmd_scheduler(settings: Settings) -> int:
                 outcome = run_pipeline(
                     ctx, _build_steps(settings, config, client, run.key.report_type, upstox_access_token)
                 )
-            queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
+            with conn.transaction():
+                if outcome.status in (RunStatus.PUBLISHED, RunStatus.PARTIAL):
+                    publish_report(conn, ctx, run.id)
+                queue.finish_run(conn, run.id, outcome.status, outcome.trace, outcome.error)
         log.info("run %s %s: %s", run.id, run.key, outcome.status)
 
     def check_upstox_token() -> None:

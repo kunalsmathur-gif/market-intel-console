@@ -97,6 +97,14 @@ def run_pipeline(ctx: RunContext, steps: Sequence[tuple[str, Step]] = V0_STEPS) 
             return RunOutcome(RunStatus.FAILED, ctx.trace, error=f"{name}: {exc!r}")
         ctx.trace.append(_record(name, started_at, started, ok=True))
 
+    if ctx.rendered_sections:
+        published_sections = [s for s in ctx.rendered_sections if s.text is not None]
+        if not published_sections:
+            return RunOutcome(RunStatus.WITHHELD, ctx.trace, error="no report section passed check")
+        if len(published_sections) < len(ctx.rendered_sections):
+            return RunOutcome(RunStatus.PARTIAL, ctx.trace)
+        return RunOutcome(RunStatus.PUBLISHED, ctx.trace)
+
     published = [s for s in ctx.sections if s.publishable]
     if not published:
         return RunOutcome(RunStatus.WITHHELD, ctx.trace, error="no section passed the gate")
