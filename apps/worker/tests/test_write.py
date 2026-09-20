@@ -22,7 +22,7 @@ from citebell_worker.llm import LLMRouter
 from citebell_worker.pipeline.runner import RunContext, Section
 from citebell_worker.pipeline.templates import REPORT_TEMPLATES, ReportTemplate, SectionTemplate
 from citebell_worker.pipeline.write import (
-    _claim_value_text,
+    claim_value_text,
     make_write_step,
     render_section,
 )
@@ -74,24 +74,24 @@ def _gemini_paragraph(paragraph: str) -> httpx.Response:
     })
 
 
-def test_claim_value_text_renders_percent_suffix() -> None:
+def testclaim_value_text_renders_percent_suffix() -> None:
     claim = market_claim("c1", "india_vix.ltp", "14.5", unit="percent")
-    assert _claim_value_text(claim) == "14.5%"
+    assert claim_value_text(claim) == "14.5%"
 
 
-def test_claim_value_text_renders_inr_crore_suffix() -> None:
+def testclaim_value_text_renders_inr_crore_suffix() -> None:
     claim = market_claim("c1", "fii.net_cash_cr", "1200", unit="inr_crore")
-    assert _claim_value_text(claim) == "1200 Cr"
+    assert claim_value_text(claim) == "1200 Cr"
 
 
-def test_claim_value_text_renders_plain_value_with_no_unit() -> None:
+def testclaim_value_text_renders_plain_value_with_no_unit() -> None:
     claim = market_claim("c1", "nifty50.close", "24500")
-    assert _claim_value_text(claim) == "24500"
+    assert claim_value_text(claim) == "24500"
 
 
-def test_claim_value_text_falls_back_to_claim_text_for_news() -> None:
+def testclaim_value_text_falls_back_to_claim_text_for_news() -> None:
     claim = news_claim("c1", "Nifty hit a record high")
-    assert _claim_value_text(claim) == "Nifty hit a record high"
+    assert claim_value_text(claim) == "Nifty hit a record high"
 
 
 def test_render_section_withholds_when_no_slots_available() -> None:

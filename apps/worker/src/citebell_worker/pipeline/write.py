@@ -35,7 +35,7 @@ PLACEHOLDER_RE = re.compile(r"\{\{([^{}]+)\}\}")
 UNIT_SUFFIXES: dict[str, str] = {"percent": "%", "inr_crore": " Cr"}
 
 
-def _claim_value_text(claim: Claim) -> str:
+def claim_value_text(claim: Claim) -> str:
     """The one deterministic rendering of a claim's number or quote — never the model's own
     words, so a claim's evidence always matches what the report actually says."""
     if claim.claim_type is ClaimType.MARKET_NUMBER and claim.value is not None:
@@ -55,7 +55,7 @@ def _citation_for(claim: Claim) -> Citation:
     )
 
 
-def _all_published_claims(ctx: RunContext) -> dict[str, Claim]:
+def all_published_claims(ctx: RunContext) -> dict[str, Claim]:
     claims: dict[str, Claim] = {}
     for section in ctx.sections:
         claims.update(section.published_claims())
@@ -129,7 +129,7 @@ def render_section(
         used_ids.append(token)
 
     def _resolve(match: re.Match[str]) -> str:
-        return _claim_value_text(known[match.group(1).strip()])
+        return claim_value_text(known[match.group(1).strip()])
 
     text = PLACEHOLDER_RE.sub(_resolve, str(paragraph))
     citations = tuple(_citation_for(known[cid]) for cid in dict.fromkeys(used_ids))
@@ -144,7 +144,7 @@ def make_write_step(
     (unbuilt) check and publish steps."""
 
     def write_step(ctx: RunContext) -> None:
-        published = _all_published_claims(ctx)
+        published = all_published_claims(ctx)
         news_used: set[str] = set()
         rendered = [
             render_section(section_template, published, news_used, router, prompt)
