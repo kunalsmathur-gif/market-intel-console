@@ -85,6 +85,23 @@ class TestMarketNumbers:
         assert decision.verdict is Verdict.WITHHOLD
         assert "disagree" in decision.reasons[-1]
 
+    def test_two_data_feeds_disagreeing_withholds(self) -> None:
+        """The realistic production conflict: two connectors (e.g. FRED vs CoinGecko) disagree."""
+        claim = number("62000", feed("coingecko", SourceTier.T2, "62000"),
+                       feed("exchange-b", SourceTier.T2, "61500"), unit="usd")
+        decision = decide(claim, POLICY)
+        assert decision.verdict is Verdict.WITHHOLD
+        assert "disagree" in decision.reasons[-1]
+
+    def test_one_outlier_among_three_sources_still_withholds(self) -> None:
+        """No majority vote: even 2-of-3 agreeing doesn't publish if one source disagrees."""
+        claim = number("25100.50", feed("exchange", SourceTier.T1, "25100.50"),
+                       article("wire", SourceTier.T2, "25100.50"),
+                       article("daily", SourceTier.T2, "25200.00"))
+        decision = decide(claim, POLICY)
+        assert decision.verdict is Verdict.WITHHOLD
+        assert "daily=25200.00" in decision.reasons[-1]
+
     def test_single_source_is_withheld_unless_policy_allows_it(self) -> None:
         claim = number("25080", article("wire", SourceTier.T2, "25080"))
         assert decide(claim, POLICY).verdict is Verdict.WITHHOLD
@@ -116,6 +133,15 @@ class TestNewsEvents:
                           POLICY)
         assert decision.verdict is Verdict.WITHHOLD
         assert any("TX" in reason for reason in decision.reasons)
+
+    def test_contradictory_single_sourced_reports_both_withhold(self) -> None:
+        """If two outlets report different, single-sourced versions of the same event
+        (e.g. 'RBI held rates' vs 'RBI cut rates'), neither meets the 2-independent-source
+        bar on its own, so both fail closed by default rather than one publishing unchecked."""
+        held = event(article("wire-a", SourceTier.T2))
+        cut = event(article("wire-b", SourceTier.T2))
+        assert decide(held, POLICY).verdict is Verdict.WITHHOLD
+        assert decide(cut, POLICY).verdict is Verdict.WITHHOLD
 
     @pytest.mark.parametrize(
         ("change", "reason"),
