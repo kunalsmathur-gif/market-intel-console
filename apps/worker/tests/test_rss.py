@@ -40,6 +40,21 @@ ATOM_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
 </feed>
 """
 
+# RSS 1.0/RDF (e.g. Nikkei Asia's actual feed): every element sits in a default namespace,
+# so plain (unqualified) tag lookups like ElementTree's ".//item" miss them entirely.
+RDF_XML = b"""<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns="http://purl.org/rss/1.0/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <channel rdf:about="https://wire.example/rdf">
+    <title>Example RDF Wire</title>
+  </channel>
+  <item rdf:about="https://wire.example/rdf-story">
+    <title>Asian markets rise on rate-cut bets</title>
+    <link>https://wire.example/rdf-story</link>
+    <description>Regional benchmarks gained as traders priced in a cut.</description>
+  </item>
+</rdf:RDF>
+"""
+
 
 def rss_source(**kw: object) -> Source:
     fields: dict[str, object] = {
@@ -67,6 +82,16 @@ def test_fetch_feed_parses_atom_entries() -> None:
     assert items[0].title == "Gold hits fresh high"
     assert items[0].link == "https://wire.example/gold"
     assert items[0].published_at is not None
+
+
+@respx.mock
+def test_fetch_feed_parses_rdf_rss_1_items() -> None:
+    respx.get(RSS_URL).mock(return_value=httpx.Response(200, content=RDF_XML))
+    items = fetch_feed(httpx.Client(), rss_source())
+    assert len(items) == 1
+    assert items[0].title == "Asian markets rise on rate-cut bets"
+    assert items[0].link == "https://wire.example/rdf-story"
+    assert items[0].summary == "Regional benchmarks gained as traders priced in a cut."
 
 
 @respx.mock
