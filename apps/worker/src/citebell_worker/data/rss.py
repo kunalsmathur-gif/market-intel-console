@@ -29,7 +29,7 @@ class FeedItem:
 
 
 def fetch_feed(client: httpx.Client, source: Source) -> list[FeedItem]:
-    """Fetch and parse an RSS 2.0 or Atom feed into plain items."""
+    """Fetch and parse an RSS 2.0, RSS 1.0 (RDF), or Atom feed into plain items."""
     require(source, "rss")
     if not source.url:
         raise DataSourceError(f"RSS source {source.id!r} has no url configured")
@@ -40,7 +40,7 @@ def fetch_feed(client: httpx.Client, source: Source) -> list[FeedItem]:
     except ET.ParseError as exc:
         raise DataSourceError(f"RSS source {source.id!r}: invalid XML: {exc}") from exc
 
-    rss_items = root.findall(".//item")
+    rss_items = root.findall(".//{*}item")
     if rss_items:
         return [_parse_rss_item(source.id, item) for item in rss_items]
     atom_entries = root.findall(f".//{ATOM_NS}entry")
@@ -50,6 +50,9 @@ def fetch_feed(client: httpx.Client, source: Source) -> list[FeedItem]:
 
 
 def _text(item: ET.Element, tag: str) -> str | None:
+    if not tag.startswith("{"):
+        tag = f"{{*}}{tag}"  # match this local name in any namespace (or none) — RSS 1.0/RDF
+        # feeds put every element in a default namespace; plain RSS 2.0 has no namespace at all.
     el = item.find(tag)
     return el.text.strip() if el is not None and el.text else None
 
