@@ -64,6 +64,9 @@ def _llm_supports_claim(
         ),
         schema_name="claim_support",
         json_schema=VERIFY_SCHEMA,
+        # A narrow yes/no judgement doesn't need extended reasoning; skipping it cuts tail
+        # latency (was timing out at 60s under normal load) without changing the check itself.
+        thinking=False,
     )
     result = router.complete_json(LLMStep.VERIFY, request)
     return bool(result.data.get("supported")) if isinstance(result.data, dict) else False
