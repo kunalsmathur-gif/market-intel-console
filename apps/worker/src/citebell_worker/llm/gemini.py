@@ -24,6 +24,9 @@ class GeminiBackend:
                 "temperature": request.temperature,
                 "responseMimeType": "application/json",
                 "responseJsonSchema": request.json_schema,
+                # Thinking adds real latency for a narrow judgement call; skip it when the
+                # caller doesn't need deep reasoning (LLMRequest.thinking=False).
+                "thinkingConfig": {"thinkingBudget": 0} if not request.thinking else {},
             },
         }
         started = time.monotonic()

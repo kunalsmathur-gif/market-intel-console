@@ -37,6 +37,10 @@ class LLMRequest:
     schema_name: str
     json_schema: dict[str, Any]
     temperature: float = 0.0
+    # Extended "thinking" helps open-ended writing/classification but adds real latency for a
+    # narrow yes/no judgement (verify) where it isn't needed. Backends that don't support the
+    # concept (e.g. OpenRouter models without a reasoning toggle) ignore this.
+    thinking: bool = True
 
 
 @dataclass(frozen=True)
