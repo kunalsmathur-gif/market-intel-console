@@ -112,7 +112,13 @@ def _build_steps(
         else:
             router = LLMRouter(settings, client)
             steps.append(("extract", make_extract_step(client, router, extract_prompt, rss_sources)))
-            steps.append(("verify", make_news_verify_step(client, router, verify_prompt)))
+            steps.append((
+                "verify",
+                make_news_verify_step(
+                    client, router, verify_prompt,
+                    reject_confirmations=settings.verify_reject_confirmations,
+                ),
+            ))
 
     steps.append(("gate", gate_step))
 

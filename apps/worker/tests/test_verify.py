@@ -202,5 +202,35 @@ def test_make_news_verify_step_leaves_non_news_claims_untouched() -> None:
     assert ctx.sections[0].claims == [market_claim]
 
 
-def _run_key() -> RunKey:
+@respx.mock
+def test_verify_keeps_a_claim_if_any_confirmation_call_says_supported() -> None:
+    """Model noise: the first call says unsupported, a later one says supported. With
+    reject_confirmations=2, the claim must survive — only unanimous rejection drops it."""
+    respx.get(ARTICLE_URL).mock(return_value=httpx.Response(
+        200, text="<html><body>Benchmark indices rallied on strong FII buying.</body></html>"))
+    respx.post(GEMINI_VERIFY_URL).mock(side_effect=[_gemini_supported(False), _gemini_supported(True)])
+    router = LLMRouter(settings())
+    with httpx.Client() as client:
+        updated, reason = verify_article_evidence(client, router, "prompt", "Nifty hit a record high",
+                                                   article_evidence(), reject_confirmations=2)
+    assert updated.quote_found is True
+    assert reason is None
+
+
+@respx.mock
+def test_verify_drops_a_claim_only_once_every_confirmation_call_agrees() -> None:
+    respx.get(ARTICLE_URL).mock(return_value=httpx.Response(
+        200, text="<html><body>Benchmark indices rallied on strong FII buying.</body></html>"))
+    respx.post(GEMINI_VERIFY_URL).mock(return_value=_gemini_supported(False))
+    router = LLMRouter(settings())
+    with httpx.Client() as client:
+        updated, reason = verify_article_evidence(client, router, "prompt", "Nifty hit a record high",
+                                                   article_evidence(), reject_confirmations=2)
+    assert updated.quote_found is True
+    assert reason is not None
+    assert "does not support" in reason
+    assert respx.calls.call_count == 3  # 1 GET fetch + 2 confirmation calls to Gemini
+
+
+def _run_key() -> RunKey: 
     return RunKey(report_type=ReportType.MORNING, trading_date=date(2026, 1, 1))

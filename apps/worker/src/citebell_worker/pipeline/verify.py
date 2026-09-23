@@ -53,9 +53,7 @@ def fetch_article(
     return None, ""
 
 
-def _llm_supports_claim(
-    router: LLMRouter, prompt: str, claim_text: str, quote: str, article_text: str
-) -> bool:
+def _llm_check_once(router: LLMRouter, prompt: str, claim_text: str, quote: str, article_text: str) -> bool:
     request = LLMRequest(
         system=prompt,
         user=(
@@ -72,8 +70,34 @@ def _llm_supports_claim(
     return bool(result.data.get("supported")) if isinstance(result.data, dict) else False
 
 
+def _llm_supports_claim(
+    router: LLMRouter,
+    prompt: str,
+    claim_text: str,
+    quote: str,
+    article_text: str,
+    *,
+    reject_confirmations: int = 1,
+) -> bool:
+    """Ask the model whether the article supports the claim. A single "unsupported" call can be
+    model noise rather than a real problem (the same input has been observed to flip supported
+    <-> unsupported across repeat calls at temperature 0), so a claim is only dropped once
+    ``reject_confirmations`` independent calls *all* agree it's unsupported; any call along the
+    way that says "supported" keeps the claim immediately, at no extra cost to the common case."""
+    for attempt in range(max(1, reject_confirmations)):
+        if _llm_check_once(router, prompt, claim_text, quote, article_text):
+            return True
+    return False
+
+
 def verify_article_evidence(
-    client: httpx.Client, router: LLMRouter, prompt: str, claim_text: str, evidence: Evidence
+    client: httpx.Client,
+    router: LLMRouter,
+    prompt: str,
+    claim_text: str,
+    evidence: Evidence,
+    *,
+    reject_confirmations: int = 1,
 ) -> tuple[Evidence, str | None]:
     """Fetch the live page, run the deterministic quote check, and — only once that check
     passes — ask the model whether the article supports the claim. Returns the updated
@@ -97,7 +121,10 @@ def verify_article_evidence(
         return updated, None  # ditto for quote_found=False; no need for the model's opinion
 
     try:
-        supported = _llm_supports_claim(router, prompt, claim_text, evidence.quote or "", plain)
+        supported = _llm_supports_claim(
+            router, prompt, claim_text, evidence.quote or "", plain,
+            reject_confirmations=reject_confirmations,
+        )
     except LLMError as exc:
         log.warning("verify: model check failed for %s, keeping the claim: %s", evidence.url, exc)
         return updated, None  # fail open: the hard checks above still gate this evidence
@@ -107,7 +134,7 @@ def verify_article_evidence(
 
 
 def make_news_verify_step(
-    client: httpx.Client, router: LLMRouter, prompt: str
+    client: httpx.Client, router: LLMRouter, prompt: str, *, reject_confirmations: int = 1
 ) -> Callable[[RunContext], None]:
     """Build a pipeline Step that re-fetches every NEWS_EVENT claim's article evidence,
     confirms (or refutes) its quote, and drops any claim the model judges unsupported."""
@@ -126,7 +153,10 @@ def make_news_verify_step(
                     if evidence.kind is not EvidenceKind.ARTICLE:
                         new_evidence.append(evidence)
                         continue
-                    updated, reason = verify_article_evidence(client, router, prompt, claim.text, evidence)
+                    updated, reason = verify_article_evidence(
+                        client, router, prompt, claim.text, evidence,
+                        reject_confirmations=reject_confirmations,
+                    )
                     new_evidence.append(updated)
                     if reason is not None:
                         drop = True

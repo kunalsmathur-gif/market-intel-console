@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     llm_qa_backup: str | None = None
     llm_timeout_seconds: float = 60.0
 
+    # A single "unsupported" verdict from verify can be model noise, not a real problem with
+    # the claim (observed: the same claim/quote/article flips supported<->unsupported across
+    # repeat calls at temperature 0). Require this many consecutive "unsupported" verdicts in
+    # agreement before actually dropping a claim; any "supported" verdict along the way keeps it.
+    verify_reject_confirmations: int = 2
+
     # The scheduler pings this every few minutes; an outside monitor alerts when the pings stop.
     healthcheck_ping_url: str | None = None
     heartbeat_seconds: int = 300
